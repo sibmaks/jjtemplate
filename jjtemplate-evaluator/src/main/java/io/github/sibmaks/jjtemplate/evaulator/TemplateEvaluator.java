@@ -3,10 +3,8 @@ package io.github.sibmaks.jjtemplate.evaulator;
 import io.github.sibmaks.jjtemplate.evaulator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaulator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaulator.fun.impl.*;
-import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
-import io.github.sibmaks.jjtemplate.lexer.Token;
-import io.github.sibmaks.jjtemplate.lexer.TokenType;
-import io.github.sibmaks.jjtemplate.parser.TemplateParser;
+import io.github.sibmaks.jjtemplate.evaulator.fun.impl.string.StringLowerTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaulator.fun.impl.string.StringUpperTemplateFunction;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.lang.reflect.Array;
@@ -24,7 +22,12 @@ public final class TemplateEvaluator {
             new DoubleTemplateFunction(),
             new IntTemplateFunction(),
             new StrTemplateFunction(),
-            new ConcatTemplateFunction()
+            new ConcatTemplateFunction(),
+            new StringLowerTemplateFunction(),
+            new StringUpperTemplateFunction(),
+            new EmptyTemplateFunction(),
+            new LengthTemplateFunction(),
+            new ListTemplateFunction()
     );
 
     private final Map<String, TemplateFunction> functions;
@@ -41,61 +44,76 @@ public final class TemplateEvaluator {
         this.functions = allFunctions;
     }
 
-    public ExpressionValue evaluate(Expression expr, Context ctx) {
-        return eval(expr, ctx);
+    public ExpressionValue evaluate(Expression expression, Context context) {
+        return eval(expression, context);
     }
 
-    private ExpressionValue eval(Expression e, Context ctx) {
-        if (e instanceof LiteralExpression) {
-            var literalExpression = (LiteralExpression) e;
+    private ExpressionValue eval(
+            Expression expression,
+            Context context
+    ) {
+        if (expression instanceof LiteralExpression) {
+            var literalExpression = (LiteralExpression) expression;
             return ExpressionValue.of(literalExpression.value);
         }
-        if (e instanceof VariableExpression) {
-            var variableExpression = (VariableExpression) e;
-            return evalVariable(variableExpression, ctx);
+        if (expression instanceof VariableExpression) {
+            var variableExpression = (VariableExpression) expression;
+            return evalVariable(variableExpression, context);
         }
-        if (e instanceof FunctionCallExpression) {
-            var callExpression = (FunctionCallExpression) e;
-            return evalCall(callExpression, ctx, null);
+        if (expression instanceof FunctionCallExpression) {
+            var callExpression = (FunctionCallExpression) expression;
+            return evalCall(callExpression, context, ExpressionValue.empty());
         }
-        if (e instanceof PipeExpression) {
-            var pipeExpression = (PipeExpression) e;
-            return evalPipe(pipeExpression, ctx);
+        if (expression instanceof PipeExpression) {
+            var pipeExpression = (PipeExpression) expression;
+            return evalPipe(pipeExpression, context);
         }
-        throw new TemplateEvalException("Unknown expr type: " + e.getClass());
+        throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
     }
 
-    private ExpressionValue evalVariable(VariableExpression v, Context ctx) {
-        if (v.path.isEmpty()) {
+    private ExpressionValue evalVariable(
+            VariableExpression variableExpression,
+            Context context
+    ) {
+        if (variableExpression.path.isEmpty()) {
             return ExpressionValue.empty();
         }
-        var cur = ctx.getRoot(v.path.get(0));
-        for (int i = 1; i < v.path.size(); i++) {
-            if (cur == null) {
+        var cur = context.getRoot(variableExpression.path.get(0));
+        for (int i = 1; i < variableExpression.path.size(); i++) {
+            if (cur == null || cur.isEmpty()) {
                 return ExpressionValue.empty();
             }
-            var seg = v.path.get(i);
-            if (cur instanceof Map) {
-                var map = (Map<?, ?>) cur;
+            var currValue = cur.getValue();
+            var seg = variableExpression.path.get(i);
+            if (currValue instanceof Map) {
+                var map = (Map<?, ?>) currValue;
                 cur = ExpressionValue.of(map.get(seg));
-            } else if (cur instanceof List && isInt(seg)) {
-                var list = (List<?>) cur;
+            } else if (currValue instanceof List && isInt(seg)) {
+                var list = (List<?>) currValue;
                 var idx = Integer.parseInt(seg);
                 if (idx >= 0 && idx < list.size()) {
                     cur = ExpressionValue.of(list.get(idx));
                 } else {
-                    cur = ExpressionValue.empty();
+                    throw new IllegalArgumentException(String.format("Index '%d' out of list length: %s", idx, currValue));
                 }
-            } else if (cur.getClass().isArray() && isInt(seg)) {
+            } else if (currValue.getClass().isArray() && isInt(seg)) {
                 var idx = Integer.parseInt(seg);
-                var len = Array.getLength(cur);
+                var len = Array.getLength(currValue);
                 if (idx >= 0 && idx < len) {
-                    cur = ExpressionValue.of(Array.get(cur.getValue(), idx));
+                    cur = ExpressionValue.of(Array.get(currValue, idx));
                 } else {
-                    cur = ExpressionValue.empty();
+                    throw new IllegalArgumentException(String.format("Index '%d' out of array length: %s", idx, currValue));
+                }
+            } else if (currValue instanceof CharSequence && isInt(seg)) {
+                var idx = Integer.parseInt(seg);
+                var curLine = (CharSequence) currValue;
+                if (idx >= 0 && idx < curLine.length()) {
+                    cur = ExpressionValue.of(curLine.charAt(idx));
+                } else {
+                    throw new IllegalArgumentException(String.format("Index '%d' out of string length: %s", idx, curLine));
                 }
             } else {
-                return ExpressionValue.empty();
+                throw new IllegalArgumentException(String.format("Unsupported type '%s' for dot operator for segment '%s", currValue.getClass(), seg));
             }
         }
         return cur;
@@ -120,15 +138,15 @@ public final class TemplateEvaluator {
 
     private ExpressionValue evalCall(
             FunctionCallExpression c,
-            Context ctx,
+            Context context,
             ExpressionValue pipeInput
     ) {
         var args = new ArrayList<ExpressionValue>();
         for (var a : c.args) {
-            args.add(eval(a, ctx));
+            args.add(eval(a, context));
         }
         var templateFunction = functions.get(c.name);
-        if(templateFunction == null) {
+        if (templateFunction == null) {
             throw new TemplateEvalException(String.format("Function '%s' not found", c.name));
         }
         return templateFunction.invoke(args, pipeInput);
@@ -136,14 +154,6 @@ public final class TemplateEvaluator {
 
     private Object invoke(String name, List<Object> args, Object pipeInput) {
         switch (name) {
-            case "len":
-                return fnLen(args, pipeInput);
-            case "empty":
-                return fnEmpty(args, pipeInput);
-            case "upper":
-                return fnUpper(args, pipeInput);
-            case "lower":
-                return fnLower(args, pipeInput);
             case "not":
                 return fnNot(args, pipeInput);
             case "eq":
@@ -162,8 +172,6 @@ public final class TemplateEvaluator {
                 return fnAnd(args, pipeInput);
             case "or":
                 return fnOr(args, pipeInput);
-            case "list":
-                return fnList(args, pipeInput);
             case "optional":
                 return fnOptional(args, pipeInput);
             case "default":
@@ -176,56 +184,6 @@ public final class TemplateEvaluator {
     // === Implementations ===
     private Object first(List<Object> a, Object pipe) {
         return !a.isEmpty() ? a.get(0) : pipe;
-    }
-
-    private Object fnLen(List<Object> a, Object p) {
-        var v = first(a, p);
-        if (v == null) {
-            return 0;
-        }
-        if (v instanceof CharSequence) {
-            return ((CharSequence) v).length();
-        }
-        if (v instanceof Collection) {
-            return ((Collection<?>) v).size();
-        }
-        if (v instanceof Map) {
-            return ((Map<?, ?>) v).size();
-        }
-        if (v.getClass().isArray()) {
-            return Array.getLength(v);
-        }
-        throw new TemplateEvalException("len: unsupported type: " + v.getClass());
-    }
-
-    private Object fnEmpty(List<Object> a, Object p) {
-        var v = first(a, p);
-        if (v == null) {
-            return true;
-        }
-        if (v instanceof CharSequence) {
-            return ((CharSequence) v).length() == 0;
-        }
-        if (v instanceof Collection) {
-            return ((Collection<?>) v).isEmpty();
-        }
-        if (v instanceof Map) {
-            return ((Map<?, ?>) v).isEmpty();
-        }
-        if (v.getClass().isArray()) {
-            return Array.getLength(v) == 0;
-        }
-        throw new TemplateEvalException("empty: unsupported type: " + v.getClass());
-    }
-
-    private Object fnUpper(List<Object> a, Object p) {
-        var v = first(a, p);
-        return v == null ? null : String.valueOf(v).toUpperCase(Locale.ROOT);
-    }
-
-    private Object fnLower(List<Object> a, Object p) {
-        var v = first(a, p);
-        return v == null ? null : String.valueOf(v).toLowerCase(Locale.ROOT);
     }
 
     private Object fnNot(List<Object> a, Object p) {
@@ -280,10 +238,6 @@ public final class TemplateEvaluator {
         return x || y;
     }
 
-    private Object fnList(List<Object> a, Object p) {
-        return new ArrayList<>(a.isEmpty() ? List.of(p) : a);
-    }
-
     private Object fnOptional(List<Object> a, Object p) {
         if (a.size() == 1) {
             return ((Boolean) a.get(0)) ? p : Omit.INSTANCE;
@@ -320,17 +274,4 @@ public final class TemplateEvaluator {
         throw new TemplateEvalException("Expected number: " + v);
     }
 
-
-    public static void main(String[] args) {
-        String tpl = "{{ .var1 | concat 'tru' | boolean }}";
-        TemplateLexer lx = new TemplateLexer(tpl);
-        List<Token> toks = lx.tokens();
-        toks.removeIf(t -> t.type == TokenType.TEXT || t.type == TokenType.OPEN_EXPR || t.type == TokenType.CLOSE);
-        var parser = new TemplateParser(toks);
-        Expression expr = parser.parseExpression();
-
-        TemplateEvaluator ev = new TemplateEvaluator();
-        Map<String, Object> ctx = Map.of("var1", "e");
-        System.out.println(ev.evaluate(expr, new Context(ctx))); // true
-    }
 }

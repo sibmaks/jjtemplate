@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Concatinate
+ * Concatenation based on 1st argument type
  *
  * @author sibmaks
  */
