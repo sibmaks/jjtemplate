@@ -102,13 +102,13 @@ public final class TemplateEvaluator {
                 if (idx >= 0 && idx < len) {
                     cur = ExpressionValue.of(Array.get(currValue, idx));
                 } else {
-                    throw new IllegalArgumentException(String.format("Index '%d' out of array length: %s", idx, currValue));
+                    throw new IllegalArgumentException(String.format("Index '%d' out of array length: %s", idx, len));
                 }
             } else if (currValue instanceof CharSequence && isInt(seg)) {
                 var idx = Integer.parseInt(seg);
                 var curLine = (CharSequence) currValue;
                 if (idx >= 0 && idx < curLine.length()) {
-                    cur = ExpressionValue.of(curLine.charAt(idx));
+                    cur = ExpressionValue.of(Character.toString(curLine.charAt(idx)));
                 } else {
                     throw new IllegalArgumentException(String.format("Index '%d' out of string length: %s", idx, curLine));
                 }

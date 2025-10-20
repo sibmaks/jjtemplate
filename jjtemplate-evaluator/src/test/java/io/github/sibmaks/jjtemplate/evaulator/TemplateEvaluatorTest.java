@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.evaulator;
 import io.github.sibmaks.jjtemplate.evaulator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.parser.api.FunctionCallExpression;
 import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
+import io.github.sibmaks.jjtemplate.parser.api.PipeExpression;
 import io.github.sibmaks.jjtemplate.parser.api.VariableExpression;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,6 +79,16 @@ class TemplateEvaluatorTest {
     }
 
     @Test
+    void emptyPathVariableExpression() {
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of());
+        var evaluated = evaluator.evaluate(expression, mock());
+        assertNotNull(evaluated);
+        assertTrue(evaluated.isEmpty());
+    }
+
+    @Test
     void checkVariableExpressionWhenNull() {
         var varName = UUID.randomUUID().toString();
         var context = mock(Context.class);
@@ -94,7 +105,7 @@ class TemplateEvaluatorTest {
     }
 
     @Test
-    void checkPathVariableExpression() {
+    void checkPathVariableExpressionOnMap() {
         var parentVarName = UUID.randomUUID().toString();
         var varName = UUID.randomUUID().toString();
         var context = mock(Context.class);
@@ -110,6 +121,112 @@ class TemplateEvaluatorTest {
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
         assertEquals(varValue, evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnList() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "0";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var listVarValue = List.of(varValue);
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(listVarValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(varValue, evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnListOutOfIndex() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = Integer.toString(1);
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var listVarValue = List.of(varValue);
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(listVarValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Index '%s' out of list length: %s", varName, listVarValue), exception.getMessage());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnArray() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "0";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var arrayVarValue = new String[]{varValue};
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(arrayVarValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(varValue, evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnArrayOutOfIndex() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = Integer.toString(1);
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var arrayVarValue = new String[]{varValue};
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(arrayVarValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Index '%s' out of array length: %s", varName, 1), exception.getMessage());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnString() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "0";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(varValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(Character.toString(varValue.charAt(0)), evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnStringOutOfIndex() {
+        var parentVarName = UUID.randomUUID().toString();
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var varName = Integer.toString(varValue.length());
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(varValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Index '%s' out of string length: %s", varName, varValue), exception.getMessage());
     }
 
     @ParameterizedTest
@@ -134,6 +251,22 @@ class TemplateEvaluatorTest {
         var evaluated = evaluator.evaluate(expression, mock());
         assertNotNull(evaluated);
         assertTrue(evaluated.isEmpty());
+    }
+
+    @Test
+    void simplePipeExpression() {
+        var evaluator = new TemplateEvaluator();
+
+        var leftExpression = new LiteralExpression("true");
+        var rightExpression = new FunctionCallExpression("boolean", List.of());
+        var pipeExpression = new PipeExpression(
+                leftExpression,
+                List.of(rightExpression)
+        );
+        var evaluated = evaluator.evaluate(pipeExpression, mock());
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(true, evaluated.getValue());
     }
 
     public static Stream<Arguments> callToStringFunctionCases() {
