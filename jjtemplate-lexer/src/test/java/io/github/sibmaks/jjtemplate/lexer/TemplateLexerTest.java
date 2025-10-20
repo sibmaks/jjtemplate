@@ -33,7 +33,7 @@ class TemplateLexerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("beginTokensCases")
+    @MethodSource("unfinishedTemplateIsTextCases")
     void unfinishedTemplateIsText(String prefix, TemplateLexer.TokenType exceptedToken) {
         var string = UUID.randomUUID().toString();
         var template = String.format("%s '%s'", prefix, string);
@@ -58,6 +58,7 @@ class TemplateLexerTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "hello world!",
+            "a",
             ""
     })
     void templateString(String string) {
@@ -78,6 +79,73 @@ class TemplateLexerTest {
         assertEquals(3, token.start);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length(), token.end);
         assertEquals(string, token.lexeme);
+
+        var endToken = tokens.get(2);
+        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1, endToken.start);
+        assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1 + 2, endToken.end);
+        assertEquals("}}", endToken.lexeme);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "hello world!",
+            "a",
+            ""
+    })
+    void templateConcatString(String string) {
+        var prefix = UUID.randomUUID().toString();
+        var template = String.format("%s{{ '%s' }}", prefix, string);
+        var lexer = new TemplateLexer(template);
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(4, tokens.size());
+
+        var prefixToken = tokens.get(0);
+        assertEquals(TemplateLexer.TokenType.TEXT, prefixToken.type);
+        assertEquals(0, prefixToken.start);
+        assertEquals(prefix.length(), prefixToken.end);
+        assertEquals(prefix, prefixToken.lexeme);
+
+        var beginToken = tokens.get(1);
+        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(prefix.length(), beginToken.start);
+        assertEquals(prefix.length() + 2, beginToken.end);
+        assertEquals("{{", beginToken.lexeme);
+
+        var token = tokens.get(2);
+        assertEquals(TemplateLexer.TokenType.STRING, token.type);
+        assertEquals(prefix.length() + 2 + 1, token.start);
+        assertEquals(prefix.length() + 2 + 1 + 2 + string.length(), token.end);
+        assertEquals(string, token.lexeme);
+
+        var endToken = tokens.get(3);
+        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(prefix.length() + 2 + 1 + 2 + string.length() + 1, endToken.start);
+        assertEquals(prefix.length() + 2 + 1 + 2 + string.length() + 1 + 2, endToken.end);
+        assertEquals("}}", endToken.lexeme);
+    }
+
+    @ParameterizedTest
+    @MethodSource("templateEscapingStringCases")
+    void templateEscapingString(String string, String excepted) {
+        var template = String.format("{{ '%s' }}", string);
+        var lexer = new TemplateLexer(template);
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(3, tokens.size());
+
+        var beginToken = tokens.get(0);
+        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(0, beginToken.start);
+        assertEquals(2, beginToken.end);
+        assertEquals("{{", beginToken.lexeme);
+
+        var token = tokens.get(1);
+        assertEquals(TemplateLexer.TokenType.STRING, token.type);
+        assertEquals(3, token.start);
+        assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length(), token.end);
+        assertEquals(excepted, token.lexeme);
 
         var endToken = tokens.get(2);
         assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
@@ -357,7 +425,21 @@ class TemplateLexerTest {
         assertEquals("}}", endToken.lexeme);
     }
 
-    public static Stream<Arguments> beginTokensCases() {
+    public static Stream<Arguments> templateEscapingStringCases() {
+        return Stream.of(
+                Arguments.of("first\\n second", "first\n second"),
+                Arguments.of("first\\r second", "first\r second"),
+                Arguments.of("first\\t second", "first\t second"),
+                Arguments.of("first\\b second", "first\b second"),
+                Arguments.of("first\\f second", "first\f second"),
+                Arguments.of("first\\\\second", "first\\second"),
+                Arguments.of("first\\'second", "first'second"),
+                Arguments.of("first\\\"second", "first\"second"),
+                Arguments.of("first\\o second", "firsto second")
+        );
+    }
+
+    public static Stream<Arguments> unfinishedTemplateIsTextCases() {
         return Stream.of(
                 Arguments.of("{{", TemplateLexer.TokenType.OPEN_EXPR),
                 Arguments.of("{{?", TemplateLexer.TokenType.OPEN_COND),
