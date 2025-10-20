@@ -269,6 +269,15 @@ class TemplateEvaluatorTest {
         assertEquals(true, evaluated.getValue());
     }
 
+    @Test
+    void notExistedFunctionExpression() {
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new FunctionCallExpression("var", List.of());
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, mock()));
+        assertEquals("Function 'var' not found", exception.getMessage());
+    }
+
     public static Stream<Arguments> callToStringFunctionCases() {
         return Stream.of(
                 Arguments.of(-42, "-42"),

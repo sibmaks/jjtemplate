@@ -3,12 +3,17 @@ package io.github.sibmaks.jjtemplate.evaulator;
 import io.github.sibmaks.jjtemplate.evaulator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaulator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaulator.fun.impl.*;
+import io.github.sibmaks.jjtemplate.evaulator.fun.impl.DefaultTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaulator.fun.impl.logic.*;
 import io.github.sibmaks.jjtemplate.evaulator.fun.impl.string.StringLowerTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaulator.fun.impl.string.StringUpperTemplateFunction;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Interpreter for TemplateParser AST.
@@ -27,7 +32,18 @@ public final class TemplateEvaluator {
             new StringUpperTemplateFunction(),
             new EmptyTemplateFunction(),
             new LengthTemplateFunction(),
-            new ListTemplateFunction()
+            new ListTemplateFunction(),
+            new EqualsTemplateFunction(),
+            new NotEqualsTemplateFunction(),
+            new NotTemplateFunction(),
+            new DefaultTemplateFunction(),
+            new OptionalTemplateFunction(),
+            new LTCompareTemplateFunction(),
+            new LECompareTemplateFunction(),
+            new GTCompareTemplateFunction(),
+            new GECompareTemplateFunction(),
+            new AndTemplateFunction(),
+            new OrTemplateFunction()
     );
 
     private final Map<String, TemplateFunction> functions;
@@ -150,128 +166,6 @@ public final class TemplateEvaluator {
             throw new TemplateEvalException(String.format("Function '%s' not found", c.name));
         }
         return templateFunction.invoke(args, pipeInput);
-    }
-
-    private Object invoke(String name, List<Object> args, Object pipeInput) {
-        switch (name) {
-            case "not":
-                return fnNot(args, pipeInput);
-            case "eq":
-                return fnEq(args, pipeInput);
-            case "neq":
-                return fnNeq(args, pipeInput);
-            case "lt":
-                return fnCmp(args, pipeInput, -1, false);
-            case "le":
-                return fnCmp(args, pipeInput, -1, true);
-            case "gt":
-                return fnCmp(args, pipeInput, 1, false);
-            case "ge":
-                return fnCmp(args, pipeInput, 1, true);
-            case "and":
-                return fnAnd(args, pipeInput);
-            case "or":
-                return fnOr(args, pipeInput);
-            case "optional":
-                return fnOptional(args, pipeInput);
-            case "default":
-                return fnDefault(args, pipeInput);
-            default:
-                throw new TemplateEvalException("Unknown function: " + name);
-        }
-    }
-
-    // === Implementations ===
-    private Object first(List<Object> a, Object pipe) {
-        return !a.isEmpty() ? a.get(0) : pipe;
-    }
-
-    private Object fnNot(List<Object> a, Object p) {
-        var v = first(a, p);
-        if (!(v instanceof Boolean)) {
-            throw new TemplateEvalException("not: arg not boolean");
-        }
-        return !((Boolean) v);
-    }
-
-    private Object fnEq(List<Object> a, Object p) {
-        if (a.size() == 1) {
-            return Objects.equals(a.get(0), p);
-        }
-        if (a.size() == 2) {
-            return Objects.equals(a.get(0), a.get(1));
-        }
-        throw new TemplateEvalException("eq: expected 1 or 2 args");
-    }
-
-    private Object fnNeq(List<Object> a, Object p) {
-        var r = fnEq(a, p);
-        return !(Boolean) r;
-    }
-
-    private Object fnCmp(List<Object> a, Object p, int dir, boolean eq) {
-        Object x, y;
-        if (a.size() == 1) {
-            x = p;
-            y = a.get(0);
-        } else if (a.size() == 2) {
-            x = a.get(0);
-            y = a.get(1);
-        } else {
-            throw new TemplateEvalException("cmp: invalid args");
-        }
-        var nx = asNum(x);
-        var ny = asNum(y);
-        var c = Double.compare(nx.doubleValue(), ny.doubleValue());
-        return dir < 0 ? (eq ? c <= 0 : c < 0) : (eq ? c >= 0 : c > 0);
-    }
-
-    private Object fnAnd(List<Object> a, Object p) {
-        var x = (Boolean) first(a, p);
-        var y = (Boolean) (a.size() > 1 ? a.get(1) : p);
-        return x && y;
-    }
-
-    private Object fnOr(List<Object> a, Object p) {
-        var x = (Boolean) first(a, p);
-        var y = (Boolean) (a.size() > 1 ? a.get(1) : p);
-        return x || y;
-    }
-
-    private Object fnOptional(List<Object> a, Object p) {
-        if (a.size() == 1) {
-            return ((Boolean) a.get(0)) ? p : Omit.INSTANCE;
-        }
-        if (a.size() == 2) {
-            return ((Boolean) a.get(0)) ? a.get(1) : Omit.INSTANCE;
-        }
-        throw new TemplateEvalException("optional: invalid args");
-    }
-
-    private Object fnDefault(List<Object> a, Object p) {
-        if (a.isEmpty()) {
-            return p;
-        }
-        if (a.size() == 1) {
-            return p != null ? p : a.get(0);
-        }
-        if (a.size() == 2) {
-            return a.get(0) != null ? a.get(0) : a.get(1);
-        }
-        throw new TemplateEvalException("default: invalid args");
-    }
-
-    private Number asNum(Object v) {
-        if (v instanceof Number) {
-            return (Number) v;
-        }
-        if (v instanceof String) {
-            try {
-                return Double.parseDouble((String) v);
-            } catch (Exception ignored) {
-            }
-        }
-        throw new TemplateEvalException("Expected number: " + v);
     }
 
 }
