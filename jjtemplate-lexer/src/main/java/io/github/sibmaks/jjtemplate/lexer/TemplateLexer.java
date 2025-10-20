@@ -6,25 +6,32 @@ import java.util.*;
  * Lexical analyzer for the templating contract described by the user.
  * <p>
  * This lexer is designed to work over full template strings and emits two kinds of tokens:
- * - TEXT chunks (raw text outside of any {{ ... }} tag)
- * - EXPRESSION tokens (inside tags), including identifiers, numbers, strings, booleans, null, punctuation, pipes, etc.
+ * <ul>
+ * <li>TEXT chunks (raw text outside of any {@code {{ ... }} } tag)</li>
+ * <li>EXPRESSION tokens (inside tags), including identifiers, numbers, strings, booleans, null, punctuation, pipes, etc.</li>
+ * </ul>
  * <p>
  * Supported tag forms (recognized at lexing time):
- * {{ <expr> }}      -> OPEN_EXPR / CLOSE
- * {{? <expr> }}     -> OPEN_COND / CLOSE    (conditional array insertion)
- * {{. <expr> }}     -> OPEN_SPREAD / CLOSE  (spread into parent array/object)
+ * <ul>
+ * <li>{@code {{ <expr> }}}      -> OPEN_EXPR / CLOSE</li>
+ * <li>{@code {{? <expr> }}}     -> OPEN_COND / CLOSE    (conditional array insertion)</li>
+ * <li>{@code {{. <expr> }}}     -> OPEN_SPREAD / CLOSE  (spread into parent array/object)</li>
+ * </ul>
  * <p>
  * Notes
  * -----
- * - Strings use single quotes per the examples. Escapes supported: \\' \\" \\n * - Numbers: integers and floating-point (e.g., 42, 3.1415, -7, +2.5, 1e10, -3.2E-4)
- * - Keywords (case-insensitive where it matters): case, then, else, range, of.
- * - Functions and logical operators are tokenized as IDENTs (e.g., str, int, double, boolean, len, empty,
+ * <ul>
+ * <li>Strings use single quotes per the examples. Escapes supported: \\' \\" \\n</li>
+ * <li>Numbers: integers and floating-point (e.g., 42, 3.1415, -7, +2.5, 1e10, -3.2E-4)</li>
+ * <li>Keywords (case-insensitive where it matters): case, then, else, range, of.</li>
+ * <li>Functions and logical operators are tokenized as IDENTs (e.g., str, int, double, boolean, len, empty,</li>
  * upper, lower, not, eq, neq, lt, le, gt, ge, and, or, list, concat, optional, default). Parser can
- * treat certain idents as keywords if desired.
- * - Variable access: a leading DOT followed by segments (e.g., .a, .parent.child). Lexer emits DOT and IDENT
- * tokens separately; the parser can assemble the chain.
- * - Whitespace inside {{ ... }} is skipped between tokens.
- * - Outside of tags, everything is emitted as TEXT (can be empty between adjacent tags).
+ * treat certain idents as keywords if desired.</li>
+ * <li>Variable access: a leading DOT followed by segments (e.g., .a, .parent.child). Lexer emits DOT and IDENT
+ * tokens separately; the parser can assemble the chain.</li>
+ * <li>Whitespace inside {{ ... }} is skipped between tokens.</li>
+ * <li>Outside of tags, everything is emitted as TEXT (can be empty between adjacent tags).</li>
+ * </ul>
  */
 public final class TemplateLexer {
     private static final Set<String> KEYWORDS = Set.of("case", "then", "else", "range", "of");

@@ -1,3 +1,6 @@
 rootProject.name = "jjtemplate"
 
-include("jjtemplate-lexer")
+include(
+    "jjtemplate-lexer",
+    "jjtemplate-parser"
+)
