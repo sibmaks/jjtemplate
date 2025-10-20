@@ -135,7 +135,7 @@ class TemplateParserTest {
     }
 
     @Test
-    void justAFunctionWithArgsCall() {
+    void justAFunctionWithArgCall() {
         var functionName = "functionName";
         var arg0 = "arg0";
         var tokens = List.of(
@@ -150,6 +150,30 @@ class TemplateParserTest {
         assertEquals(functionName, functionCallExpression.name);
         var argExpression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(0));
         assertEquals(List.of(arg0), argExpression.path);
+    }
+
+    @Test
+    void justAFunctionWithArgsCall() {
+        var functionName = "functionName";
+        var arg0 = "arg0";
+        var arg1 = "arg1";
+        var tokens = List.of(
+                new Token(TokenType.IDENT, functionName, 1, functionName.length() + 1),
+                new Token(TokenType.DOT, ".", 1, 1),
+                new Token(TokenType.IDENT, arg0, 1, 1),
+                new Token(TokenType.COMMA, ",", 1, 1),
+                new Token(TokenType.DOT, ".", 1, 1),
+                new Token(TokenType.IDENT, arg1, 1, 1)
+        );
+        var parser = new TemplateParser(tokens);
+        var expression = parser.parseExpression();
+        assertNotNull(expression);
+        var functionCallExpression = assertInstanceOf(FunctionCallExpression.class, expression);
+        assertEquals(functionName, functionCallExpression.name);
+        var arg0Expression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(0));
+        assertEquals(List.of(arg0), arg0Expression.path);
+        var arg1Expression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(1));
+        assertEquals(List.of(arg1), arg1Expression.path);
     }
 
     @Test

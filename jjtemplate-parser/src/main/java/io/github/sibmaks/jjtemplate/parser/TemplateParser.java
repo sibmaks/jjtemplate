@@ -88,19 +88,27 @@ public final class TemplateParser {
     private FunctionCallExpression parseFunctionCallOrIdent() {
         var nameTok = expect(TokenType.IDENT, "function or identifier");
         var name = nameTok.lexeme;
-        var args = new ArrayList<Expression>();
-        // parse following arguments until '}}', '|', ',', or closing paren/bracket/brace
-        while (true) {
-            var t = peek();
-            if (t == null) {
-                break;
-            }
-            if (isStopToken(t)) {
-                break;
-            }
-            args.add(parsePrimary());
-        }
+        var args = parseArguments();
         return new FunctionCallExpression(name, args);
+    }
+
+    private FunctionCallExpression parseFunctionCall() {
+        var nameTok = expect(TokenType.IDENT, "function after '|'");
+        var name = nameTok.lexeme;
+        var args = parseArguments();
+        return new FunctionCallExpression(name, args);
+    }
+
+    private List<Expression> parseArguments() {
+        var args = new ArrayList<Expression>();
+        var t = peek();
+        if (t == null || isStopToken(t)) {
+            return args; // no args
+        }
+        do {
+            args.add(parsePrimary());
+        } while (match(TokenType.COMMA));
+        return args;
     }
 
     private boolean isStopToken(Token t) {
@@ -115,20 +123,6 @@ public final class TemplateParser {
             default:
                 return false;
         }
-    }
-
-    private FunctionCallExpression parseFunctionCall() {
-        var nameTok = expect(TokenType.IDENT, "function after '|'");
-        var name = nameTok.lexeme;
-        var args = new ArrayList<Expression>();
-        while (true) {
-            var t = peek();
-            if (t == null || isStopToken(t)) {
-                break;
-            }
-            args.add(parsePrimary());
-        }
-        return new FunctionCallExpression(name, args);
     }
 
     private Token peek() {

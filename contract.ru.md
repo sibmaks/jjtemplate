@@ -228,13 +228,14 @@ var context = Map.of(
 ## Разворачивание выражения в объекте или массиве
 
 Содержимое выражение вставляется в родительский объект:
+
 - для массива:
-  - если значения выражения массив, то элементы массива добавляются в родительский массив
-  - если значение выражения значение, то значение добавляется в родительский массив
+    - если значения выражения массив, то элементы массива добавляются в родительский массив
+    - если значение выражения значение, то значение добавляется в родительский массив
 - для объектов:
-  - если значение выражения объект, то параметры из выражения добавляются, 
-в том числе перезаписывая параметры родительского объекта.
-  - иначе ошибка
+    - если значение выражения объект, то параметры из выражения добавляются,
+      в том числе перезаписывая параметры родительского объекта.
+    - иначе ошибка
 
 ### Примеры
 
@@ -286,11 +287,14 @@ var context = Map.of(
 # Поддерживаемые функции
 
 Функция может быть вызвана в двух вариантах:
+
 - прямой вызов: `<function> <args>`
-Вызов функции с передачей аргументов.
+  Вызов функции с передачей аргументов.
 
 - вызов через pipe-оператор `|`: `<expression> | <function> <args>`
-Вызов функции с передачей левого выражения как последний аргумент в функцию.
+  Вызов функции с передачей левого выражения как последний аргумент в функцию.
+
+Аргументы перечисляются через запятую.
 
 С помощью оператора `|` можно последовательно вызывать функции: `<expression> | <expression> [ | <expression> ...]`.
 
@@ -454,7 +458,7 @@ var context = Map.of("value", "1234");
 
 ```json
 {
-  "key": "{{ .value | empty }}"
+  "key": "{{ .value | empty }}",
   "pipe1stArg": "{{ empty .value }}"
 }
 ```
@@ -597,7 +601,7 @@ var context = Map.of("value", List.of("1", "2", "3", "4"));
 ```json
 {
   "key": "{{ .value | not }}",
-  "key": "{{ not .value }}"
+  "pipe1stArg": "{{ not .value }}"
 }
 ```
 
@@ -625,7 +629,7 @@ var context = Map.of("value", true);
 ```json
 {
   "key": "{{ .value | eq 'text' }}",
-  "pipe1stArg": "{{ eq .value 'text' }}"
+  "pipe1stArg": "{{ eq .value, 'text' }}"
 }
 ```
 
@@ -653,7 +657,7 @@ var context = Map.of("value", "text");
 ```json
 {
   "key": "{{ .value | neq 'text' }}",
-  "pipe1stArg": "{{ neq .value 'text' }}"
+  "pipe1stArg": "{{ neq .value, 'text' }}"
 }
 ```
 
@@ -681,7 +685,7 @@ var context = Map.of("value", "text");
 ```json
 {
   "key": "{{ .value | lt 0 }}",
-  "pipe1stArg": "{{ lt .value 0 }}"
+  "pipe1stArg": "{{ lt .value, 0 }}"
 }
 ```
 
@@ -709,7 +713,7 @@ var context = Map.of("value", 10);
 ```json
 {
   "key": "{{ .value | le 0 }}",
-  "pipe1stArg": "{{ le .value 0 }}"
+  "pipe1stArg": "{{ le .value, 0 }}"
 }
 ```
 
@@ -737,7 +741,7 @@ var context = Map.of("value", 10);
 ```json
 {
   "key": "{{ .value | gt 0 }}",
-  "pipe1stArg": "{{ gt .value 0 }}"
+  "pipe1stArg": "{{ gt .value, 0 }}"
 }
 ```
 
@@ -765,7 +769,7 @@ var context = Map.of("value", 10);
 ```json
 {
   "key": "{{ .value | ge 0 }}",
-  "pipe1stArg": "{{ ge .value 0 }}"
+  "pipe1stArg": "{{ ge .value, 0 }}"
 }
 ```
 
@@ -793,7 +797,7 @@ var context = Map.of("value", 10);
 ```json
 {
   "key": "{{ .v1 | and .v2 }}",
-  "pipe1stArg": "{{ and .v1 .v2 }}"
+  "pipe1stArg": "{{ and .v1, .v2 }}"
 }
 ```
 
@@ -821,7 +825,7 @@ var context = Map.of("v1", true, "v2", false);
 ```json
 {
   "key": "{{ .v1 | or .v2 }}",
-  "pipe1stArg": "{{ or .v1 .v2 }}"
+  "pipe1stArg": "{{ or .v1, .v2 }}"
 }
 ```
 
@@ -848,8 +852,8 @@ var context = Map.of("v1", true, "v2", false);
 
 ```json
 {
-  "key": "{{ list 'a' true .var1 }}",
-  "pipe1stArg": "{{ 'a' | list true .var1 }}"
+  "key": "{{ list 'a', true, .var1 }}",
+  "pipe1stArg": "{{ 'a' | list true, .var1 }}"
 }
 ```
 
@@ -886,8 +890,8 @@ var context = Map.of("var1", 42);
 
 ```json
 {
-  "key": "{{ concat 'a' true .var1 }}",
-  "pipe1stArg": "{{ 'a' | concat true .var1 }}"
+  "key": "{{ concat 'a', true, .var1 }}",
+  "pipe1stArg": "{{ 'a' | concat true, .var1 }}"
 }
 ```
 
@@ -916,8 +920,8 @@ var context = Map.of("var1", 42);
 
 ```json
 {
-  "key": "{{ concat .var1 'a' 123 }}",
-  "pipe1stArg": "{{ .var1 | concat 123 'a' }}"
+  "key": "{{ concat .var1, 'a', 123 }}",
+  "pipe1stArg": "{{ .var1 | concat 123, 'a' }}"
 }
 ```
 
@@ -958,12 +962,12 @@ var context = Map.of("var1", List.of(true));
 
 ```json
 {
-  "key": "{{ optional .var1 'a' }}",
+  "key": "{{ optional .var1, 'a' }}",
   "nKey": "{{ optional (.var1 | not) 'a' }}",
   "pipe1stArg": "{{ .var1 | optional 123 }}",
   "nPipe1stArg": "{{ (.var1 | not) | optional 'a' }}",
   "array": [
-    "{{ optional .var1 'a' }}",
+    "{{ optional .var1, 'a' }}",
     "{{ optional (.var1 | not) 'a' }}",
     "{{ .var1 | optional 123 }}",
     "{{ (.var1 | not) | optional 'a' }}"
@@ -1001,13 +1005,13 @@ var context = Map.of("var1", true);
 
 ```json
 {
-  "key": "{{ default .var1 'a' }}",
-  "nKey": "{{ default .var2 'a' }}",
+  "key": "{{ default .var1, 'a' }}",
+  "nKey": "{{ default .var2, 'a' }}",
   "pipe1stArg": "{{ .var1 | default 123 }}",
   "nPipe1stArg": "{{ .var2 | default 'a' }}",
   "array": [
-    "{{ default .var1 'a' }}",
-    "{{ default .var2 'a' }}",
+    "{{ default .var1, 'a' }}",
+    "{{ default .var2. 'a' }}",
     "{{ .var1 | default 123 }}",
     "{{ .var2 | default 'a' }}"
   ]
@@ -1073,13 +1077,14 @@ var context = Map.of("var1", 't');
 Элемент списка (JSON объект) - `definition` содержит определения переменных.
 
 Каждый ключ в `definition` определяет переменную одним из следующих вариантов:
+
 - явное определение переменной
 - условное определение переменной
 - определение переменной массива
 
 ## Явное определение переменной
 
-Если ключ `definition` начинается с символа `a-zA-Z` и далее содержит только знаки: `a-zA-Z0-9`, 
+Если ключ `definition` начинается с символа `a-zA-Z` и далее содержит только знаки: `a-zA-Z0-9`,
 то это является явным определением переменной. Значение может быть как статичным JSON-ом, так и шаблоном.
 
 ### Пример статичных значений
@@ -1139,18 +1144,20 @@ var context = Map.of("var1", 't');
 ## Условное определение переменной
 
 Если ключ `definition` начинается с явного определения переменной за которым следует конструкция: `case <expression>`,
-то данное определение является условным. 
-В данном случае вычисляется результат `<expression>` и переменной присваивается значение в зависимости от описанных условий.
+то данное определение является условным.
+В данном случае вычисляется результат `<expression>` и переменной присваивается значение в зависимости от описанных
+условий.
 Если ни одно из условий не выполняется, то переменная не создаётся.
 
 Поддерживаемые типы условий:
+
 - констант:
-  - строки: `'text'`
-  - числа: `42`, `3.1415`
-  - булевые: `true`, `false`
+    - строки: `'text'`
+    - числа: `42`, `3.1415`
+    - булевые: `true`, `false`
 - выражения
-  - значение переменной `.someVar`
-  - значение функции или `pipe`, пример: `upper .someVar`
+    - значение переменной `.someVar`
+    - значение функции или `pipe`, пример: `upper .someVar`
 - `then` - строгое равенство `<expression>` значению `true`
 - `else` - выполняется если ни одно из условий ранее не было выполнено
 
@@ -1174,23 +1181,29 @@ var context = Map.of("var1", 't');
 
 ## Определение переменной массива
 
-Если ключ `definition` начинается с явного определения переменной за которым следует конструкция: `range <item variable>,<index variable> <expression>`,
+Если ключ `definition` начинается с явного определения переменной за которым следует конструкция:
+`range <item variable>,<index variable> <expression>`,
 то данное определение является определением массива, где:
+
 - `<item variable>` - определение имени переменной значения из коллекции в контексте создаваемого массива.
-- `<index variable>` - определение имени переменной порядково номера значения из коллекции в контексте создаваемого массива.
+- `<index variable>` - определение имени переменной порядково номера значения из коллекции в контексте создаваемого
+  массива.
 - `<expression>` - выражение, результат которого должен быть итерируемая коллекция.
 
-Если коллекция пустая, то создаётся пустой массив. 
+Если коллекция пустая, то создаётся пустой массив.
 Если коллекция равна `null`, то создаётся переменная со значением `null`.
 
 ### Пример
+
 ```json
 {
   "definitions": [
-    "varObject2 range item,index of .listOfNodes": {
-      "key-{{ .index }}": "{{ .item }}"
-    },
-    "varObject3 range item,index of .listOfNodes": "{{ .item | str }}"
+    {
+      "varObject2 range item,index of .listOfNodes": {
+        "key-{{ .index }}": "{{ .item }}"
+      },
+      "varObject3 range item,index of .listOfNodes": "{{ .item | str }}"
+    }
   ]
 }
 ```
