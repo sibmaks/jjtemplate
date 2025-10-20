@@ -1,10 +1,16 @@
-plugins {
-    id("java")
-}
+subprojects {
+    apply(plugin = "java")
 
-group = "io.github.sibmaks.jjtemplate"
-version = "0.0.1"
+    group = "io.github.sibmaks.jjtemplate"
+    version = "0.0.1"
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
+
+    extensions.configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
+    }
 }
