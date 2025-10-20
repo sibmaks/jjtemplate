@@ -9,8 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -26,33 +25,26 @@ class TemplateLexerTest {
         assertNotNull(tokens);
         assertEquals(1, tokens.size());
         var token = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.TEXT, token.type);
+        assertEquals(TokenType.TEXT, token.type);
         assertEquals(0, token.start);
         assertEquals(template.length(), token.end);
         assertEquals(template, token.lexeme);
     }
 
     @ParameterizedTest
-    @MethodSource("unfinishedTemplateIsTextCases")
-    void unfinishedTemplateIsText(String prefix, TemplateLexer.TokenType exceptedToken) {
+    @ValueSource(strings = {
+            "{{",
+            "{{?",
+            "{{."
+    })
+    void unfinishedTemplateIsText(String prefix) {
         var string = UUID.randomUUID().toString();
         var template = String.format("%s '%s'", prefix, string);
         var lexer = new TemplateLexer(template);
-        var tokens = lexer.tokens();
-        assertNotNull(tokens);
-        assertEquals(2, tokens.size());
 
-        var beginToken = tokens.get(0);
-        assertEquals(exceptedToken, beginToken.type);
-        assertEquals(0, beginToken.start);
-        assertEquals(prefix.length(), beginToken.end);
-        assertEquals(prefix, beginToken.lexeme);
-
-        var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.STRING, token.type);
-        assertEquals(prefix.length() + 1, token.start);
-        assertEquals(prefix.length() + 1 + 2 + string.length(), token.end);
-        assertEquals(string, token.lexeme);
+        var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
+        assertEquals("Unterminated template: missing closing '}}' at position " + template.length(), exception.getMessage());
+        assertEquals(template.length(), exception.getPosition());
     }
 
     @ParameterizedTest
@@ -69,19 +61,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.STRING, token.type);
+        assertEquals(TokenType.STRING, token.type);
         assertEquals(3, token.start);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length(), token.end);
         assertEquals(string, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1, endToken.start);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -102,25 +94,25 @@ class TemplateLexerTest {
         assertEquals(4, tokens.size());
 
         var prefixToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.TEXT, prefixToken.type);
+        assertEquals(TokenType.TEXT, prefixToken.type);
         assertEquals(0, prefixToken.start);
         assertEquals(prefix.length(), prefixToken.end);
         assertEquals(prefix, prefixToken.lexeme);
 
         var beginToken = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(prefix.length(), beginToken.start);
         assertEquals(prefix.length() + 2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.STRING, token.type);
+        assertEquals(TokenType.STRING, token.type);
         assertEquals(prefix.length() + 2 + 1, token.start);
         assertEquals(prefix.length() + 2 + 1 + 2 + string.length(), token.end);
         assertEquals(string, token.lexeme);
 
         var endToken = tokens.get(3);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(prefix.length() + 2 + 1 + 2 + string.length() + 1, endToken.start);
         assertEquals(prefix.length() + 2 + 1 + 2 + string.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -136,19 +128,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.STRING, token.type);
+        assertEquals(TokenType.STRING, token.type);
         assertEquals(3, token.start);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length(), token.end);
         assertEquals(excepted, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1, endToken.start);
         assertEquals(3 /* '{{ ' */ + 2 /* ''' */ + string.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -166,22 +158,48 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.KEYWORD, token.type);
+        assertEquals(TokenType.KEYWORD, token.type);
         assertEquals(3, token.start);
         assertEquals(3 /* '{{ ' */ + string.length(), token.end);
         assertEquals(string, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 /* '{{ ' */ + string.length() + 1, endToken.start);
         assertEquals(3 /* '{{ ' */ + string.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "а",
+            "п",
+            "я",
+            "%",
+            "$",
+            "$"
+    })
+    void unexpectedCharacterInTemplate(String value) {
+        var template = String.format("{{ %s }}", value);
+        var lexer = new TemplateLexer(template);
+        var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
+        assertEquals(String.format("Unexpected character '%s' at position 3", value), exception.getMessage());
+        assertEquals(3, exception.getPosition());
+    }
+
+    @Test
+    void unterminatedStringLiteral() {
+        var template = "{{\t 'text";
+        var lexer = new TemplateLexer(template);
+        var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
+        assertEquals("Unterminated string literal at position 9", exception.getMessage());
+        assertEquals(9, exception.getPosition());
     }
 
     @ParameterizedTest
@@ -200,19 +218,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.NUMBER, token.type);
+        assertEquals(TokenType.NUMBER, token.type);
         assertEquals(3, token.start);
         assertEquals(3 + Integer.toString(integer).length(), token.end);
         assertEquals(Integer.toString(integer), token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + Integer.toString(integer).length() + 1, endToken.start);
         assertEquals(3 + Integer.toString(integer).length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -235,19 +253,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.NUMBER, token.type);
+        assertEquals(TokenType.NUMBER, token.type);
         assertEquals(3, token.start);
         assertEquals(3 + numberString.length(), token.end);
         assertEquals(numberString, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + numberString.length() + 1, endToken.start);
         assertEquals(3 + numberString.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -265,7 +283,18 @@ class TemplateLexerTest {
                     "6.72E9",
                     "2E-1",
                     "9.87E2",
-                    "7.51E-9"
+                    "7.51E-9",
+
+                    "2e0",
+                    "3e2",
+                    "4.321768e3",
+                    "-5.3e4",
+                    "5.3e4",
+                    "+5.3e4",
+                    "6.72e9",
+                    "2e-1",
+                    "9.87e2",
+                    "7.51e-9"
             }
     )
     void templateScientificNumber(String number) {
@@ -276,19 +305,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.NUMBER, token.type);
+        assertEquals(TokenType.NUMBER, token.type);
         assertEquals(3, token.start);
         assertEquals(3 + number.length(), token.end);
         assertEquals(number, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + number.length() + 1, endToken.start);
         assertEquals(3 + number.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -304,19 +333,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.BOOLEAN, token.type);
+        assertEquals(TokenType.BOOLEAN, token.type);
         assertEquals(3, token.start);
         assertEquals(3 + Boolean.toString(value).length(), token.end);
         assertEquals(Boolean.toString(value), token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + Boolean.toString(value).length() + 1, endToken.start);
         assertEquals(3 + Boolean.toString(value).length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -332,25 +361,25 @@ class TemplateLexerTest {
         assertEquals(4, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var dotToken = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.DOT, dotToken.type);
+        assertEquals(TokenType.DOT, dotToken.type);
         assertEquals(3, dotToken.start);
         assertEquals(3 + 1, dotToken.end);
         assertEquals(".", dotToken.lexeme);
 
         var token = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.IDENT, token.type);
+        assertEquals(TokenType.IDENT, token.type);
         assertEquals(3 + 1, token.start);
         assertEquals(3 + 1 + varName.length(), token.end);
         assertEquals(varName, token.lexeme);
 
         var endToken = tokens.get(3);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + 1 + varName.length() + 1, endToken.start);
         assertEquals(3 + 1 + varName.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -366,19 +395,19 @@ class TemplateLexerTest {
         assertEquals(3, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var token = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.NULL, token.type);
+        assertEquals(TokenType.NULL, token.type);
         assertEquals(3, token.start);
         assertEquals(3 + lexeme.length(), token.end);
         assertEquals(lexeme, token.lexeme);
 
         var endToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + lexeme.length() + 1, endToken.start);
         assertEquals(3 + lexeme.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -395,31 +424,31 @@ class TemplateLexerTest {
         assertEquals(5, tokens.size());
 
         var beginToken = tokens.get(0);
-        assertEquals(TemplateLexer.TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
         assertEquals(0, beginToken.start);
         assertEquals(2, beginToken.end);
         assertEquals("{{", beginToken.lexeme);
 
         var leftToken = tokens.get(1);
-        assertEquals(TemplateLexer.TokenType.IDENT, leftToken.type);
+        assertEquals(TokenType.IDENT, leftToken.type);
         assertEquals(3, leftToken.start);
         assertEquals(3 + leftLexem.length(), leftToken.end);
         assertEquals(leftLexem, leftToken.lexeme);
 
         var pipeToken = tokens.get(2);
-        assertEquals(TemplateLexer.TokenType.PIPE, pipeToken.type);
+        assertEquals(TokenType.PIPE, pipeToken.type);
         assertEquals(3 + leftLexem.length() + 1, pipeToken.start);
         assertEquals(3 + leftLexem.length() + 2, pipeToken.end);
         assertEquals("|", pipeToken.lexeme);
 
         var rightToken = tokens.get(3);
-        assertEquals(TemplateLexer.TokenType.IDENT, rightToken.type);
+        assertEquals(TokenType.IDENT, rightToken.type);
         assertEquals(3 + leftLexem.length() + 2 + 1, rightToken.start);
         assertEquals(3 + leftLexem.length() + 2 + 1 + rightLexem.length(), rightToken.end);
         assertEquals(rightLexem, rightToken.lexeme);
 
         var endToken = tokens.get(4);
-        assertEquals(TemplateLexer.TokenType.CLOSE, endToken.type);
+        assertEquals(TokenType.CLOSE, endToken.type);
         assertEquals(3 + leftLexem.length() + 2 + 1 + rightLexem.length() + 1, endToken.start);
         assertEquals(3 + leftLexem.length() + 2 + 1 + rightLexem.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
@@ -439,11 +468,4 @@ class TemplateLexerTest {
         );
     }
 
-    public static Stream<Arguments> unfinishedTemplateIsTextCases() {
-        return Stream.of(
-                Arguments.of("{{", TemplateLexer.TokenType.OPEN_EXPR),
-                Arguments.of("{{?", TemplateLexer.TokenType.OPEN_COND),
-                Arguments.of("{{.", TemplateLexer.TokenType.OPEN_SPREAD)
-        );
-    }
 }

@@ -27,16 +27,12 @@ import java.util.*;
  * - Outside of tags, everything is emitted as TEXT (can be empty between adjacent tags).
  */
 public final class TemplateLexer {
-
-    // ==== Public API ========================================================
-
-    private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
-            "case", "then", "else", "range", "of"
-    ));
+    private static final Set<String> KEYWORDS = Set.of("case", "then", "else", "range", "of");
     private final String input;
     private final int n;
     private int pos = 0;
     private Mode mode = Mode.TEXT;
+
     public TemplateLexer(String input) {
         this.input = Objects.requireNonNull(input, "input");
         this.n = input.length();
@@ -54,20 +50,23 @@ public final class TemplateLexer {
         return isIdentStart(c) || isDigit(c);
     }
 
-    // ==== Core lexing =======================================================
-
     /**
      * Produce all tokens for the input. The stream alternates between TEXT and expression tokens depending on tags.
      */
     public List<Token> tokens() {
-        List<Token> out = new ArrayList<>();
-        while (pos < n) {
-            if (mode == Mode.TEXT) {
-                out.add(lexText());
-            } else {
-                Token t = lexExprToken();
-                out.add(t);
+        var out = new ArrayList<Token>();
+        try {
+            while (pos < n) {
+                if (mode == Mode.TEXT) out.add(lexText());
+                else out.add(lexExprToken());
             }
+        } catch (TemplateLexerException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TemplateLexerException("Unexpected error: " + e.getMessage(), pos);
+        }
+        if (mode == Mode.EXPR) {
+            throw new TemplateLexerException("Unterminated template: missing closing '}}'", pos);
         }
         return out;
     }
@@ -77,7 +76,7 @@ public final class TemplateLexer {
         while (pos < n) {
             if (peek() == '{' && peek2() == '{') {
                 // Emit accumulated TEXT (possibly empty), then switch to EXPR and emit tag opener token.
-                String chunk = input.substring(start, pos);
+                var chunk = input.substring(start, pos);
                 if (!chunk.isEmpty()) {
                     return new Token(TokenType.TEXT, chunk, start, pos);
                 }
@@ -98,24 +97,17 @@ public final class TemplateLexer {
                 }
                 mode = Mode.EXPR;
                 return new Token(TokenType.OPEN_EXPR, "{{", openerStart, pos);
-            } else {
-                pos++;
-            }
+            } else pos++;
         }
-        // End reached, emit remaining TEXT
-        String chunk = input.substring(start, pos);
+        var chunk = input.substring(start, pos);
         return new Token(TokenType.TEXT, chunk, start, pos);
     }
 
-    // ---- Helpers -----------------------------------------------------------
-
     private Token lexExprToken() {
         skipWhitespace();
-        int start = pos;
+        var start = pos;
         if (pos >= n) {
-            // Unterminated expression; return empty TEXT to finish gracefully
-            mode = Mode.TEXT;
-            return new Token(TokenType.TEXT, "", pos, pos);
+            throw new TemplateLexerException("Unexpected end inside expression", pos);
         }
 
         // Close delimiter
@@ -167,24 +159,23 @@ public final class TemplateLexer {
                     return lexWord();
                 }
                 // Unknown character inside expr
-                pos++;
-                return new Token(TokenType.TEXT, String.valueOf(c), start, pos);
+                throw new TemplateLexerException("Unexpected character '" + c + "'", pos);
         }
     }
 
     private Token lexString() {
-        int start = pos;
+        var start = pos;
         pos++; // opening '
-        StringBuilder sb = new StringBuilder();
-        boolean closed = false;
+        var sb = new StringBuilder();
+        var closed = false;
         while (pos < n) {
-            char c = input.charAt(pos++);
+            var c = input.charAt(pos++);
             if (c == '\'') {
                 closed = true;
                 break;
             }
             if (c == '\\' && pos < n) {
-                char e = input.charAt(pos++);
+                var e = input.charAt(pos++);
                 switch (e) {
                     case '\\':
                         sb.append('\\');
@@ -218,17 +209,21 @@ public final class TemplateLexer {
                 sb.append(c);
             }
         }
-        int end = pos;
+        if (!closed) {
+            throw new TemplateLexerException("Unterminated string literal", pos);
+        }
         // Even if not closed, we emit STRING with what we have
-        return new Token(TokenType.STRING, sb.toString(), start, end);
+        return new Token(TokenType.STRING, sb.toString(), start, pos);
     }
 
     private Token lexNumber() {
-        int start = pos;
-        if (peek() == '+' || peek() == '-') pos++;
-        boolean hasDot = false;
+        var start = pos;
+        if (peek() == '+' || peek() == '-') {
+            pos++;
+        }
+        var hasDot = false;
         while (pos < n) {
-            char c = peek();
+            var c = peek();
             if (isDigit(c)) {
                 pos++;
                 continue;
@@ -242,26 +237,30 @@ public final class TemplateLexer {
         }
         // exponent
         if (pos < n && (peek() == 'e' || peek() == 'E')) {
-            int save = pos;
+            var save = pos;
             pos++;
-            if (pos < n && (peek() == '+' || peek() == '-')) pos++;
+            if (pos < n && (peek() == '+' || peek() == '-')) {
+                pos++;
+            }
             if (pos < n && isDigit(peek())) {
-                while (pos < n && isDigit(peek())) pos++;
+                while (pos < n && isDigit(peek())) {
+                    pos++;
+                }
             } else {
                 // not a valid exponent, roll back to save
                 pos = save;
             }
         }
-        String num = input.substring(start, pos);
+        var num = input.substring(start, pos);
         return new Token(TokenType.NUMBER, num, start, pos);
     }
 
     private Token lexWord() {
-        int start = pos;
-        pos++; // consume first
-        while (pos < n && isIdentPart(peek())) pos++;
-        String word = input.substring(start, pos);
-        String lower = word.toLowerCase(Locale.ROOT);
+        var start = pos;
+        do pos++; // consume first
+        while (pos < n && isIdentPart(peek()));
+        var word = input.substring(start, pos);
+        var lower = word.toLowerCase(Locale.ROOT);
         if ("true".equals(lower) || "false".equals(lower)) {
             return new Token(TokenType.BOOLEAN, lower, start, pos);
         }
@@ -275,11 +274,8 @@ public final class TemplateLexer {
     }
 
     private void skipWhitespace() {
-        while (pos < n) {
-            char c = peek();
-            if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
-                pos++;
-            } else break;
+        while (pos < n && Character.isWhitespace(peek())) {
+            pos++;
         }
     }
 
@@ -288,64 +284,12 @@ public final class TemplateLexer {
     }
 
     private char peek2() {
-        return (pos + 1) < n ? input.charAt(pos + 1) : '\0';
-    }
-
-    public enum TokenType {
-        // Outside expressions
-        TEXT,
-
-        // Tag delimiters
-        OPEN_EXPR,      // "{{"
-        OPEN_COND,      // "{{?"
-        OPEN_SPREAD,    // "{{."
-        CLOSE,          // "}}"
-
-        // Punctuation / Operators (inside expressions)
-        PIPE,           // '|'
-        DOT,            // '.'
-        COMMA,          // ','
-        COLON,          // ':'
-        LPAREN,         // '('
-        RPAREN,         // ')'
-        LBRACE,         // '{'
-        RBRACE,         // '}'
-        LBRACKET,       // '['
-        RBRACKET,       // ']'
-
-        // Literals
-        STRING,         // 'text' with escapes
-        NUMBER,         // 42, 3.14, 1e-3
-        BOOLEAN,        // true | false
-        NULL,           // null
-
-        // Words
-        IDENT,          // functions, variable names, etc.
-        KEYWORD,        // case, then, else, range, of
+        return (pos + 1 < n) ? input.charAt(pos + 1) : '\0';
     }
 
     /**
      * Mode indicates whether we are lexing raw TEXT or an expression within a tag.
      */
     private enum Mode {TEXT, EXPR}
-
-    public static final class Token {
-        public final TokenType type;
-        public final String lexeme; // For TEXT, STRING (without quotes), IDENT/KEYWORD, BOOLEAN/NULL, or raw chunk
-        public final int start;     // start index (inclusive) in original input
-        public final int end;       // end index (exclusive)
-
-        Token(TokenType type, String lexeme, int start, int end) {
-            this.type = type;
-            this.lexeme = lexeme;
-            this.start = start;
-            this.end = end;
-        }
-
-        @Override
-        public String toString() {
-            return type + (lexeme != null ? ("(" + lexeme + ")") : "") + "@" + start + ".." + end;
-        }
-    }
 
 }
