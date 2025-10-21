@@ -97,14 +97,14 @@
   "string": "{{ .string }}",
   "integer": "{{ .integer }}",
   "double": "{{ .double }}",
-  "null": "{{ .null }}",
+  "null": "{{ .nullVar }}",
   "array": [
     "{{ .booleanTrue }}",
     "{{ .booleanFalse }}",
     "{{ .string }}",
     "{{ .integer }}",
     "{{ .double }}",
-    "{{ .null }}"
+    "{{ .nullVar }}"
   ]
 }
 ```
@@ -118,7 +118,7 @@ var context = Map.of(
         "string", "text",
         "integer", 42,
         "double", 3.1415,
-        "null", null
+        "nullVar", null
 );
 ```
 
@@ -187,12 +187,12 @@ var context = Map.of(
 ```json
 {
   "array": [
-    "{{ .booleanTrue }}",
-    "{{ .booleanFalse }}",
-    "{{ .string }}",
-    "{{ .integer }}",
-    "{{ .double }}",
-    "{{ .null }}"
+    "{{? .booleanTrue }}",
+    "{{? .booleanFalse }}",
+    "{{? .string }}",
+    "{{? .integer }}",
+    "{{? .double }}",
+    "{{? .nullVar }}"
   ]
 }
 ```
@@ -206,7 +206,7 @@ var context = Map.of(
         "string", "text",
         "integer", 42,
         "double", 3.1415,
-        "null", null
+        "nullVar", null
 );
 ```
 

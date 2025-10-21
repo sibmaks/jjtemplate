@@ -7,8 +7,11 @@ import java.util.List;
  * @author sibmaks
  */
 public class TemplateScript {
-    private final List<Definition> definitions;
-    private final Object template;
+    private List<Definition> definitions;
+    private Object template;
+
+    public TemplateScript() {
+    }
 
     public TemplateScript(List<Definition> definitions, Object template) {
         this.definitions = definitions;
@@ -19,7 +22,15 @@ public class TemplateScript {
         return definitions;
     }
 
+    public void setDefinitions(List<Definition> definitions) {
+        this.definitions = definitions;
+    }
+
     public Object getTemplate() {
         return template;
+    }
+
+    public void setTemplate(Object template) {
+        this.template = template;
     }
 }

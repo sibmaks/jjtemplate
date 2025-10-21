@@ -1,0 +1,14 @@
+{
+  "array": [
+    "prefix",
+    true,
+    false,
+    "text",
+    42,
+    3.1415,
+    "suffix"
+  ],
+  "object": {
+    "key": "new-value"
+  }
+}

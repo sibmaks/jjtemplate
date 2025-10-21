@@ -1,0 +1,13 @@
+{
+  "template": {
+    "array": [
+      "prefix",
+      "{{. .varList}}",
+      "suffix"
+    ],
+    "object": {
+      "key": "value",
+      "{{. .varObject }}": true
+    }
+  }
+}

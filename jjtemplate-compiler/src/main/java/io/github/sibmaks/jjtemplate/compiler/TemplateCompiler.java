@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
-import io.github.sibmaks.jjtemplate.compiler.api.Definition;
 import io.github.sibmaks.jjtemplate.compiler.api.Nodes;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
@@ -151,7 +150,7 @@ public final class TemplateCompiler {
         if (ms.matches()) {
             var expression = compileExpression(raw);
             var foldedExpression = tryFoldConstant(expression);
-            if(foldedExpression instanceof LiteralExpression) {
+            if (foldedExpression instanceof LiteralExpression) {
                 return ((LiteralExpression) foldedExpression).value;
             }
             return new Nodes.SpreadNode(foldedExpression);
@@ -160,7 +159,7 @@ public final class TemplateCompiler {
         if (mc.matches()) {
             var expression = compileExpression(raw);
             var foldedExpression = tryFoldConstant(expression);
-            if(foldedExpression instanceof LiteralExpression) {
+            if (foldedExpression instanceof LiteralExpression) {
                 return ((LiteralExpression) foldedExpression).value;
             }
             return new Nodes.CondNode(foldedExpression);
@@ -171,7 +170,7 @@ public final class TemplateCompiler {
         var parser = new TemplateParser(tokens);
         var expression = parser.parseTemplate();
         var foldedExpression = tryFoldConstant(expression);
-        if(foldedExpression instanceof LiteralExpression) {
+        if (foldedExpression instanceof LiteralExpression) {
             return ((LiteralExpression) foldedExpression).value;
         }
         return foldedExpression;
@@ -333,19 +332,5 @@ public final class TemplateCompiler {
         String item;
         String index;
         String expr;
-    }
-
-    public static void main(String[] args) {
-        var compiler = new TemplateCompiler();
-        var definition = new Definition();
-        definition.put("var1", List.of(true, 42));
-        definition.put("var2", "{{ list true, 42 }}");
-        var script = new TemplateScript(
-                List.of(definition),
-                List.of("{{. .var1 }}", "{{ .var2 }}", "x", "{{? 'ok' }}", "{{? null }}", "t-{{ 'true' }}", "{{ 'true' }}-t", "a-{{ 'true' }}-z")
-        );
-        var compiled = compiler.compile(script);
-        var rendered = compiled.render(Map.of());
-        System.out.println(rendered);
     }
 }

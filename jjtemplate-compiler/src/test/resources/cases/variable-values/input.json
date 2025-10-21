@@ -1,0 +1,18 @@
+{
+  "template": {
+    "booleanTrue": "{{ .booleanTrue }}",
+    "booleanFalse": "{{ .booleanFalse }}",
+    "string": "{{ .string }}",
+    "integer": "{{ .integer }}",
+    "double": "{{ .double }}",
+    "null": "{{ .nullVar }}",
+    "array": [
+      "{{ .booleanTrue }}",
+      "{{ .booleanFalse }}",
+      "{{ .string }}",
+      "{{ .integer }}",
+      "{{ .double }}",
+      "{{ .nullVar }}"
+    ]
+  }
+}

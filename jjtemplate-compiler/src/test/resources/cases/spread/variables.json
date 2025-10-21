@@ -1,0 +1,12 @@
+{
+  "varList": [
+    true,
+    false,
+    "text",
+    42,
+    3.1415
+  ],
+  "varObject": {
+    "key": "new-value"
+  }
+}
