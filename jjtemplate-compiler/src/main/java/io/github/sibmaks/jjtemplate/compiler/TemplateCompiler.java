@@ -3,11 +3,13 @@ package io.github.sibmaks.jjtemplate.compiler;
 import io.github.sibmaks.jjtemplate.compiler.api.Definition;
 import io.github.sibmaks.jjtemplate.compiler.api.Nodes;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.evaluator.Context;
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 import io.github.sibmaks.jjtemplate.lexer.Token;
 import io.github.sibmaks.jjtemplate.lexer.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
-import io.github.sibmaks.jjtemplate.parser.api.Expression;
+import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -18,6 +20,7 @@ public final class TemplateCompiler {
     private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\s*\\{\\{\\.(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern WHOLE_COND = Pattern.compile("^\\s*\\{\\{\\?(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
+    private static final TemplateEvaluator CONST_EVAL = new TemplateEvaluator();
 
     @SuppressWarnings("unchecked")
     public CompiledTemplate compile(TemplateScript script) {
@@ -146,17 +149,32 @@ public final class TemplateCompiler {
         }
         var ms = WHOLE_SPREAD.matcher(raw);
         if (ms.matches()) {
-            return new Nodes.SpreadNode(compileExpression(raw));
+            var expression = compileExpression(raw);
+            var foldedExpression = tryFoldConstant(expression);
+            if(foldedExpression instanceof LiteralExpression) {
+                return ((LiteralExpression) foldedExpression).value;
+            }
+            return new Nodes.SpreadNode(foldedExpression);
         }
         var mc = WHOLE_COND.matcher(raw);
         if (mc.matches()) {
-            return new Nodes.CondNode(compileExpression(raw));
+            var expression = compileExpression(raw);
+            var foldedExpression = tryFoldConstant(expression);
+            if(foldedExpression instanceof LiteralExpression) {
+                return ((LiteralExpression) foldedExpression).value;
+            }
+            return new Nodes.CondNode(foldedExpression);
         }
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
         var lexer = new TemplateLexer(raw);
         var tokens = lexer.tokens();
         var parser = new TemplateParser(tokens);
-        return parser.parseTemplate();
+        var expression = parser.parseTemplate();
+        var foldedExpression = tryFoldConstant(expression);
+        if(foldedExpression instanceof LiteralExpression) {
+            return ((LiteralExpression) foldedExpression).value;
+        }
+        return foldedExpression;
     }
 
     private Expression compileAsExpression(String expr) {
@@ -244,6 +262,62 @@ public final class TemplateCompiler {
         return r;
     }
 
+    /**
+     * Try to evaluate expression at compile time.
+     * If expression is pure (no variable access) — it’s folded into a literal value.
+     */
+    private Expression tryFoldConstant(Expression expr) {
+        try {
+            // Walk expression tree to check if it depends on variables
+            if (!dependsOnContext(expr)) {
+                var value = CONST_EVAL.evaluate(expr, new Context(Map.of())).getValue();
+                return new LiteralExpression(value);
+            }
+        } catch (Exception ignore) {
+            // ignore folding failures (like divide by zero or unknown function)
+        }
+        return expr; // keep expression as is
+    }
+
+    private boolean dependsOnContext(Expression expr) {
+        if (expr == null) {
+            return false;
+        }
+
+        // VariableExpression always depends on context
+        if (expr instanceof VariableExpression) {
+            return true;
+        }
+
+        if (expr instanceof FunctionCallExpression) {
+            var call = (FunctionCallExpression) expr;
+            for (var a : call.args) {
+                if (dependsOnContext(a)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (expr instanceof PipeExpression) {
+            var pipe = (PipeExpression) expr;
+            if (dependsOnContext(pipe.left)) {
+                return true;
+            }
+            for (var call : pipe.chain) {
+                for (var a : call.args) {
+                    if (dependsOnContext(a)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // LiteralExpression never depends on context
+        return false;
+    }
+
     // --- headers parsing ---
     private static final class SimpleHeader {
         String varName;
@@ -265,9 +339,10 @@ public final class TemplateCompiler {
         var compiler = new TemplateCompiler();
         var definition = new Definition();
         definition.put("var1", List.of(true, 42));
+        definition.put("var2", "{{ list true, 42 }}");
         var script = new TemplateScript(
                 List.of(definition),
-                List.of("{{. .var1 }}", "x", "{{? 'ok' }}", "{{? null }}", "t-{{ 'true' }}", "{{ 'true' }}-t", "a-{{ 'true' }}-z")
+                List.of("{{. .var1 }}", "{{ .var2 }}", "x", "{{? 'ok' }}", "{{? null }}", "t-{{ 'true' }}", "{{ 'true' }}-t", "a-{{ 'true' }}-z")
         );
         var compiled = compiler.compile(script);
         var rendered = compiled.render(Map.of());
