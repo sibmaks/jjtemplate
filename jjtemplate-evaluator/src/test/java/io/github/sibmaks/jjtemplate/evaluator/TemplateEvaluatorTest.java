@@ -143,6 +143,23 @@ class TemplateEvaluatorTest {
     }
 
     @Test
+    void checkPathVariableExpressionOnListWhenNonInt() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "0a";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var listVarValue = List.of(varValue);
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(listVarValue));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Unknown property '%s' for %s", varName, listVarValue.getClass()), exception.getMessage());
+    }
+
+    @Test
     void checkPathVariableExpressionOnListOutOfIndex() {
         var parentVarName = UUID.randomUUID().toString();
         var varName = Integer.toString(1);
@@ -319,6 +336,46 @@ class TemplateEvaluatorTest {
     }
 
     @Test
+    void checkPathVariableExpressionOnMethodBooleanObject() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "booleanObject";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var object = new Stub();
+        object.property = varValue;
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(Boolean.TRUE, evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnMethodBooleanPrimitive() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "booleanPrimitive";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var object = new Stub();
+        object.property = varValue;
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(Boolean.TRUE, evaluated.getValue());
+    }
+
+    @Test
     void checkPathVariableExpressionOnNoExistedProperty() {
         var parentVarName = UUID.randomUUID().toString();
         var varName = "notExisted";
@@ -356,6 +413,14 @@ class TemplateEvaluatorTest {
 
         public String getProperty() {
             return property + "-";
+        }
+
+        public Boolean isBooleanObject() {
+            return Boolean.TRUE;
+        }
+
+        public boolean isBooleanPrimitive() {
+            return true;
         }
 
         public String getException() {
