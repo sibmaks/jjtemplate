@@ -10,6 +10,8 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplat
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +48,8 @@ public final class TemplateEvaluator {
             new FormatDateTemplateFunction(),
             new FormatStringTemplateFunction()
     );
-
+    private static final Map<Class<?>, Map<String, java.lang.reflect.Method>> METHOD_CACHE = new HashMap<>();
+    private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new HashMap<>();
     private final Map<String, TemplateFunction> functions;
 
     public TemplateEvaluator() {
@@ -59,6 +62,39 @@ public final class TemplateEvaluator {
             allFunctions.put(builtInFunction.getName(), builtInFunction);
         }
         this.functions = allFunctions;
+    }
+
+    private static Map<String, Method> scanMethods(Class<?> cls) {
+        var map = new HashMap<String, Method>();
+        for (var m : cls.getMethods()) {
+            if (m.getParameterCount() != 0) {
+                continue;
+            }
+            var name = m.getName();
+            if (name.startsWith("get") && name.length() > 3) {
+                map.put(decapitalize(name.substring(3)), m);
+            } else if (name.startsWith("is") && name.length() > 2
+                    && (m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class)) {
+                map.put(decapitalize(name.substring(2)), m);
+            }
+        }
+        return map;
+    }
+
+    private static Map<String, Field> scanFields(Class<?> cls) {
+        var map = new HashMap<String, Field>();
+        for (var f : cls.getFields()) {
+            f.setAccessible(true);
+            map.put(f.getName(), f);
+        }
+        return map;
+    }
+
+    private static String decapitalize(String s) {
+        if (s.isEmpty()) {
+            return s;
+        }
+        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 
     public ExpressionValue evaluate(Expression expression, Context context) {
@@ -97,47 +133,78 @@ public final class TemplateEvaluator {
         }
         var cur = context.getRoot(variableExpression.path.get(0));
         for (int i = 1; i < variableExpression.path.size(); i++) {
-            if (cur == null || cur.isEmpty()) {
+            if (cur.isEmpty()) {
                 return ExpressionValue.empty();
             }
             var currValue = cur.getValue();
             var seg = variableExpression.path.get(i);
-            if (currValue instanceof Map) {
+            if (currValue instanceof Map<?, ?>) {
                 var map = (Map<?, ?>) currValue;
                 cur = ExpressionValue.of(map.get(seg));
-            } else if (currValue instanceof List && isInt(seg)) {
+                continue;
+            }
+            if (currValue instanceof List<?> && isInt(seg)) {
                 var list = (List<?>) currValue;
                 var idx = Integer.parseInt(seg);
-                if (idx >= 0 && idx < list.size()) {
-                    cur = ExpressionValue.of(list.get(idx));
-                } else {
-                    throw new IllegalArgumentException(String.format("Index '%d' out of list length: %s", idx, currValue));
+                if (idx < 0 || idx >= list.size()) {
+                    throw new IllegalArgumentException("List index out of range: " + seg);
                 }
-            } else if (currValue.getClass().isArray() && isInt(seg)) {
+                cur = ExpressionValue.of(list.get(idx));
+                continue;
+            }
+            if (currValue.getClass().isArray() && isInt(seg)) {
                 var idx = Integer.parseInt(seg);
                 var len = Array.getLength(currValue);
-                if (idx >= 0 && idx < len) {
-                    cur = ExpressionValue.of(Array.get(currValue, idx));
-                } else {
-                    throw new IllegalArgumentException(String.format("Index '%d' out of array length: %s", idx, len));
+                if (idx < 0 || idx >= len) {
+                    throw new IllegalArgumentException("Array index out of range: " + seg);
                 }
-            } else if (currValue instanceof CharSequence && isInt(seg)) {
-                var idx = Integer.parseInt(seg);
-                var curLine = (CharSequence) currValue;
-                if (idx >= 0 && idx < curLine.length()) {
-                    cur = ExpressionValue.of(Character.toString(curLine.charAt(idx)));
-                } else {
-                    throw new IllegalArgumentException(String.format("Index '%d' out of string length: %s", idx, curLine));
-                }
-            } else {
-                throw new IllegalArgumentException(String.format("Unsupported type '%s' for dot operator for segment '%s'", currValue.getClass(), seg));
+                cur = ExpressionValue.of(Array.get(currValue, idx));
+                continue;
             }
+            if (currValue instanceof CharSequence && isInt(seg)) {
+                var idx = Integer.parseInt(seg);
+                var seq = (CharSequence) currValue;
+                if (idx < 0 || idx >= seq.length()) {
+                    throw new IllegalArgumentException("String index out of range: " + seg);
+                }
+                cur = ExpressionValue.of(Character.toString(seq.charAt(idx)));
+                continue;
+            }
+            cur = ExpressionValue.of(resolvePropertyReflective(currValue, seg));
         }
         return cur;
     }
 
+    private Object resolvePropertyReflective(Object obj, String name) {
+        var cls = obj.getClass();
+
+        // --- Field lookup cache ---
+        var fieldMap = FIELD_CACHE.computeIfAbsent(cls, TemplateEvaluator::scanFields);
+        if (fieldMap.containsKey(name)) {
+            try {
+                var f = fieldMap.get(name);
+                return f.get(obj);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Cannot access field '" + name + "' of " + cls, e);
+            }
+        }
+
+        // --- Method lookup cache ---
+        var methodMap = METHOD_CACHE.computeIfAbsent(cls, TemplateEvaluator::scanMethods);
+        var m = methodMap.get(name);
+        if (m != null) {
+            try {
+                return m.invoke(obj);
+            } catch (Exception e) {
+                throw new RuntimeException("Error invoking getter '" + name + "' on " + cls, e);
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown property '" + name + "' for class " + cls.getName());
+    }
+
     private boolean isInt(String s) {
-        for (int i = 0; i < s.length(); i++) {
+        for (var i = 0; i < s.length(); i++) {
             if (!Character.isDigit(s.charAt(i))) {
                 return false;
             }

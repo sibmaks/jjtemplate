@@ -156,7 +156,7 @@ class TemplateEvaluatorTest {
 
         var expression = new VariableExpression(List.of(parentVarName, varName));
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Index '%s' out of list length: %s", varName, listVarValue), exception.getMessage());
+        assertEquals(String.format("List index out of range: %s", varName), exception.getMessage());
     }
 
     @Test
@@ -192,7 +192,7 @@ class TemplateEvaluatorTest {
 
         var expression = new VariableExpression(List.of(parentVarName, varName));
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Index '%s' out of array length: %s", varName, 1), exception.getMessage());
+        assertEquals(String.format("Array index out of range: %s", 1), exception.getMessage());
     }
 
     @Test
@@ -226,7 +226,7 @@ class TemplateEvaluatorTest {
 
         var expression = new VariableExpression(List.of(parentVarName, varName));
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Index '%s' out of string length: %s", varName, varValue), exception.getMessage());
+        assertEquals(String.format("String index out of range: %s", varName), exception.getMessage());
     }
 
     @ParameterizedTest
@@ -276,6 +276,91 @@ class TemplateEvaluatorTest {
         var expression = new FunctionCallExpression("var", List.of());
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, mock()));
         assertEquals("Function 'var' not found", exception.getMessage());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnField() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "field";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var object = new Stub();
+        object.field = varValue;
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(varValue, evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnMethod() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "property";
+        var context = mock(Context.class);
+        var varValue = UUID.randomUUID().toString();
+        var object = new Stub();
+        object.property = varValue;
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals(varValue + "-", evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnNoExistedProperty() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "notExisted";
+        var context = mock(Context.class);
+        var object = new Stub();
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Unknown property '%s' for %s", varName, object.getClass()), exception.getMessage());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnMethodWithException() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "exception";
+        var context = mock(Context.class);
+        var object = new Stub();
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var exception = assertThrows(RuntimeException.class, () -> evaluator.evaluate(expression, context));
+        assertEquals(String.format("Error invoking getter '%s' on %s", varName, object.getClass()), exception.getMessage());
+    }
+
+    static class Stub {
+        public String field;
+        private String property;
+
+        public String getProperty() {
+            return property + "-";
+        }
+
+        public String getException() {
+            throw new RuntimeException("internal");
+        }
     }
 
     public static Stream<Arguments> callToStringFunctionCases() {
