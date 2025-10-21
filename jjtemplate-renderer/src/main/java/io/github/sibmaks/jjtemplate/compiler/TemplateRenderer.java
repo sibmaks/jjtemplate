@@ -1,4 +1,4 @@
-package io.github.sibmaks.jjtemplate.renderer;
+package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
@@ -298,8 +298,7 @@ public final class TemplateRenderer {
     // === Expression evaluation helper ===
     private ExpressionValue evalExpr(String expr, Map<String, Object> ctx) {
         expr = expr == null ? "" : expr;
-        var wrapped = expr;
-        var lexer = new TemplateLexer(wrapped);
+        var lexer = new TemplateLexer(expr);
         var tokens = lexer.tokens();
         var parser = new TemplateParser(tokens);
         var ast = parser.parseTemplate();

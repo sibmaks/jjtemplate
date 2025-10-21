@@ -4,5 +4,6 @@ include(
     "jjtemplate-lexer",
     "jjtemplate-parser",
     "jjtemplate-evaluator",
-    "jjtemplate-renderer"
+    "jjtemplate-renderer",
+    "jjtemplate-compiler",
 )
