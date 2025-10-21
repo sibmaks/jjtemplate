@@ -1,15 +1,23 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.compiler.api.Definition;
+import io.github.sibmaks.jjtemplate.compiler.api.Nodes;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
+import io.github.sibmaks.jjtemplate.lexer.Token;
+import io.github.sibmaks.jjtemplate.lexer.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public final class TemplateCompiler {
+
+    private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\s*\\{\\{\\.(.*?)}}\\s*$", Pattern.DOTALL);
+    private static final Pattern WHOLE_COND = Pattern.compile("^\\s*\\{\\{\\?(.*?)}}\\s*$", Pattern.DOTALL);
+    private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
 
     @SuppressWarnings("unchecked")
     public CompiledTemplate compile(TemplateScript script) {
@@ -25,13 +33,59 @@ public final class TemplateCompiler {
             var def = (Map<String, Object>) d;
             var compiled = new LinkedHashMap<String, Object>();
             for (var e : def.entrySet()) {
-                compiled.put(e.getKey(), compileNode(e.getValue()));
+                var header = e.getKey();
+                var valueSpec = e.getValue();
+
+                // case
+                var ch = parseCaseHeader(header);
+                if (ch != null) {
+                    var defn = compileCase(valueSpec, ch);
+                    compiled.put(ch.varName, defn);
+                    continue;
+                }
+                // range
+                var rh = parseRangeHeader(header);
+                if (rh != null) {
+                    var defn = new Nodes.RangeDefinition(rh.item, rh.index, compileExpression(rh.expr), compileNode(valueSpec));
+                    compiled.put(rh.varName, defn);
+                    continue;
+                }
+                // explicit
+                var sh = parseSimpleHeader(header);
+                if (sh != null) {
+                    compiled.put(sh.varName, compileNode(valueSpec));
+                    continue;
+                }
+                throw new IllegalArgumentException("Unknown definition header: " + header);
             }
             compiledDefs.add(compiled);
         }
 
         var compiledTemplate = compileNode(template);
         return new CompiledTemplate(compiledDefs, compiledTemplate);
+    }
+
+    private Nodes.CaseDefinition compileCase(Object valueSpec, CaseHeader ch) {
+        if (!(valueSpec instanceof Map<?, ?>)) {
+            throw new IllegalArgumentException("case definition expects mapping object");
+        }
+        var branches = new LinkedHashMap<Expression, Object>();
+        Object elseNode = null;
+        Object thenNode = null;
+        for (var ce : ((Map<String, Object>) valueSpec).entrySet()) {
+            var condKey = ce.getKey();
+            if ("else".equals(condKey)) {
+                elseNode = compileNode(ce.getValue());
+                continue;
+            }
+            if ("then".equals(condKey)) {
+                thenNode = compileNode(ce.getValue());
+                continue;
+            }
+            var condition = compileAsExpression(condKey);
+            branches.put(condition, compileNode(ce.getValue()));
+        }
+        return new Nodes.CaseDefinition(compileExpression(ch.expr), branches, thenNode, elseNode);
     }
 
     private Object compileNode(Object node) {
@@ -43,12 +97,7 @@ public final class TemplateCompiler {
         }
         if (node instanceof Map<?, ?>) {
             var nodeMap = (Map<?, ?>) node;
-            var compiled = new LinkedHashMap<String, Object>();
-            for (var e : nodeMap.entrySet()) {
-                var compileNode = compileNode(e.getValue());
-                compiled.put(e.getKey().toString(), compileNode);
-            }
-            return compiled;
+            return compileObject(nodeMap);
         }
         if (node instanceof List<?>) {
             var nodeList = (List<?>) node;
@@ -72,11 +121,144 @@ public final class TemplateCompiler {
         return node; // number, boolean
     }
 
-    private Expression compileString(String rawExpression) {
-        var lexer = new TemplateLexer(rawExpression);
+    private Object compileObject(Map<?, ?> nodeMap) {
+        var entries = new ArrayList<Nodes.CompiledObject.Entry>();
+        for (var e : nodeMap.entrySet()) {
+            var rawKey = String.valueOf(e.getKey());
+            var ms = WHOLE_SPREAD.matcher(rawKey);
+            if (ms.matches()) {
+                // object spread key: "{{. expr}}" — value is ignored
+                var expression = compileExpression(rawKey);
+                entries.add(new Nodes.CompiledObject.Spread(expression));
+                continue;
+            }
+            var keyCompiled = rawKey.contains("{{") ? compileString(rawKey) : rawKey;
+            var valCompiled = compileNode(e.getValue());
+            entries.add(new Nodes.CompiledObject.Field(keyCompiled, valCompiled));
+        }
+        return new Nodes.CompiledObject(entries);
+    }
+
+    private Object compileString(String raw) {
+        // literal (no tags) — keep as is
+        if (!raw.contains("{{")) {
+            return raw;
+        }
+        var ms = WHOLE_SPREAD.matcher(raw);
+        if (ms.matches()) {
+            return new Nodes.SpreadNode(compileExpression(raw));
+        }
+        var mc = WHOLE_COND.matcher(raw);
+        if (mc.matches()) {
+            return new Nodes.CondNode(compileExpression(raw));
+        }
+        // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
+        var lexer = new TemplateLexer(raw);
         var tokens = lexer.tokens();
         var parser = new TemplateParser(tokens);
         return parser.parseTemplate();
+    }
+
+    private Expression compileAsExpression(String expr) {
+        return compileExpression("{{ " + expr + " }}");
+    }
+
+    private Expression compileExpression(String expr) {
+        var lexer = new TemplateLexer(expr);
+        var tokens = lexer.tokens();
+        var inner = new ArrayList<Token>();
+        var started = false;
+        for (var t : tokens) {
+            switch (t.type) {
+                case OPEN_EXPR:
+                case OPEN_COND:
+                case OPEN_SPREAD:
+                    started = true;
+                    break;
+                case CLOSE:
+                    started = false;
+                    break;
+                default:
+                    if (started && t.type != TokenType.TEXT) {
+                        inner.add(t);
+                    }
+            }
+        }
+        var parser = new TemplateParser(inner);
+        return parser.parseExpression();
+    }
+
+    private SimpleHeader parseSimpleHeader(String h) {
+        if (VARIABLE_NAME.matcher(h).matches()) {
+            var s = new SimpleHeader();
+            s.varName = h;
+            return s;
+        }
+        return null;
+    }
+
+    private CaseHeader parseCaseHeader(String h) {
+        var i = h.indexOf(" case ");
+        if (i < 0) {
+            return null;
+        }
+        var var = h.substring(0, i).trim();
+        var expr = h.substring(i + 6).trim();
+        if (!VARIABLE_NAME.matcher(var).matches()) {
+            return null;
+        }
+        var c = new CaseHeader();
+        c.varName = var;
+        c.expr = "{{ " + expr + " }}";
+        return c;
+    }
+
+    private RangeHeader parseRangeHeader(String h) {
+        var mark = " range ";
+        var i = h.indexOf(mark);
+        if (i < 0) {
+            return null;
+        }
+        var var = h.substring(0, i).trim();
+        var rest = h.substring(i + mark.length()).trim();
+        int ofIdx = rest.indexOf(" of ");
+        if (ofIdx < 0) {
+            return null;
+        }
+        var vars = rest.substring(0, ofIdx).trim();
+        var expr = rest.substring(ofIdx + 4).trim();
+        var parts = vars.split(",");
+        if (parts.length != 2) {
+            return null;
+        }
+        var item = parts[0].trim();
+        var index = parts[1].trim();
+        if (!VARIABLE_NAME.matcher(var).matches() || !VARIABLE_NAME.matcher(item).matches() || !VARIABLE_NAME.matcher(index).matches()) {
+            return null;
+        }
+        var r = new RangeHeader();
+        r.varName = var;
+        r.item = item;
+        r.index = index;
+        r.expr = "{{ " + expr + " }}";
+        return r;
+    }
+
+    // --- headers parsing ---
+    private static final class SimpleHeader {
+        String varName;
+    }
+
+    private static final class CaseHeader {
+        String varName;
+        String expr;
+    }
+
+    private static final class RangeHeader {
+        String varName;
+        String item;
+        String index;
+        String expr;
     }
 
     public static void main(String[] args) {
@@ -84,15 +266,11 @@ public final class TemplateCompiler {
         var definition = new Definition();
         definition.put("var1", List.of(true, 42));
         var script = new TemplateScript(
-                List.of(
-                        definition
-                ),
-                List.of("{{. .var1 }}")
+                List.of(definition),
+                List.of("{{. .var1 }}", "x", "{{? 'ok' }}", "{{? null }}", "t-{{ 'true' }}", "{{ 'true' }}-t", "a-{{ 'true' }}-z")
         );
         var compiled = compiler.compile(script);
         var rendered = compiled.render(Map.of());
-
-        System.out.println(compiled);
         System.out.println(rendered);
     }
 }
