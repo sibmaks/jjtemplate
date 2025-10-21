@@ -15,7 +15,7 @@ public class StringUpperTemplateFunction implements TemplateFunction {
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         var argument = first(args, pipeArg);
         if (argument.isEmpty()) {
-            return argument;
+            throw new IllegalArgumentException("upper: 1 argument required");
         }
         var value = argument.getValue();
         var stringValue = String.valueOf(value);

@@ -3,8 +3,8 @@ package io.github.sibmaks.jjtemplate.evaluator;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.DefaultTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
 import io.github.sibmaks.jjtemplate.parser.api.*;
@@ -43,7 +43,9 @@ public final class TemplateEvaluator {
             new GTCompareTemplateFunction(),
             new GECompareTemplateFunction(),
             new AndTemplateFunction(),
-            new OrTemplateFunction()
+            new OrTemplateFunction(),
+            new FormatDateTemplateFunction(),
+            new FormatStringTemplateFunction()
     );
 
     private final Map<String, TemplateFunction> functions;
