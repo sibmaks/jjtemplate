@@ -1,0 +1,9 @@
+{
+  "template": {
+    "stringKey": "{{ lower 'HELLO' }}",
+    "stringPipeKey": "{{ 'HELLO' | lower }}",
+
+    "emptyStringKey": "{{ lower '' }}",
+    "emptyStringPipeKey": "{{ '' | lower }}"
+  }
+}

@@ -159,9 +159,6 @@ public final class TemplateCompiler {
         if (mc.matches()) {
             var expression = compileExpression(raw);
             var foldedExpression = tryFoldConstant(expression);
-            if (foldedExpression instanceof LiteralExpression) {
-                return ((LiteralExpression) foldedExpression).value;
-            }
             return new Nodes.CondNode(foldedExpression);
         }
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
