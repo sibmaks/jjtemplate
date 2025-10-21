@@ -13,6 +13,7 @@
       "{{ .integer }}",
       "{{ .double }}",
       "{{ .nullVar }}"
-    ]
+    ],
+    "fun": "{{ (neg .integer) | str | concat (.booleanTrue | str)}}"
   }
 }

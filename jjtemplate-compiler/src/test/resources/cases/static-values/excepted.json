@@ -13,5 +13,6 @@
     3.1415,
     null
   ],
-  "key-end": "value"
+  "key-end": "value",
+  "fun": "true-42"
 }

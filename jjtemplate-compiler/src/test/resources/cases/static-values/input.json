@@ -14,6 +14,7 @@
       "{{ 3.1415 }}",
       "{{ null }}"
     ],
-    "key-{{ 'end' }}": "value"
+    "key-{{ 'end' }}": "value",
+    "fun": "{{ -42 | str | concat ('true' | boolean)}}"
   }
 }

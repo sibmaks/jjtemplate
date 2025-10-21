@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
@@ -46,7 +47,8 @@ public final class TemplateEvaluator {
             new AndTemplateFunction(),
             new OrTemplateFunction(),
             new FormatDateTemplateFunction(),
-            new FormatStringTemplateFunction()
+            new FormatStringTemplateFunction(),
+            new NegTemplateFunction()
     );
     private static final Map<Class<?>, Map<String, java.lang.reflect.Method>> METHOD_CACHE = new HashMap<>();
     private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new HashMap<>();
