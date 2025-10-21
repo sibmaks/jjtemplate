@@ -13,9 +13,9 @@ import java.util.*;
  * <p>
  * Supported tag forms (recognized at lexing time):
  * <ul>
- * <li>{@code {{ <expr> }}}      -> OPEN_EXPR / CLOSE</li>
- * <li>{@code {{? <expr> }}}     -> OPEN_COND / CLOSE    (conditional array insertion)</li>
- * <li>{@code {{. <expr> }}}     -> OPEN_SPREAD / CLOSE  (spread into parent array/object)</li>
+ * <li>{@code {{ <expr> }}}      -&gt; OPEN_EXPR / CLOSE</li>
+ * <li>{@code {{? <expr> }}}     -&gt; OPEN_COND / CLOSE    (conditional array insertion)</li>
+ * <li>{@code {{. <expr> }}}     -&gt; OPEN_SPREAD / CLOSE  (spread into parent array/object)</li>
  * </ul>
  * <p>
  * Notes
@@ -24,7 +24,7 @@ import java.util.*;
  * <li>Strings use single quotes per the examples. Escapes supported: \\' \\" \\n</li>
  * <li>Numbers: integers and floating-point (e.g., 42, 3.1415, -7, +2.5, 1e10, -3.2E-4)</li>
  * <li>Keywords (case-insensitive where it matters): case, then, else, range, of.</li>
- * <li>Functions and logical operators are tokenized as IDENTs (e.g., str, int, double, boolean, len, empty,</li>
+ * <li>Functions and logical operators are tokenized as IDENTs (e.g., str, int, double, boolean, len, empty,
  * upper, lower, not, eq, neq, lt, le, gt, ge, and, or, list, concat, default). Parser can
  * treat certain idents as keywords if desired.</li>
  * <li>Variable access: a leading DOT followed by segments (e.g., .a, .parent.child). Lexer emits DOT and IDENT
@@ -59,6 +59,8 @@ public final class TemplateLexer {
 
     /**
      * Produce all tokens for the input. The stream alternates between TEXT and expression tokens depending on tags.
+     *
+     * @return parsed tokens
      */
     public List<Token> tokens() {
         var out = new ArrayList<Token>();

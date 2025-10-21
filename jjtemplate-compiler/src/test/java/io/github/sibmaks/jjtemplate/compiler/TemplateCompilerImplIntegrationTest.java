@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author sibmaks
  */
-class TemplateCompilerIntegrationTest {
+class TemplateCompilerImplIntegrationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private final TemplateCompiler compiler = new TemplateCompiler();
+    private final TemplateCompilerImpl compiler = new TemplateCompilerImpl();
 
     private static Arguments buildArguments(Path it) {
         try {
@@ -77,6 +77,6 @@ class TemplateCompilerIntegrationTest {
 
         return cases
                 .stream()
-                .map(TemplateCompilerIntegrationTest::buildArguments);
+                .map(TemplateCompilerImplIntegrationTest::buildArguments);
     }
 }

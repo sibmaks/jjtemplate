@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
-import io.github.sibmaks.jjtemplate.compiler.api.Nodes;
+import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
@@ -14,13 +15,14 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public final class TemplateCompiler {
+public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\s*\\{\\{\\.(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern WHOLE_COND = Pattern.compile("^\\s*\\{\\{\\?(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
     private static final TemplateEvaluator CONST_EVAL = new TemplateEvaluator();
 
+    @Override
     @SuppressWarnings("unchecked")
     public CompiledTemplate compile(TemplateScript script) {
         var defs = Optional.ofNullable(script.getDefinitions())
@@ -64,7 +66,7 @@ public final class TemplateCompiler {
         }
 
         var compiledTemplate = compileNode(template);
-        return new CompiledTemplate(compiledDefs, compiledTemplate);
+        return new CompiledTemplateImpl(compiledDefs, compiledTemplate);
     }
 
     private Nodes.CaseDefinition compileCase(Object valueSpec, CaseHeader ch) {
@@ -72,22 +74,24 @@ public final class TemplateCompiler {
             throw new IllegalArgumentException("case definition expects mapping object");
         }
         var branches = new LinkedHashMap<Expression, Object>();
-        Object elseNode = null;
-        Object thenNode = null;
+        var caseDefinitionBuilder = Nodes.CaseDefinition.builder();
         for (var ce : ((Map<String, Object>) valueSpec).entrySet()) {
             var condKey = ce.getKey();
             if ("else".equals(condKey)) {
-                elseNode = compileNode(ce.getValue());
+                caseDefinitionBuilder.elseNode(compileNode(ce.getValue()));
                 continue;
             }
             if ("then".equals(condKey)) {
-                thenNode = compileNode(ce.getValue());
+                caseDefinitionBuilder.thenNode(compileNode(ce.getValue()));
                 continue;
             }
             var condition = compileAsExpression(condKey);
             branches.put(condition, compileNode(ce.getValue()));
         }
-        return new Nodes.CaseDefinition(compileExpression(ch.expr), branches, thenNode, elseNode);
+        return caseDefinitionBuilder
+                .switchExpr(compileExpression(ch.expr))
+                .branches(branches)
+                .build();
     }
 
     private Object compileNode(Object node) {

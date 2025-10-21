@@ -1,0 +1,21 @@
+[versions]
+lombok = "1.18.42"
+jackson = "2.20.0"
+junit-bom = "5.10.0"
+mockito = "5.20.0"
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[bundles]
+jackson = [
+    "jackson-core",
+    "jackson-databind",
+    "jackson-datatype-jsr310"
+]

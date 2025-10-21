@@ -1,16 +1,109 @@
-subprojects {
-    apply(plugin = "java")
+import java.text.SimpleDateFormat
+import java.util.*
 
-    group = "io.github.sibmaks.jjtemplate"
-    version = "0.0.1"
+plugins {
+    id("maven-publish")
+    id("java")
+    id("jacoco")
+}
+
+allprojects {
+    apply(plugin = "java")
+    apply(plugin = "jacoco")
+    apply(plugin = "maven-publish")
+
+    val versionFromProperty = "${project.property("version")}"
+    val versionFromEnv: String? = System.getenv("VERSION")
+
+    version = versionFromEnv ?: versionFromProperty
+    group = "${project.property("group")}"
+
+    val targetJavaVersion = (project.property("jdk_version") as String).toInt()
+    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
 
     repositories {
         mavenCentral()
     }
 
-    extensions.configure<JavaPluginExtension> {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(11))
+
+    tasks.withType<JavaCompile>().configureEach {
+        // ensure that the encoding is set to UTF-8, no matter what the system default is
+        // this fixes some edge cases with special characters not displaying correctly
+        // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+        // If Javadoc is generated, this must be specified in that task too.
+        options.encoding = "UTF-8"
+        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible) {
+            options.release = targetJavaVersion
+        }
+    }
+
+    java {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        if (JavaVersion.current() < javaVersion) {
+            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        }
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    tasks.test {
+        useJUnitPlatform()
+        finalizedBy(tasks.jacocoTestReport)
+    }
+
+    tasks.jacocoTestReport {
+        dependsOn(tasks.test)
+    }
+
+    tasks.jar {
+        from("LICENSE") {
+            rename { "${it}_${project.property("project_name")}" }
+        }
+        manifest {
+            attributes(
+                mapOf(
+                    "Specification-Title" to project.name,
+                    "Specification-Vendor" to project.property("author"),
+                    "Specification-Version" to project.version,
+                    "Specification-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
+                    "Timestamp" to System.currentTimeMillis(),
+                    "Built-On-Java" to "${System.getProperty("java.vm.version")} (${System.getProperty("java.vm.vendor")})"
+                )
+            )
+        }
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(components["java"])
+                pom {
+                    packaging = "jar"
+                    url = "https://github.com/sibmaks/jjtemplate"
+
+                    licenses {
+                        license {
+                            name.set("Apache License, version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:https://github.com/sibmaks/jjtemplate.git")
+                        developerConnection.set("scm:git:ssh://github.com/sibmaks")
+                        url.set("https://github.com/sibmaks/jjtemplate")
+                    }
+
+                    developers {
+                        developer {
+                            id.set("sibmaks")
+                            name.set("Maksim Drobyshev")
+                            email.set("sibmaks@vk.com")
+                        }
+                    }
+                }
+            }
         }
     }
 }

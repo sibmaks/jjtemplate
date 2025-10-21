@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
-import io.github.sibmaks.jjtemplate.compiler.api.Nodes;
+import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
@@ -8,19 +8,23 @@ import io.github.sibmaks.jjtemplate.parser.api.Expression;
 import java.lang.reflect.Array;
 import java.util.*;
 
-public final class CompiledTemplate {
+/**
+ * @author sibmaks
+ */
+final class CompiledTemplateImpl implements CompiledTemplate {
     private final TemplateEvaluator evaluator = new TemplateEvaluator();
 
     private final List<Map<String, Object>> compiledDefs;
     private final Object compiledTemplate;
 
-    public CompiledTemplate(List<Map<String, Object>> defs, Object template) {
+    public CompiledTemplateImpl(List<Map<String, Object>> defs, Object template) {
         this.compiledDefs = defs;
         this.compiledTemplate = template;
     }
 
-    public Object render(Map<String, Object> ctx) {
-        var local = new LinkedHashMap<>(ctx);
+    @Override
+    public Object render(Map<String, Object> context) {
+        var local = new LinkedHashMap<>(context);
         evalDefinitions(compiledDefs, local);
         return renderNode(compiledTemplate, local);
     }
@@ -33,13 +37,13 @@ public final class CompiledTemplate {
                 if (value instanceof Expression) {
                     var expr = (Expression) value;
                     var evaluated = evaluator.evaluate(expr, new Context(ctx));
-                    if(!evaluated.isEmpty()) {
+                    if (!evaluated.isEmpty()) {
                         ctx.put(e.getKey(), evaluated.getValue());
                     }
                 } else if (value instanceof Nodes.CaseDefinition) {
                     var cd = (Nodes.CaseDefinition) value;
                     var evaluated = evaluator.evaluate(cd.getSwitchExpr(), new Context(ctx));
-                    if(evaluated.isEmpty()) {
+                    if (evaluated.isEmpty()) {
                         continue;
                     }
                     var switchVal = evaluated.getValue();
@@ -47,7 +51,7 @@ public final class CompiledTemplate {
                     var matched = false;
                     for (var br : cd.getBranches().entrySet()) {
                         var evaluatedItem = evaluator.evaluate(br.getKey(), new Context(ctx));
-                        if(evaluatedItem.isEmpty()) {
+                        if (evaluatedItem.isEmpty()) {
                             continue;
                         }
                         var keyVal = evaluatedItem.getValue();
@@ -70,7 +74,7 @@ public final class CompiledTemplate {
                 } else if (value instanceof Nodes.RangeDefinition) {
                     var rd = (Nodes.RangeDefinition) value;
                     var evaluated = evaluator.evaluate(rd.getSourceExpr(), new Context(ctx));
-                    if(evaluated.isEmpty()) {
+                    if (evaluated.isEmpty()) {
                         continue;
                     }
                     var source = evaluated.getValue();
@@ -150,7 +154,7 @@ public final class CompiledTemplate {
             if (entry instanceof Nodes.CompiledObject.Spread) {
                 var spread = (Nodes.CompiledObject.Spread) entry;
                 var evaluated = evaluator.evaluate(spread.getExpression(), new Context(ctx));
-                if(evaluated.isEmpty()) {
+                if (evaluated.isEmpty()) {
                     continue;
                 }
                 var v = evaluated.getValue();
@@ -171,7 +175,7 @@ public final class CompiledTemplate {
             if (k instanceof Expression) {
                 var ke = (Expression) k;
                 var evaluated = evaluator.evaluate(ke, new Context(ctx));
-                if(evaluated.isEmpty()) {
+                if (evaluated.isEmpty()) {
                     continue;
                 }
                 var kv = evaluated.getValue();
@@ -191,7 +195,7 @@ public final class CompiledTemplate {
             if (el instanceof Nodes.SpreadNode) {
                 var sp = (Nodes.SpreadNode) el;
                 var evaluated = evaluator.evaluate(sp.getExpression(), new Context(ctx));
-                if(evaluated.isEmpty()) {
+                if (evaluated.isEmpty()) {
                     continue;
                 }
                 var v = evaluated.getValue();
@@ -208,7 +212,7 @@ public final class CompiledTemplate {
             if (el instanceof Nodes.CondNode) {
                 var cn = (Nodes.CondNode) el;
                 var evaluated = evaluator.evaluate(cn.getExpression(), new Context(ctx));
-                if(evaluated.isEmpty()) {
+                if (evaluated.isEmpty()) {
                     continue;
                 }
                 var v = evaluated.getValue();
