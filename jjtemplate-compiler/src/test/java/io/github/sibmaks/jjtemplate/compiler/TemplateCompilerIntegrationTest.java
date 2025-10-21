@@ -38,6 +38,7 @@ class TemplateCompilerIntegrationTest {
             }
             var excepted = OBJECT_MAPPER.readValue(it.resolve("excepted.json").toFile(), Object.class);
             return Arguments.of(
+                    it.getFileName().toString(),
                     templateScript,
                     context,
                     excepted
@@ -61,7 +62,8 @@ class TemplateCompilerIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("cases")
-    void testScenario(TemplateScript templateScript, Map<String, Object> context, Object excepted) {
+    void testScenario(String caseName, TemplateScript templateScript, Map<String, Object> context, Object excepted) {
+        System.out.println(caseName);
         var compiled = compiler.compile(templateScript);
         assertNotNull(compiled);
         var rendered = compiled.render(context);

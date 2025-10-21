@@ -19,7 +19,7 @@ public class IntTemplateFunction implements TemplateFunction {
         }
         var value = argument.getValue();
         if (value == null) {
-            return null;
+            return ExpressionValue.empty();
         }
         if (value instanceof Integer) {
             return argument;

@@ -1,0 +1,15 @@
+{
+  "template": {
+    "stringKey": "{{ double .string }}",
+    "stringPipeKey": "{{ .string | double }}",
+
+    "integerKey": "{{ double .integer }}",
+    "integerPipeKey": "{{ .integer | double }}",
+
+    "doubleKey": "{{ double .double }}",
+    "doublePipeKey": "{{ .double | double }}",
+
+    "nullVarKey": "{{ double .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | double }}"
+  }
+}

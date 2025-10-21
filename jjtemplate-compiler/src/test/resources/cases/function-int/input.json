@@ -1,0 +1,15 @@
+{
+  "template": {
+    "stringKey": "{{ int .string }}",
+    "stringPipeKey": "{{ .string | int }}",
+
+    "integerKey": "{{ int .integer }}",
+    "integerPipeKey": "{{ .integer | int }}",
+
+    "doubleKey": "{{ int .double }}",
+    "doublePipeKey": "{{ .double | int }}",
+
+    "nullVarKey": "{{ int .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | int }}"
+  }
+}

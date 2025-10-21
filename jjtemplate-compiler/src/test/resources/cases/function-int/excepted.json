@@ -1,0 +1,13 @@
+{
+  "stringKey": 42,
+  "stringPipeKey": 42,
+
+  "integerKey": 42,
+  "integerPipeKey": 42,
+
+  "doubleKey": 3,
+  "doublePipeKey": 3,
+
+  "nullVarKey": null,
+  "nullVarPipeKey": null
+}
