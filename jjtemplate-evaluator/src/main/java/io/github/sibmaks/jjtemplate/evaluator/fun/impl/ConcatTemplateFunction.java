@@ -25,19 +25,14 @@ public class ConcatTemplateFunction implements TemplateFunction {
             Collection<?> collection,
             ArrayList<ExpressionValue> all
     ) {
-        var out = new ArrayList<ExpressionValue>();
-        for (var item : collection) {
-            out.add(ExpressionValue.of(item));
-        }
+        var out = new ArrayList<Object>(collection);
         for (var i = 1; i < all.size(); i++) {
             var v = all.get(i);
-            if (v instanceof Collection) {
+            if (v instanceof Collection<?>) {
                 var subCollection = (Collection<?>) v;
-                for (var item : subCollection) {
-                    out.add(ExpressionValue.of(item));
-                }
+                out.addAll(subCollection);
             } else {
-                out.add(v);
+                out.add(v.getValue());
             }
         }
         return ExpressionValue.of(out);
@@ -49,9 +44,9 @@ public class ConcatTemplateFunction implements TemplateFunction {
         if (!pipeArg.isEmpty()) {
             all.add(pipeArg);
         }
-        var first = all.isEmpty() ? null : all.get(0);
-        if (first instanceof Collection) {
-            return concatCollection((Collection<?>) first, all);
+        var first = all.isEmpty() ? ExpressionValue.empty() : all.get(0);
+        if (first.getValue() instanceof Collection) {
+            return concatCollection((Collection<?>) first.getValue(), all);
         } else {
             return concatString(all);
         }
