@@ -25,7 +25,7 @@ import java.util.*;
  * <li>Numbers: integers and floating-point (e.g., 42, 3.1415, -7, +2.5, 1e10, -3.2E-4)</li>
  * <li>Keywords (case-insensitive where it matters): case, then, else, range, of.</li>
  * <li>Functions and logical operators are tokenized as IDENTs (e.g., str, int, double, boolean, len, empty,</li>
- * upper, lower, not, eq, neq, lt, le, gt, ge, and, or, list, concat, optional, default). Parser can
+ * upper, lower, not, eq, neq, lt, le, gt, ge, and, or, list, concat, default). Parser can
  * treat certain idents as keywords if desired.</li>
  * <li>Variable access: a leading DOT followed by segments (e.g., .a, .parent.child). Lexer emits DOT and IDENT
  * tokens separately; the parser can assemble the chain.</li>

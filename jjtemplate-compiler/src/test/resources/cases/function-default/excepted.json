@@ -1,0 +1,12 @@
+{
+  "key": "a",
+  "nKey": "text",
+  "pipe1stArg": 123,
+  "nPipe1stArg": "text",
+  "array": [
+    "a",
+    "text",
+    123,
+    "text"
+  ]
+}

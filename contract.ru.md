@@ -951,52 +951,6 @@ var context = Map.of("var1", List.of(true));
 }
 ```
 
-## Запись по условию: `optional`
-
-Если первый аргумент истина, то выводится 2-ой аргумент, иначе:
-
-- для массива не добавляется элемент
-- для поля объекта не добавляется поле
-
-### Шаблон
-
-```json
-{
-  "key": "{{ optional .var1, 'a' }}",
-  "nKey": "{{ optional (.var1 | not) 'a' }}",
-  "pipe1stArg": "{{ .var1 | optional 123 }}",
-  "nPipe1stArg": "{{ (.var1 | not) | optional 'a' }}",
-  "array": [
-    "{{ optional .var1, 'a' }}",
-    "{{ optional (.var1 | not) 'a' }}",
-    "{{ .var1 | optional 123 }}",
-    "{{ (.var1 | not) | optional 'a' }}"
-  ]
-}
-```
-
-### Контекст
-
-```java
-import java.util.List;
-import java.util.Map;
-
-var context = Map.of("var1", true);
-```
-
-### Ожидаемый вывод
-
-```json
-{
-  "key": "a",
-  "pipe1stArg": 123,
-  "array": [
-    "a",
-    123
-  ]
-}
-```
-
 ## Значение по умолчанию: `default`
 
 Если первый аргумент `null`, то выводится 2-ой аргумент, иначе 1-ый
@@ -1011,7 +965,7 @@ var context = Map.of("var1", true);
   "nPipe1stArg": "{{ .var2 | default 'a' }}",
   "array": [
     "{{ default .var1, 'a' }}",
-    "{{ default .var2. 'a' }}",
+    "{{ default .var2, 'a' }}",
     "{{ .var1 | default 123 }}",
     "{{ .var2 | default 'a' }}"
   ]

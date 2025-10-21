@@ -37,7 +37,6 @@ public final class TemplateEvaluator {
             new NotEqualsTemplateFunction(),
             new NotTemplateFunction(),
             new DefaultTemplateFunction(),
-            new OptionalTemplateFunction(),
             new LTCompareTemplateFunction(),
             new LECompareTemplateFunction(),
             new GTCompareTemplateFunction(),

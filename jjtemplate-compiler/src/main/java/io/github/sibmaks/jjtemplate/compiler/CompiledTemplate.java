@@ -33,14 +33,24 @@ public final class CompiledTemplate {
                 if (value instanceof Expression) {
                     var expr = (Expression) value;
                     var evaluated = evaluator.evaluate(expr, new Context(ctx));
-                    ctx.put(e.getKey(), evaluated.getValue());
+                    if(!evaluated.isEmpty()) {
+                        ctx.put(e.getKey(), evaluated.getValue());
+                    }
                 } else if (value instanceof Nodes.CaseDefinition) {
                     var cd = (Nodes.CaseDefinition) value;
-                    var switchVal = evaluator.evaluate(cd.getSwitchExpr(), new Context(ctx)).getValue();
+                    var evaluated = evaluator.evaluate(cd.getSwitchExpr(), new Context(ctx));
+                    if(evaluated.isEmpty()) {
+                        continue;
+                    }
+                    var switchVal = evaluated.getValue();
                     Object selected = null;
                     var matched = false;
                     for (var br : cd.getBranches().entrySet()) {
-                        var keyVal = evaluator.evaluate(br.getKey(), new Context(ctx)).getValue();
+                        var evaluatedItem = evaluator.evaluate(br.getKey(), new Context(ctx));
+                        if(evaluatedItem.isEmpty()) {
+                            continue;
+                        }
+                        var keyVal = evaluatedItem.getValue();
                         if (Objects.equals(switchVal, keyVal)) {
                             selected = br.getValue();
                             matched = true;
@@ -59,7 +69,11 @@ public final class CompiledTemplate {
                     }
                 } else if (value instanceof Nodes.RangeDefinition) {
                     var rd = (Nodes.RangeDefinition) value;
-                    var source = evaluator.evaluate(rd.getSourceExpr(), new Context(ctx)).getValue();
+                    var evaluated = evaluator.evaluate(rd.getSourceExpr(), new Context(ctx));
+                    if(evaluated.isEmpty()) {
+                        continue;
+                    }
+                    var source = evaluated.getValue();
                     if (source == null) {
                         ctx.put(e.getKey(), null);
                         continue;
@@ -135,7 +149,11 @@ public final class CompiledTemplate {
         for (var entry : obj.getEntries()) {
             if (entry instanceof Nodes.CompiledObject.Spread) {
                 var spread = (Nodes.CompiledObject.Spread) entry;
-                var v = evaluator.evaluate(spread.getExpression(), new Context(ctx)).getValue();
+                var evaluated = evaluator.evaluate(spread.getExpression(), new Context(ctx));
+                if(evaluated.isEmpty()) {
+                    continue;
+                }
+                var v = evaluated.getValue();
                 if (v == null) {
                     continue;
                 }
@@ -152,7 +170,11 @@ public final class CompiledTemplate {
             var k = f.getKey();
             if (k instanceof Expression) {
                 var ke = (Expression) k;
-                var kv = evaluator.evaluate(ke, new Context(ctx)).getValue();
+                var evaluated = evaluator.evaluate(ke, new Context(ctx));
+                if(evaluated.isEmpty()) {
+                    continue;
+                }
+                var kv = evaluated.getValue();
                 key = kv == null ? "null" : String.valueOf(kv);
             } else {
                 key = String.valueOf(k);
@@ -168,7 +190,11 @@ public final class CompiledTemplate {
         for (var el : list) {
             if (el instanceof Nodes.SpreadNode) {
                 var sp = (Nodes.SpreadNode) el;
-                var v = evaluator.evaluate(sp.getExpression(), new Context(ctx)).getValue();
+                var evaluated = evaluator.evaluate(sp.getExpression(), new Context(ctx));
+                if(evaluated.isEmpty()) {
+                    continue;
+                }
+                var v = evaluated.getValue();
                 if (v instanceof Iterable<?>) {
                     for (Object x : (Iterable<?>) v) out.add(x);
                 } else if (v != null && v.getClass().isArray()) {
@@ -181,7 +207,11 @@ public final class CompiledTemplate {
             }
             if (el instanceof Nodes.CondNode) {
                 var cn = (Nodes.CondNode) el;
-                var v = evaluator.evaluate(cn.getExpression(), new Context(ctx)).getValue();
+                var evaluated = evaluator.evaluate(cn.getExpression(), new Context(ctx));
+                if(evaluated.isEmpty()) {
+                    continue;
+                }
+                var v = evaluated.getValue();
                 if (v != null) out.add(v);
                 continue;
             }
