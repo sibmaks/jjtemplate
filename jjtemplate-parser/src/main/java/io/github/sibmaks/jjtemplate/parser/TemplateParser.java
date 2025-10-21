@@ -39,6 +39,47 @@ public final class TemplateParser {
         return expr;
     }
 
+    public Expression parseTemplate() {
+        var parts = new ArrayList<Expression>();
+
+        while (pos < tokens.size()) {
+            var t = peek();
+
+            switch (t.type) {
+                case TEXT:
+                    advance();
+                    parts.add(new LiteralExpression(t.lexeme));
+                    break;
+
+                case OPEN_EXPR:
+                case OPEN_COND:
+                case OPEN_SPREAD:
+                    advance();
+                    var expr = parseExpression();
+                    expect(TokenType.CLOSE, "}}");
+                    parts.add(expr);
+                    break;
+
+                default:
+                    throw error("Unexpected token outside expression: " + t.type);
+            }
+        }
+
+        if (parts.isEmpty()) {
+            throw error("Expected expression inside {{...}}, but template is empty");
+        }
+
+        if (parts.size() == 1) {
+            return parts.get(0); // single literal or expression
+        }
+
+        // Build concat(...)
+        return new FunctionCallExpression(
+                "concat",
+                parts
+        );
+    }
+
     private Expression parsePrimary() {
         var t = peek();
         if (t == null) {

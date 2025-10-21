@@ -13,14 +13,10 @@ repositories {
 dependencies {
     implementation(project(":jjtemplate-lexer"))
     implementation(project(":jjtemplate-parser"))
-
-    implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")
+    implementation(project(":jjtemplate-evaluator"))
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.mockito:mockito-core:5.20.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
