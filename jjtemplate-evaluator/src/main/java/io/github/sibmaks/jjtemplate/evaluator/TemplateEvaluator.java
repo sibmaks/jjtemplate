@@ -8,6 +8,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.lang.reflect.Array;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Interpreter for TemplateParser AST.
@@ -25,33 +27,8 @@ import java.util.Map;
  * to all function invocations, instead of being appended to the args list.
  */
 public final class TemplateEvaluator {
-    private static final List<TemplateFunction> builtInFunctions = List.of(
-            new BooleanTemplateFunction(),
-            new DoubleTemplateFunction(),
-            new IntTemplateFunction(),
-            new StrTemplateFunction(),
-            new ConcatTemplateFunction(),
-            new StringLowerTemplateFunction(),
-            new StringUpperTemplateFunction(),
-            new EmptyTemplateFunction(),
-            new LengthTemplateFunction(),
-            new ListTemplateFunction(),
-            new EqualsTemplateFunction(),
-            new NotEqualsTemplateFunction(),
-            new NotTemplateFunction(),
-            new DefaultTemplateFunction(),
-            new LTCompareTemplateFunction(),
-            new LECompareTemplateFunction(),
-            new GTCompareTemplateFunction(),
-            new GECompareTemplateFunction(),
-            new AndTemplateFunction(),
-            new OrTemplateFunction(),
-            new FormatDateTemplateFunction(),
-            new FormatStringTemplateFunction(),
-            new NegTemplateFunction()
-    );
-    private static final Map<Class<?>, Map<String, java.lang.reflect.Method>> METHOD_CACHE = new HashMap<>();
-    private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new HashMap<>();
+    private final Map<Class<?>, Map<String, Method>> methodCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Map<String, Field>> fieldCache = new ConcurrentHashMap<>();
     private final Map<String, TemplateFunction> functions;
 
     public TemplateEvaluator() {
@@ -60,43 +37,36 @@ public final class TemplateEvaluator {
 
     public TemplateEvaluator(Map<String, TemplateFunction> functions) {
         var allFunctions = new HashMap<>(functions);
+        var builtInFunctions = List.of(
+                new BooleanTemplateFunction(),
+                new DoubleTemplateFunction(),
+                new IntTemplateFunction(),
+                new StrTemplateFunction(),
+                new ConcatTemplateFunction(),
+                new StringLowerTemplateFunction(),
+                new StringUpperTemplateFunction(),
+                new EmptyTemplateFunction(),
+                new LengthTemplateFunction(),
+                new ListTemplateFunction(),
+                new EqualsTemplateFunction(),
+                new NotEqualsTemplateFunction(),
+                new NotTemplateFunction(),
+                new DefaultTemplateFunction(),
+                new LTCompareTemplateFunction(),
+                new LECompareTemplateFunction(),
+                new GTCompareTemplateFunction(),
+                new GECompareTemplateFunction(),
+                new AndTemplateFunction(),
+                new OrTemplateFunction(),
+                new FormatDateTemplateFunction(),
+                new FormatStringTemplateFunction(),
+                new NegTemplateFunction(),
+                new CollapseTemplateFunction(this)
+        );
         for (var builtInFunction : builtInFunctions) {
             allFunctions.put(builtInFunction.getName(), builtInFunction);
         }
         this.functions = allFunctions;
-    }
-
-    private static Map<String, Method> scanMethods(Class<?> cls) {
-        var map = new HashMap<String, Method>();
-        for (var m : cls.getMethods()) {
-            if (m.getParameterCount() != 0) {
-                continue;
-            }
-            var name = m.getName();
-            if (name.startsWith("get") && name.length() > 3) {
-                map.put(decapitalize(name.substring(3)), m);
-            } else if (name.startsWith("is") && name.length() > 2
-                    && (m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class)) {
-                map.put(decapitalize(name.substring(2)), m);
-            }
-        }
-        return map;
-    }
-
-    private static Map<String, Field> scanFields(Class<?> cls) {
-        var map = new HashMap<String, Field>();
-        for (var f : cls.getFields()) {
-            f.setAccessible(true);
-            map.put(f.getName(), f);
-        }
-        return map;
-    }
-
-    private static String decapitalize(String s) {
-        if (s.isEmpty()) {
-            return s;
-        }
-        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 
     public ExpressionValue evaluate(Expression expression, Context context) {
@@ -181,31 +151,31 @@ public final class TemplateEvaluator {
     }
 
     private Object resolvePropertyReflective(Object obj, String name) {
-        var cls = obj.getClass();
+        var type = obj.getClass();
 
         // --- Field lookup cache ---
-        var fieldMap = FIELD_CACHE.computeIfAbsent(cls, TemplateEvaluator::scanFields);
+        var fieldMap = getFields(type);
         if (fieldMap.containsKey(name)) {
             try {
                 var f = fieldMap.get(name);
                 return f.get(obj);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Cannot access field '" + name + "' of " + cls, e);
+                throw new RuntimeException("Cannot access field '" + name + "' of " + type, e);
             }
         }
 
         // --- Method lookup cache ---
-        var methodMap = METHOD_CACHE.computeIfAbsent(cls, TemplateEvaluator::scanMethods);
+        var methodMap = getMethods(type);
         var m = methodMap.get(name);
         if (m != null) {
             try {
                 return m.invoke(obj);
             } catch (Exception e) {
-                throw new RuntimeException("Error invoking getter '" + name + "' on " + cls, e);
+                throw new RuntimeException("Error invoking getter '" + name + "' on " + type, e);
             }
         }
 
-        throw new IllegalArgumentException("Unknown property '" + name + "' for class " + cls.getName());
+        throw new IllegalArgumentException("Unknown property '" + name + "' for class " + type.getName());
     }
 
     private boolean isInt(String s) {
@@ -241,4 +211,18 @@ public final class TemplateEvaluator {
         return templateFunction.invoke(args, pipeInput);
     }
 
+    public Map<String, Field> getFields(Class<?> type) {
+        return fieldCache.computeIfAbsent(type, ReflectionUtils::scanFields);
+    }
+
+    public Map<String, Method> getMethods(Class<?> type) {
+        return methodCache.computeIfAbsent(type, it -> {
+            var ignored = methodCache.computeIfAbsent(Object.class, ReflectionUtils::scanMethods);
+            var typed = ReflectionUtils.scanMethods(it);
+            for (var ignoredMethod : ignored.keySet()) {
+                typed.remove(ignoredMethod);
+            }
+            return typed;
+        });
+    }
 }

@@ -1,0 +1,18 @@
+{
+  "varList": [
+    {
+      "key": "value"
+    },
+    {
+      "key2": "value2",
+      "key3": "value3"
+    },
+    {
+      "key3": "value4",
+      "key4": "value5"
+    }
+  ],
+  "varObject": {
+    "key4": "value6"
+  }
+}
