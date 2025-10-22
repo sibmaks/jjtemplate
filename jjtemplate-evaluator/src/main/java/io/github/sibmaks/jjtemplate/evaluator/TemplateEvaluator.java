@@ -216,8 +216,8 @@ public final class TemplateEvaluator {
     }
 
     public Map<String, Method> getMethods(Class<?> type) {
+        var ignored = methodCache.computeIfAbsent(Object.class, ReflectionUtils::scanMethods);
         return methodCache.computeIfAbsent(type, it -> {
-            var ignored = methodCache.computeIfAbsent(Object.class, ReflectionUtils::scanMethods);
             var typed = ReflectionUtils.scanMethods(it);
             for (var ignoredMethod : ignored.keySet()) {
                 typed.remove(ignoredMethod);
