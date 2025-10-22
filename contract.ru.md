@@ -1032,6 +1032,114 @@ var context = Map.of("varList", List.of(
 }
 ```
 
+## Форматирование строк: `format`
+
+### Шаблон
+
+```json
+{
+  "result": "{{ format '%s-%d-%b', 'text', 42, true }}",
+  "resultPipe": "{{ true | format '%s-%d-%b', 'text', 42 }}"
+}
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "result": {
+    "result": "text-42-true",
+    "resultPipe": "text-42-true"
+  }
+}
+```
+
+## Форматирование дат: `formatDate`
+
+На вход принимает:
+- java.time.LocalDate
+- java.time.LocalDateTime
+- java.time.ZonedLocalDateTime
+- java.util.Date
+
+### Шаблон
+
+```json
+{
+  "result": "{{ formatDate 'dd.MM.yyyy', .varDate }}",
+  "resultPipe": "{{ .varDate | formatDate 'dd.MM.yyyy' }}"
+}
+```
+
+### Контекст
+
+```java
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+import java.util.Map;
+
+var context = Map.of("varDate", LocalDate.of(2024, Month.OCTOBER, 28));
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "result": {
+    "result": "28.10.2024",
+    "resultPipe": "28.10.2024"
+  }
+}
+```
+
+## Парсинг дата: `parseDate`
+
+Возвращает: `java.time.LocalDate`
+
+### Шаблон
+
+```json
+{
+  "result": "{{ parseDate 'dd.MM.yyyy', '28.10.2024' | str }}",
+  "resultPipe": "{{ '28.10.2024' | parseDate 'dd.MM.yyyy' | str }}"
+}
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "result": {
+    "result": "2024-10-28",
+    "resultPipe": "2024-10-28"
+  }
+}
+```
+## Парсинг даты и времени: `parseDateTime`
+
+Возвращает: `java.time.LocalDateTime`
+
+### Шаблон
+
+```json
+{
+  "result": "{{ parseDate 'dd.MM.yyyy HH:mm', '28.10.2024 14:00' | str }}",
+  "resultPipe": "{{ '28.10.2024 14:00' | parseDate 'dd.MM.yyyy HH:mm' | str }}"
+}
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "result": {
+    "result": "2024-10-28T14:00:00.0",
+    "resultPipe": "2024-10-28T14:00:00.0"
+  }
+}
+```
+
 ## Пример цепочки операций
 
 ### Шаблон

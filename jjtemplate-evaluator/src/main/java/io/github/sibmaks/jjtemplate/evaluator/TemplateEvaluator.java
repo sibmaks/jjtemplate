@@ -61,7 +61,9 @@ public final class TemplateEvaluator {
                 new FormatDateTemplateFunction(),
                 new FormatStringTemplateFunction(),
                 new NegTemplateFunction(),
-                new CollapseTemplateFunction(this)
+                new CollapseTemplateFunction(this),
+                new ParseDateTemplateFunction(),
+                new ParseDateTimeTemplateFunction()
         );
         for (var builtInFunction : builtInFunctions) {
             allFunctions.put(builtInFunction.getName(), builtInFunction);
