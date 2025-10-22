@@ -139,6 +139,9 @@ public final class TemplateEvaluator {
                 return ExpressionValue.empty();
             }
             var currValue = cur.getValue();
+            if (currValue == null) {
+                return ExpressionValue.empty();
+            }
             var seg = variableExpression.path.get(i);
             if (currValue instanceof Map<?, ?>) {
                 var map = (Map<?, ?>) currValue;
