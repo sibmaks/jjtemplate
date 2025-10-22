@@ -71,6 +71,32 @@ public final class TemplateEvaluator {
         this.functions = allFunctions;
     }
 
+    private static Class<?> wrap(Class<?> cls) {
+        if (!cls.isPrimitive()) {
+            return cls;
+        }
+        switch (cls.getName()) {
+            case "int":
+                return Integer.class;
+            case "boolean":
+                return Boolean.class;
+            case "long":
+                return Long.class;
+            case "double":
+                return Double.class;
+            case "float":
+                return Float.class;
+            case "char":
+                return Character.class;
+            case "short":
+                return Short.class;
+            case "byte":
+                return Byte.class;
+            default:
+                return cls;
+        }
+    }
+
     public ExpressionValue evaluate(Expression expression, Context context) {
         return eval(expression, context);
     }
@@ -102,54 +128,105 @@ public final class TemplateEvaluator {
             VariableExpression variableExpression,
             Context context
     ) {
-        if (variableExpression.path.isEmpty()) {
+        if (variableExpression.segments.isEmpty()) {
             return ExpressionValue.empty();
         }
-        var cur = context.getRoot(variableExpression.path.get(0));
-        for (int i = 1; i < variableExpression.path.size(); i++) {
-            if (cur.isEmpty()) {
-                return ExpressionValue.empty();
-            }
-            var currValue = cur.getValue();
-            if (currValue == null) {
-                return ExpressionValue.empty();
-            }
-            var seg = variableExpression.path.get(i);
-            if (currValue instanceof Map<?, ?>) {
-                var map = (Map<?, ?>) currValue;
-                cur = ExpressionValue.of(map.get(seg));
-                continue;
-            }
-            if (currValue instanceof List<?> && isInt(seg)) {
-                var list = (List<?>) currValue;
-                var idx = Integer.parseInt(seg);
-                if (idx < 0 || idx >= list.size()) {
-                    throw new IllegalArgumentException("List index out of range: " + seg);
-                }
-                cur = ExpressionValue.of(list.get(idx));
-                continue;
-            }
-            if (currValue.getClass().isArray() && isInt(seg)) {
-                var idx = Integer.parseInt(seg);
-                var len = Array.getLength(currValue);
-                if (idx < 0 || idx >= len) {
-                    throw new IllegalArgumentException("Array index out of range: " + seg);
-                }
-                cur = ExpressionValue.of(Array.get(currValue, idx));
-                continue;
-            }
-            if (currValue instanceof CharSequence && isInt(seg)) {
-                var idx = Integer.parseInt(seg);
-                var seq = (CharSequence) currValue;
-                if (idx < 0 || idx >= seq.length()) {
-                    throw new IllegalArgumentException("String index out of range: " + seg);
-                }
-                cur = ExpressionValue.of(Character.toString(seq.charAt(idx)));
-                continue;
-            }
-            cur = ExpressionValue.of(resolvePropertyReflective(currValue, seg));
+
+        var first = variableExpression.segments.get(0);
+        var curr = context.getRoot(first.name);
+        if (curr.isEmpty()) {
+            return ExpressionValue.empty();
         }
-        return cur;
+        var current = curr.getValue();
+
+        for (var i = 1; i < variableExpression.segments.size(); i++) {
+            var seg = variableExpression.segments.get(i);
+            if (current == null) {
+                return ExpressionValue.empty();
+            }
+
+            if (!seg.isMethod()) {
+                current = getFieldOrProperty(current, seg.name);
+                continue;
+            }
+
+            var args = new ArrayList<>();
+            for (var argExpr : seg.args) {
+                args.add(eval(argExpr, context).getValue());
+            }
+            current = invokeMethodReflective(current, seg.name, args);
+        }
+
+        return ExpressionValue.of(current);
+    }
+
+    private Object getFieldOrProperty(Object currValue, String seg) {
+        if (currValue instanceof Map<?, ?>) {
+            var m = (Map<?, ?>) currValue;
+            return m.get(seg);
+        }
+        if (currValue instanceof List<?> && isInt(seg)) {
+            var list = (List<?>) currValue;
+            var idx = Integer.parseInt(seg);
+            if (idx < 0 || idx >= list.size()) {
+                throw new IllegalArgumentException("List index out of range: " + seg);
+            }
+            return list.get(idx);
+        }
+        if (currValue instanceof CharSequence && isInt(seg)) {
+            var idx = Integer.parseInt(seg);
+            var seq = (CharSequence) currValue;
+            if (idx < 0 || idx >= seq.length()) {
+                throw new IllegalArgumentException("String index out of range: " + seg);
+            }
+            return Character.toString(seq.charAt(idx));
+        }
+        if (currValue.getClass().isArray() && isInt(seg)) {
+            var idx = Integer.parseInt(seg);
+            var len = Array.getLength(currValue);
+            if (idx < 0 || idx >= len) {
+                throw new IllegalArgumentException("Array index out of range: " + seg);
+            }
+            return Array.get(currValue, idx);
+        }
+        return resolvePropertyReflective(currValue, seg);
+    }
+
+    private Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
+        var type = target.getClass();
+        var methods = type.getMethods();
+
+        outer:
+        for (var m : methods) {
+            if (!m.getName().equals(methodName)) {
+                continue;
+            }
+            var params = m.getParameterTypes();
+            if (params.length != args.size()) {
+                continue;
+            }
+
+            var converted = new Object[args.size()];
+            for (int i = 0; i < args.size(); i++) {
+                var arg = args.get(i);
+                if (arg == null) {
+                    converted[i] = null;
+                    continue;
+                }
+                if (!wrap(params[i]).isAssignableFrom(arg.getClass())) {
+                    continue outer;
+                }
+                converted[i] = arg;
+            }
+
+            try {
+                return m.invoke(target, converted);
+            } catch (Exception e) {
+                throw new RuntimeException("Error calling method " + methodName, e);
+            }
+        }
+
+        throw new IllegalArgumentException("No method " + methodName + " with args " + args.size());
     }
 
     private Object resolvePropertyReflective(Object obj, String name) {

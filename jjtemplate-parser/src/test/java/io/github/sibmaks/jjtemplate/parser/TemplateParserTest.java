@@ -104,14 +104,14 @@ class TemplateParserTest {
         var parser = new TemplateParser(tokens);
         var expression = parser.parseExpression();
         assertNotNull(expression);
-        var literalExpression = assertInstanceOf(VariableExpression.class, expression);
-        assertEquals(List.of(varName), literalExpression.path);
+        var variableExpression = assertInstanceOf(VariableExpression.class, expression);
+        assertEquals(List.of(new VariableExpression.Segment(varName)), variableExpression.segments);
     }
 
     @Test
     void justAVariableChain() {
         var varName = "varName";
-        var subVarName = "varName";
+        var subVarName = "subVarName";
         var tokens = List.of(
                 new Token(TokenType.DOT, ".", 0, 1),
                 new Token(TokenType.IDENT, varName, 1, varName.length() + 1),
@@ -121,8 +121,43 @@ class TemplateParserTest {
         var parser = new TemplateParser(tokens);
         var expression = parser.parseExpression();
         assertNotNull(expression);
-        var literalExpression = assertInstanceOf(VariableExpression.class, expression);
-        assertEquals(List.of(varName, subVarName), literalExpression.path);
+        var variableExpression = assertInstanceOf(VariableExpression.class, expression);
+        assertEquals(
+                List.of(
+                        new VariableExpression.Segment(varName),
+                        new VariableExpression.Segment(subVarName)
+                ),
+                variableExpression.segments
+        );
+    }
+
+    @Test
+    void callMethodInChain() {
+        var varName = "varName";
+        var methodName = "methoName";
+        var argValue = UUID.randomUUID().toString();
+        var tokens = List.of(
+                new Token(TokenType.DOT, ".", 0, 1),
+                new Token(TokenType.IDENT, varName, 1, 1),
+                new Token(TokenType.DOT, ".", 0, 1),
+                new Token(TokenType.IDENT, methodName, 1, 1),
+                new Token(TokenType.LPAREN, "(", 1, 1),
+                new Token(TokenType.STRING, argValue, 1, 1),
+                new Token(TokenType.RPAREN, ")", 1, 1)
+        );
+        var parser = new TemplateParser(tokens);
+        var expression = parser.parseExpression();
+        assertNotNull(expression);
+        var variableExpression = assertInstanceOf(VariableExpression.class, expression);
+        assertEquals(
+                List.of(
+                        new VariableExpression.Segment(varName),
+                        new VariableExpression.Segment(methodName, List.of(
+                                new LiteralExpression(argValue)
+                        ))
+                ),
+                variableExpression.segments
+        );
     }
 
     @Test
@@ -154,7 +189,7 @@ class TemplateParserTest {
         var functionCallExpression = assertInstanceOf(FunctionCallExpression.class, expression);
         assertEquals(functionName, functionCallExpression.name);
         var argExpression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(0));
-        assertEquals(List.of(arg0), argExpression.path);
+        assertEquals(List.of(new VariableExpression.Segment(arg0)), argExpression.segments);
     }
 
     @Test
@@ -176,9 +211,9 @@ class TemplateParserTest {
         var functionCallExpression = assertInstanceOf(FunctionCallExpression.class, expression);
         assertEquals(functionName, functionCallExpression.name);
         var arg0Expression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(0));
-        assertEquals(List.of(arg0), arg0Expression.path);
+        assertEquals(List.of(new VariableExpression.Segment(arg0)), arg0Expression.segments);
         var arg1Expression = assertInstanceOf(VariableExpression.class, functionCallExpression.args.get(1));
-        assertEquals(List.of(arg1), arg1Expression.path);
+        assertEquals(List.of(new VariableExpression.Segment(arg1)), arg1Expression.segments);
     }
 
     @Test
@@ -223,8 +258,8 @@ class TemplateParserTest {
         var rightExpression = assertInstanceOf(FunctionCallExpression.class, pipeExpression.chain.get(0));
         assertEquals(rightFunctionName, rightExpression.name);
 
-        var argExpression = assertInstanceOf(VariableExpression.class, rightExpression.args.get(0));
-        assertEquals(List.of(arg0), argExpression.path);
+        var arg0Expression = assertInstanceOf(VariableExpression.class, rightExpression.args.get(0));
+        assertEquals(List.of(new VariableExpression.Segment(arg0)), arg0Expression.segments);
     }
 
     @Test
@@ -239,8 +274,8 @@ class TemplateParserTest {
         var parser = new TemplateParser(tokens);
         var expression = parser.parseExpression();
         assertNotNull(expression);
-        var literalExpression = assertInstanceOf(VariableExpression.class, expression);
-        assertEquals(List.of(varName), literalExpression.path);
+        var variableExpression = assertInstanceOf(VariableExpression.class, expression);
+        assertEquals(List.of(new VariableExpression.Segment(varName)), variableExpression.segments);
     }
 
     @Test

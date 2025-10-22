@@ -14,5 +14,8 @@
     null
   ],
   "fun": "true-42",
-  "nullDot": null
+  "nullDot": null,
+  "methodCall_get": "value",
+  "methodCall_isEmpty": false,
+  "methodCall_size": 1
 }

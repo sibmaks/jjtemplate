@@ -1,4 +1,8 @@
 dependencies {
+    compileOnly(libs.lombok)
+
+    annotationProcessor(libs.lombok)
+
     implementation(project(":jjtemplate-lexer"))
 
     testImplementation(platform(libs.junit.bom))

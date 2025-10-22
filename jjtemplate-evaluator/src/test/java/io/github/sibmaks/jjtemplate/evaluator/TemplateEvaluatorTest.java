@@ -71,7 +71,11 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -97,7 +101,11 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertTrue(evaluated.isEmpty());
@@ -114,7 +122,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertTrue(evaluated.isEmpty());
@@ -133,7 +146,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -152,7 +170,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -171,7 +194,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Unknown property '%s' for %s", varName, listVarValue.getClass()), exception.getMessage());
     }
@@ -188,7 +216,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("List index out of range: %s", varName), exception.getMessage());
     }
@@ -205,7 +238,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -224,7 +262,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Array index out of range: %s", 1), exception.getMessage());
     }
@@ -240,7 +283,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -258,7 +306,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("String index out of range: %s", varName), exception.getMessage());
     }
@@ -325,7 +378,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -345,11 +403,42 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
         assertEquals(varValue + "-", evaluated.getValue());
+    }
+
+    @Test
+    void checkPathVariableExpressionOnMethodWithArg() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = "callMethodWithArg";
+        var argValue = UUID.randomUUID().toString();
+        var context = mock(Context.class);
+        var object = new Stub();
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.of(object));
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName, List.of(
+                                new LiteralExpression(argValue)
+                        ))
+                )
+        );
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals("-" + argValue, evaluated.getValue());
     }
 
     @Test
@@ -365,7 +454,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -385,7 +479,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
         assertFalse(evaluated.isEmpty());
@@ -403,7 +502,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Unknown property '%s' for %s", varName, object.getClass()), exception.getMessage());
     }
@@ -419,7 +523,12 @@ class TemplateEvaluatorTest {
 
         var evaluator = new TemplateEvaluator();
 
-        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var expression = new VariableExpression(
+                List.of(
+                        new VariableExpression.Segment(parentVarName),
+                        new VariableExpression.Segment(varName)
+                )
+        );
         var exception = assertThrows(RuntimeException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Error invoking getter '%s' on %s", varName, object.getClass()), exception.getMessage());
     }
@@ -442,6 +551,10 @@ class TemplateEvaluatorTest {
 
         public String getException() {
             throw new RuntimeException("internal");
+        }
+
+        public String callMethodWithArg(String arg) {
+            return "-" + arg;
         }
     }
 

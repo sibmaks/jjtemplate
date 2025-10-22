@@ -120,11 +120,31 @@ public final class TemplateParser {
 
     private VariableExpression parseVariable() {
         expect(TokenType.DOT, ".");
-        var path = new ArrayList<String>();
+        var segments = new ArrayList<VariableExpression.Segment>();
+
         do {
-            path.add(expect(TokenType.IDENT, "identifier after '.'").lexeme);
+            var ident = expect(TokenType.IDENT, "identifier after '.'");
+            var name = ident.lexeme;
+            var args = new ArrayList<Expression>();
+
+            var method = match(TokenType.LPAREN);
+            if (method) {
+                if (!check(TokenType.RPAREN)) {
+                    do {
+                        args.add(parseExpression());
+                    } while (match(TokenType.COMMA));
+                }
+                expect(TokenType.RPAREN, ")");
+            }
+
+            if (method) {
+                segments.add(new VariableExpression.Segment(name, args));
+            } else {
+                segments.add(new VariableExpression.Segment(name));
+            }
         } while (match(TokenType.DOT));
-        return new VariableExpression(path);
+
+        return new VariableExpression(segments);
     }
 
     private FunctionCallExpression parseFunctionCallOrIdent() {

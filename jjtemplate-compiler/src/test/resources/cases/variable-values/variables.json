@@ -4,5 +4,8 @@
   "string": "text",
   "integer": 42,
   "float": 3.1415,
-  "nullVar": null
+  "nullVar": null,
+  "object": {
+    "key": "value"
+  }
 }
