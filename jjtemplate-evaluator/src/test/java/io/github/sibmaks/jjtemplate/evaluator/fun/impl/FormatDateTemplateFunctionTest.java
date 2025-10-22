@@ -3,9 +3,11 @@ package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,6 +84,66 @@ class FormatDateTemplateFunctionTest {
         assertFalse(actual.isEmpty());
 
         var formatter = DateTimeFormatter.ofPattern(format);
+        var excepted = formatter.format(localDate);
+        assertEquals(excepted, actual.getValue());
+    }
+
+    @Test
+    void formatDateFromArguments() {
+        var format = "dd.MM.yyyy'T'HH:mm:ss";
+        var localDate = new Date();
+        var args = List.of(
+                ExpressionValue.of(format)
+        );
+        var actual = function.invoke(args, ExpressionValue.of(localDate));
+        assertFalse(actual.isEmpty());
+
+        var formatter = new SimpleDateFormat(format);
+        var excepted = formatter.format(localDate);
+        assertEquals(excepted, actual.getValue());
+    }
+
+    @Test
+    void formatDateFromPipe() {
+        var format = "dd.MM.yyyy'T'HH:mm:ss";
+        var localDate = new Date();
+        var args = List.of(
+                ExpressionValue.of(format)
+        );
+        var actual = function.invoke(args, ExpressionValue.of(localDate));
+        assertFalse(actual.isEmpty());
+
+        var formatter = new SimpleDateFormat(format);
+        var excepted = formatter.format(localDate);
+        assertEquals(excepted, actual.getValue());
+    }
+
+    @Test
+    void formatDateFromArgumentsToDateOnly() {
+        var format = "dd.MM.yyyy";
+        var localDate = new Date();
+        var args = List.of(
+                ExpressionValue.of(format)
+        );
+        var actual = function.invoke(args, ExpressionValue.of(localDate));
+        assertFalse(actual.isEmpty());
+
+        var formatter = new SimpleDateFormat(format);
+        var excepted = formatter.format(localDate);
+        assertEquals(excepted, actual.getValue());
+    }
+
+    @Test
+    void formatDateFromPipeToDateOnly() {
+        var format = "dd.MM.yyyy";
+        var localDate = new Date();
+        var args = List.of(
+                ExpressionValue.of(format)
+        );
+        var actual = function.invoke(args, ExpressionValue.of(localDate));
+        assertFalse(actual.isEmpty());
+
+        var formatter = new SimpleDateFormat(format);
         var excepted = formatter.format(localDate);
         assertEquals(excepted, actual.getValue());
     }
