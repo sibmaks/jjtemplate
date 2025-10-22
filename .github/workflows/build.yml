@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'oracle'
+          distribution: 'adopt'
           cache: 'gradle'
       - name: Cache Gradle packages
         uses: actions/cache@v4
