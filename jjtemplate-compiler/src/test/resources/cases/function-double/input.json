@@ -1,15 +1,15 @@
 {
   "template": {
-    "stringKey": "{{ double .string }}",
-    "stringPipeKey": "{{ .string | double }}",
+    "stringKey": "{{ float .string }}",
+    "stringPipeKey": "{{ .string | float }}",
 
-    "integerKey": "{{ double .integer }}",
-    "integerPipeKey": "{{ .integer | double }}",
+    "integerKey": "{{ float .integer }}",
+    "integerPipeKey": "{{ .integer | float }}",
 
-    "doubleKey": "{{ double .double }}",
-    "doublePipeKey": "{{ .double | double }}",
+    "floatKey": "{{ float .float }}",
+    "floatPipeKey": "{{ .float | float }}",
 
-    "nullVarKey": "{{ double .nullVar }}",
-    "nullVarPipeKey": "{{ .nullVar | double }}"
+    "nullVarKey": "{{ float .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | float }}"
   }
 }

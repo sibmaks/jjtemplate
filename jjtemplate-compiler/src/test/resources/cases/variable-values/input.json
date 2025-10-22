@@ -4,14 +4,14 @@
     "booleanFalse": "{{ .booleanFalse }}",
     "string": "{{ .string }}",
     "integer": "{{ .integer }}",
-    "double": "{{ .double }}",
+    "float": "{{ .float }}",
     "null": "{{ .nullVar }}",
     "array": [
       "{{ .booleanTrue }}",
       "{{ .booleanFalse }}",
       "{{ .string }}",
       "{{ .integer }}",
-      "{{ .double }}",
+      "{{ .float }}",
       "{{ .nullVar }}"
     ],
     "fun": "{{ (neg .integer) | str | concat (.booleanTrue | str)}}",

@@ -6,8 +6,8 @@
     "integerKey": "{{ int .integer }}",
     "integerPipeKey": "{{ .integer | int }}",
 
-    "doubleKey": "{{ int .double }}",
-    "doublePipeKey": "{{ .double | int }}",
+    "floatKey": "{{ int .float }}",
+    "floatPipeKey": "{{ .float | int }}",
 
     "nullVarKey": "{{ int .nullVar }}",
     "nullVarPipeKey": "{{ .nullVar | int }}"

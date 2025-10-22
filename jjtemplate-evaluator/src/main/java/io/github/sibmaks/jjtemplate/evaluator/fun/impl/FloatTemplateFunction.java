@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author sibmaks
  */
-public class DoubleTemplateFunction implements TemplateFunction {
+public class FloatTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         var argument = first(args, pipeArg);
@@ -36,11 +36,11 @@ public class DoubleTemplateFunction implements TemplateFunction {
             } catch (Exception ignored) {
             }
         }
-        throw new TemplateEvalException("double: cannot convert: " + value);
+        throw new TemplateEvalException("float: cannot convert: " + value);
     }
 
     @Override
     public String getName() {
-        return "double";
+        return "float";
     }
 }

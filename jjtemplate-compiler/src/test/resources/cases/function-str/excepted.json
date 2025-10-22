@@ -11,8 +11,8 @@
   "integerKey": "42",
   "integerPipeKey": "42",
 
-  "doubleKey": "3.1415",
-  "doublePipeKey": "3.1415",
+  "floatKey": "3.1415",
+  "floatPipeKey": "3.1415",
 
   "nullVarKey": "null",
   "nullVarPipeKey": "null"

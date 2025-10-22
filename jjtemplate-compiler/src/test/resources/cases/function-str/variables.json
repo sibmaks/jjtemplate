@@ -3,6 +3,6 @@
   "booleanFalse": false,
   "string": "text",
   "integer": 42,
-  "double": 3.1415,
+  "float": 3.1415,
   "nullVar": null
 }

@@ -50,7 +50,7 @@
   "booleanFalse": "{{ false }}",
   "string": "{{ 'text' }}",
   "integer": "{{ 42 }}",
-  "double": "{{ 3.1415 }}",
+  "float": "{{ 3.1415 }}",
   "null": "{{ null }}",
   "array": [
     "{{ true }}",
@@ -72,7 +72,7 @@
   "booleanFalse": false,
   "string": "text",
   "integer": 42,
-  "double": 3.1415,
+  "float": 3.1415,
   "null": null,
   "array": [
     true,
@@ -96,14 +96,14 @@
   "booleanFalse": "{{ .booleanFalse }}",
   "string": "{{ .string }}",
   "integer": "{{ .integer }}",
-  "double": "{{ .double }}",
+  "float": "{{ .float }}",
   "null": "{{ .nullVar }}",
   "array": [
     "{{ .booleanTrue }}",
     "{{ .booleanFalse }}",
     "{{ .string }}",
     "{{ .integer }}",
-    "{{ .double }}",
+    "{{ .float }}",
     "{{ .nullVar }}"
   ]
 }
@@ -117,7 +117,7 @@ var context = Map.of(
         "booleanFalse", false,
         "string", "text",
         "integer", 42,
-        "double", 3.1415,
+        "float", 3.1415,
         "nullVar", null
 );
 ```
@@ -130,7 +130,7 @@ var context = Map.of(
   "booleanFalse": false,
   "string": "text",
   "integer": 42,
-  "double": 3.1415,
+  "float": 3.1415,
   "null": null,
   "array": [
     true,
@@ -191,7 +191,7 @@ var context = Map.of(
     "{{? .booleanFalse }}",
     "{{? .string }}",
     "{{? .integer }}",
-    "{{? .double }}",
+    "{{? .float }}",
     "{{? .nullVar }}"
   ]
 }
@@ -205,7 +205,7 @@ var context = Map.of(
         "booleanFalse", false,
         "string", "text",
         "integer", 42,
-        "double", 3.1415,
+        "float", 3.1415,
         "nullVar", null
 );
 ```
@@ -360,7 +360,7 @@ var context = Map.of("value", "42");
 }
 ```
 
-## Преобразование в вещественное число: `double`
+## Преобразование в вещественное число: `float`
 
 Преобразование аргумента в вещественное числа.
 Если аргумент `null`, то результат `null`.
@@ -370,8 +370,8 @@ var context = Map.of("value", "42");
 
 ```json
 {
-  "key": "{{ .value | double }}",
-  "pipe1stArg": "{{ double .value }}"
+  "key": "{{ .value | float }}",
+  "pipe1stArg": "{{ float .value }}"
 }
 ```
 
@@ -1191,7 +1191,7 @@ var context = Map.of("var1", 't');
     {
       "textVar": "textValue",
       "intVar": 42,
-      "doubleVar": 3.1415,
+      "floatVar": 3.1415,
       "booleanVar": true,
       "arrayVar": [
         "text",
@@ -1218,7 +1218,7 @@ var context = Map.of("var1", 't');
     {
       "textVar": "{{ 'textValue' }}",
       "intVar": "{{ 42 }}",
-      "doubleVar": "{{ 3.1415 }}",
+      "floatVar": "{{ 3.1415 }}",
       "booleanVar": "{{ true }}",
       "arrayVar": [
         "{{ 'text' }}",

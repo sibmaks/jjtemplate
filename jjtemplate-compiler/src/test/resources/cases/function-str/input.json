@@ -12,8 +12,8 @@
     "integerKey": "{{ str .integer }}",
     "integerPipeKey": "{{ .integer | str }}",
 
-    "doubleKey": "{{ str .double }}",
-    "doublePipeKey": "{{ .double | str }}",
+    "floatKey": "{{ str .float }}",
+    "floatPipeKey": "{{ .float | str }}",
 
     "nullVarKey": "{{ str .nullVar }}",
     "nullVarPipeKey": "{{ .nullVar | str }}"

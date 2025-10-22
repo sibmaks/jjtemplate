@@ -39,7 +39,7 @@ public final class TemplateEvaluator {
         var allFunctions = new HashMap<>(functions);
         var builtInFunctions = List.of(
                 new BooleanTemplateFunction(),
-                new DoubleTemplateFunction(),
+                new FloatTemplateFunction(),
                 new IntTemplateFunction(),
                 new StrTemplateFunction(),
                 new ConcatTemplateFunction(),
