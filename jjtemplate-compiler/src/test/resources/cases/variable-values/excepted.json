@@ -13,5 +13,6 @@
     3.1415,
     null
   ],
-  "fun": "true-42"
+  "fun": "true-42",
+  "nullDot": null
 }

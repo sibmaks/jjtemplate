@@ -105,6 +105,23 @@ class TemplateEvaluatorTest {
     }
 
     @Test
+    void checkVariableExpressionWhenNotExisted() {
+        var parentVarName = UUID.randomUUID().toString();
+        var varName = UUID.randomUUID().toString();
+        var context = mock(Context.class);
+        when(context.getRoot(parentVarName))
+                .thenReturn(ExpressionValue.empty());
+
+        var evaluator = new TemplateEvaluator();
+
+        var expression = new VariableExpression(List.of(parentVarName, varName));
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertTrue(evaluated.isEmpty());
+        assertNull(evaluated.getValue());
+    }
+
+    @Test
     void checkPathVariableExpressionOnMap() {
         var parentVarName = UUID.randomUUID().toString();
         var varName = UUID.randomUUID().toString();
