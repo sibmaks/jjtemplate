@@ -1,0 +1,26 @@
+{
+  "collapsedKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  },
+  "collapsedPipeKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  },
+  "collapsedWithObjectKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value6"
+  },
+  "collapsedWithObjectPipeKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value6"
+  }
+}

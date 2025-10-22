@@ -11,7 +11,8 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
-mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 
 [bundles]
 jackson = [

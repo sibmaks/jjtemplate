@@ -998,6 +998,40 @@ var context = Map.of("var1", null, "var2", "text");
 }
 ```
 
+## Схлопывание списка объектов: `collapse`
+
+### Шаблон
+
+```json
+{
+  "result": "{{ collapse .varList }}",
+  "resultPipe": "{{ .varList | collapse }}"
+}
+```
+
+### Контекст
+
+```java
+import java.util.List;
+import java.util.Map;
+
+var context = Map.of("varList", List.of(
+        Map.of("key", "value"),
+        Map.of("key", "value-2", "key2", "value-3")
+));
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "result": {
+    "key": "value-2",
+    "key2": "value-3"
+  }
+}
+```
+
 ## Пример цепочки операций
 
 ### Шаблон
