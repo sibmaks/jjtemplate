@@ -306,8 +306,10 @@ var context = Map.of(
 
 ```json
 {
-  "key": "{{ .value | str }}",
-  "pipe1stArg": "{{ str .value }}"
+  "key": "{{ str .value }}",
+  "pipeKey": "{{ .value | str }}",
+  "nullKey": "{{ str null }}",
+  "nullPipeKey": "{{ null | str }}"
 }
 ```
 
@@ -324,7 +326,9 @@ var context = Map.of("value", true);
 ```json
 {
   "key": "true",
-  "pipe1stArg": "true"
+  "pipeKey": "true",
+  "nullKey": null,
+  "nullPipeKey": null
 }
 ```
 

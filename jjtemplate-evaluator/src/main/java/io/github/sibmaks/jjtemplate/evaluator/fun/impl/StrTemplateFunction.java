@@ -13,7 +13,7 @@ public class StrTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         var argument = first(args, pipeArg);
-        if(argument.isEmpty()) {
+        if(argument.isEmpty() || argument.getValue() == null) {
             return argument;
         }
         var value = argument.getValue();
