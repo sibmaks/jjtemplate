@@ -2,11 +2,15 @@ package io.github.sibmaks.jjtemplate.parser;
 
 import io.github.sibmaks.jjtemplate.lexer.Token;
 import io.github.sibmaks.jjtemplate.lexer.TokenType;
-import io.github.sibmaks.jjtemplate.parser.api.*;
+import io.github.sibmaks.jjtemplate.parser.api.FunctionCallExpression;
+import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
+import io.github.sibmaks.jjtemplate.parser.api.PipeExpression;
+import io.github.sibmaks.jjtemplate.parser.api.VariableExpression;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,7 +60,8 @@ class TemplateParserTest {
         var expression = parser.parseExpression();
         assertNotNull(expression);
         var literalExpression = assertInstanceOf(LiteralExpression.class, expression);
-        assertEquals(value, literalExpression.value);
+        var excepted = BigDecimal.valueOf(value);
+        assertEquals(excepted, literalExpression.value);
     }
 
     @Test

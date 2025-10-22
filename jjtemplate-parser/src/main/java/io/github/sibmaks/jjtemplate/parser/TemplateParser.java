@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.lexer.Token;
 import io.github.sibmaks.jjtemplate.lexer.TokenType;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +95,7 @@ public final class TemplateParser {
                 var num = t.lexeme;
                 var isDecimal = num.contains(".");
                 if (isDecimal) {
-                    return new LiteralExpression(Double.parseDouble(num));
+                    return new LiteralExpression(new BigDecimal(num));
                 }
                 return new LiteralExpression(Integer.parseInt(num));
             case BOOLEAN:

@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,10 +15,10 @@ public abstract class CompareTemplateFunction implements TemplateFunction {
 
     protected boolean fnCmp(List<ExpressionValue> args, ExpressionValue pipe, int dir, boolean eq) {
         ExpressionValue x, y;
-        if (args.size() == 1) {
+        if (args.size() == 1 && !pipe.isEmpty()) {
             x = pipe;
             y = args.get(0);
-        } else if (args.size() == 2) {
+        } else if (args.size() == 2 && pipe.isEmpty()) {
             x = args.get(0);
             y = args.get(1);
         } else {
@@ -25,20 +26,23 @@ public abstract class CompareTemplateFunction implements TemplateFunction {
         }
         var nx = asNum(x.getValue());
         var ny = asNum(y.getValue());
-        var c = Double.compare(nx.doubleValue(), ny.doubleValue());
+        var c = nx.compareTo(ny);
         return dir < 0 ? (eq ? c <= 0 : c < 0) : (eq ? c >= 0 : c > 0);
     }
 
-    protected Number asNum(Object v) {
-        if (v instanceof Number) {
-            return (Number) v;
+    protected BigDecimal asNum(Object value) {
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
         }
-        if (v instanceof String) {
+        if (value instanceof Number) {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        }
+        if (value instanceof String) {
             try {
-                return Double.parseDouble((String) v);
+                return new BigDecimal((String) value);
             } catch (Exception ignored) {
             }
         }
-        throw new TemplateEvalException("Expected number: " + v);
+        throw new TemplateEvalException("Expected number: " + value);
     }
 }

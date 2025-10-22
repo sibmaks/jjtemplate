@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * @author sibmaks
  */
 class TemplateCompilerImplIntegrationTest {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
     private final TemplateCompilerImpl compiler = new TemplateCompilerImpl();
 
     private static Arguments buildArguments(Path it) {

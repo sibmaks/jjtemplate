@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -23,6 +24,9 @@ public class NegTemplateFunction implements TemplateFunction {
         }
         if (value instanceof Integer) {
             return ExpressionValue.of(-(Integer) value);
+        }
+        if (value instanceof BigDecimal) {
+            return ExpressionValue.of(((BigDecimal) value).negate());
         }
         if (value instanceof Number) {
             var doubleValue = ((Number) value).doubleValue();

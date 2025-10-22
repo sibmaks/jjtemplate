@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -21,17 +22,17 @@ public class DoubleTemplateFunction implements TemplateFunction {
         if (value == null) {
             return ExpressionValue.empty();
         }
-        if (value instanceof Double) {
+        if (value instanceof BigDecimal) {
             return argument;
         }
         if (value instanceof Number) {
-            var intValue = ((Number) value).doubleValue();
-            return ExpressionValue.of(intValue);
+            var doubleValue = ((Number) value).doubleValue();
+            return ExpressionValue.of(BigDecimal.valueOf(doubleValue));
         }
         if (value instanceof String) {
             try {
-                var doubleValue = Double.valueOf((String) value);
-                return ExpressionValue.of(doubleValue);
+                var bigDecimal = new BigDecimal((String) value);
+                return ExpressionValue.of(bigDecimal);
             } catch (Exception ignored) {
             }
         }
