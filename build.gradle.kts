@@ -25,7 +25,6 @@ allprojects {
         mavenCentral()
     }
 
-
     tasks.withType<JavaCompile>().configureEach {
         // ensure that the encoding is set to UTF-8, no matter what the system default is
         // this fixes some edge cases with special characters not displaying correctly
@@ -106,4 +105,11 @@ allprojects {
             }
         }
     }
+}
+
+dependencies {
+    implementation(project(":jjtemplate-parser"))
+    implementation(project(":jjtemplate-lexer"))
+    implementation(project(":jjtemplate-evaluator"))
+    implementation(project(":jjtemplate-compiler"))
 }
