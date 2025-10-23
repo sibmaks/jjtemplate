@@ -269,15 +269,14 @@ public final class TemplateLexer {
         do pos++; // consume first
         while (pos < n && isIdentPart(peek()));
         var word = input.substring(start, pos);
-        var lower = word.toLowerCase(Locale.ROOT);
-        if ("true".equals(lower) || "false".equals(lower)) {
-            return new Token(TokenType.BOOLEAN, lower, start, pos);
+        if ("true".equals(word) || "false".equals(word)) {
+            return new Token(TokenType.BOOLEAN, word, start, pos);
         }
-        if ("null".equals(lower)) {
-            return new Token(TokenType.NULL, lower, start, pos);
+        if ("null".equals(word)) {
+            return new Token(TokenType.NULL, word, start, pos);
         }
-        if (KEYWORDS.contains(lower)) {
-            return new Token(TokenType.KEYWORD, lower, start, pos);
+        if (KEYWORDS.contains(word)) {
+            return new Token(TokenType.KEYWORD, word, start, pos);
         }
         return new Token(TokenType.IDENT, word, start, pos);
     }

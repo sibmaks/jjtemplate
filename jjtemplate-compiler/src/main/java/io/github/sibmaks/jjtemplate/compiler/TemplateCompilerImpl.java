@@ -20,7 +20,11 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\s*\\{\\{\\.(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern WHOLE_COND = Pattern.compile("^\\s*\\{\\{\\?(.*?)}}\\s*$", Pattern.DOTALL);
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
-    private static final TemplateEvaluator CONST_EVAL = new TemplateEvaluator();
+    private final TemplateEvaluator templateEvaluator;
+
+    public TemplateCompilerImpl(Locale locale) {
+        this.templateEvaluator = new TemplateEvaluator(locale);
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -66,7 +70,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
 
         var compiledTemplate = compileNode(template);
-        return new CompiledTemplateImpl(compiledDefs, compiledTemplate);
+        return new CompiledTemplateImpl(templateEvaluator, compiledDefs, compiledTemplate);
     }
 
     private Nodes.CaseDefinition compileCase(Object valueSpec, CaseHeader ch) {
@@ -270,7 +274,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         try {
             // Walk expression tree to check if it depends on variables
             if (!dependsOnContext(expr)) {
-                var value = CONST_EVAL.evaluate(expr, new Context(Map.of())).getValue();
+                var value = templateEvaluator.evaluate(expr, new Context(Map.of())).getValue();
                 return new LiteralExpression(value);
             }
         } catch (Exception ignore) {

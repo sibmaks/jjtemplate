@@ -2,6 +2,8 @@ package io.github.sibmaks.jjtemplate.compiler.api;
 
 import io.github.sibmaks.jjtemplate.compiler.TemplateCompilerImpl;
 
+import java.util.Locale;
+
 /**
  *
  * @author sibmaks
@@ -23,6 +25,16 @@ public interface TemplateCompiler {
      * @return compiler instance
      */
     static TemplateCompiler getInstance() {
-        return new TemplateCompilerImpl();
+        return getInstance(Locale.getDefault());
+    }
+
+    /**
+     * Get compiler instance with specific locale
+     *
+     * @param locale compiler locale
+     * @return compiler instance
+     */
+    static TemplateCompiler getInstance(Locale locale) {
+        return new TemplateCompilerImpl(locale);
     }
 }

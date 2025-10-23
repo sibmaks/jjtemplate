@@ -2,6 +2,7 @@ package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Locale;
@@ -10,7 +11,10 @@ import java.util.Locale;
  *
  * @author sibmaks
  */
+@AllArgsConstructor
 public class StringUpperTemplateFunction implements TemplateFunction {
+    private final Locale locale;
+
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         var argument = first(args, pipeArg);
@@ -19,7 +23,7 @@ public class StringUpperTemplateFunction implements TemplateFunction {
         }
         var value = argument.getValue();
         var stringValue = String.valueOf(value);
-        return ExpressionValue.of(stringValue.toUpperCase(Locale.ROOT));
+        return ExpressionValue.of(stringValue.toUpperCase(locale));
     }
 
     @Override

@@ -14,10 +14,7 @@ import io.github.sibmaks.jjtemplate.parser.api.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,11 +28,11 @@ public final class TemplateEvaluator {
     private final Map<Class<?>, Map<String, Field>> fieldCache = new ConcurrentHashMap<>();
     private final Map<String, TemplateFunction> functions;
 
-    public TemplateEvaluator() {
-        this(Map.of());
+    public TemplateEvaluator(Locale locale) {
+        this(locale, Map.of());
     }
 
-    public TemplateEvaluator(Map<String, TemplateFunction> functions) {
+    public TemplateEvaluator(Locale locale, Map<String, TemplateFunction> functions) {
         var allFunctions = new HashMap<>(functions);
         var builtInFunctions = List.of(
                 new BooleanTemplateFunction(),
@@ -43,8 +40,8 @@ public final class TemplateEvaluator {
                 new IntTemplateFunction(),
                 new StrTemplateFunction(),
                 new ConcatTemplateFunction(),
-                new StringLowerTemplateFunction(),
-                new StringUpperTemplateFunction(),
+                new StringLowerTemplateFunction(locale),
+                new StringUpperTemplateFunction(locale),
                 new EmptyTemplateFunction(),
                 new LengthTemplateFunction(),
                 new ListTemplateFunction(),
@@ -59,7 +56,7 @@ public final class TemplateEvaluator {
                 new AndTemplateFunction(),
                 new OrTemplateFunction(),
                 new FormatDateTemplateFunction(),
-                new FormatStringTemplateFunction(),
+                new FormatStringTemplateFunction(locale),
                 new NegTemplateFunction(),
                 new CollapseTemplateFunction(this),
                 new ParseDateTemplateFunction(),

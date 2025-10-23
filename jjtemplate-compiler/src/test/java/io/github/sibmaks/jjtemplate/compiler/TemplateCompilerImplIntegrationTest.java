@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class TemplateCompilerImplIntegrationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-    private final TemplateCompilerImpl compiler = new TemplateCompilerImpl();
+    private final TemplateCompilerImpl compiler = new TemplateCompilerImpl(Locale.ROOT);
 
     private static Arguments buildArguments(Path it) {
         try {

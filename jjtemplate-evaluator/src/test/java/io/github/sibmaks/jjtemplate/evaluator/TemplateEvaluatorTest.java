@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ class TemplateEvaluatorTest {
         var expression = new LiteralExpression(value);
         var context = mock(Context.class);
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
@@ -53,7 +54,7 @@ class TemplateEvaluatorTest {
         var expression = new LiteralExpression(value);
         var context = mock(Context.class);
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
@@ -69,7 +70,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(varName))
                 .thenReturn(ExpressionValue.of(varValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -84,7 +85,7 @@ class TemplateEvaluatorTest {
 
     @Test
     void emptyPathVariableExpression() {
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(List.of());
         var evaluated = evaluator.evaluate(expression, mock());
@@ -99,7 +100,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(varName))
                 .thenReturn(ExpressionValue.empty());
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -120,7 +121,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.empty());
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -144,7 +145,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(mapVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -168,7 +169,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(listVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -192,7 +193,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(listVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -214,7 +215,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(listVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -236,7 +237,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(arrayVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -260,7 +261,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(arrayVarValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -281,7 +282,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(varValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -304,7 +305,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(varValue));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -319,7 +320,7 @@ class TemplateEvaluatorTest {
     @ParameterizedTest
     @MethodSource("callToStringFunctionCases")
     void callToStringFunction(Object value, String excepted) {
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new FunctionCallExpression("str", List.of(
                 new LiteralExpression(value)
@@ -332,7 +333,7 @@ class TemplateEvaluatorTest {
 
     @Test
     void callToStringFunctionWhenNoArgs() {
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new FunctionCallExpression("str", List.of());
         var evaluated = evaluator.evaluate(expression, mock());
@@ -342,7 +343,7 @@ class TemplateEvaluatorTest {
 
     @Test
     void simplePipeExpression() {
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var leftExpression = new LiteralExpression("true");
         var rightExpression = new FunctionCallExpression("boolean", List.of());
@@ -358,7 +359,7 @@ class TemplateEvaluatorTest {
 
     @Test
     void notExistedFunctionExpression() {
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new FunctionCallExpression("var", List.of());
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, mock()));
@@ -376,7 +377,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -401,7 +402,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -425,7 +426,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -452,7 +453,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -477,7 +478,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -500,7 +501,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(
@@ -521,7 +522,7 @@ class TemplateEvaluatorTest {
         when(context.getRoot(parentVarName))
                 .thenReturn(ExpressionValue.of(object));
 
-        var evaluator = new TemplateEvaluator();
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new VariableExpression(
                 List.of(

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * @author sibmaks
  */
 class FormatStringTemplateFunctionTest {
-    private final TemplateFunction function = new FormatStringTemplateFunction();
+    private final TemplateFunction function = new FormatStringTemplateFunction(Locale.US);
 
     @Test
     void checkFunctionName() {

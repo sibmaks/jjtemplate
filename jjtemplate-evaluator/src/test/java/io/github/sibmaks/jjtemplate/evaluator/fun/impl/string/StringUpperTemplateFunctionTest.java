@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author sibmaks
  */
 class StringUpperTemplateFunctionTest {
-    private final TemplateFunction function = new StringUpperTemplateFunction();
+    private final TemplateFunction function = new StringUpperTemplateFunction(Locale.US);
 
     @Test
     void checkFunctionName() {

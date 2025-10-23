@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author sibmaks
  */
 class StringLowerTemplateFunctionTest {
-    private final StringLowerTemplateFunction function = new StringLowerTemplateFunction();
+    private final StringLowerTemplateFunction function = new StringLowerTemplateFunction(Locale.US);
 
     @Test
     void checkFunctionName() {

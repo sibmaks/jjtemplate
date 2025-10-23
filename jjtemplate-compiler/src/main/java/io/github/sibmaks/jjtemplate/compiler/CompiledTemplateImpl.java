@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
+import lombok.AllArgsConstructor;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -11,16 +12,11 @@ import java.util.*;
 /**
  * @author sibmaks
  */
+@AllArgsConstructor
 final class CompiledTemplateImpl implements CompiledTemplate {
-    private final TemplateEvaluator evaluator = new TemplateEvaluator();
-
+    private final TemplateEvaluator evaluator;
     private final List<Map<String, Object>> compiledDefs;
     private final Object compiledTemplate;
-
-    public CompiledTemplateImpl(List<Map<String, Object>> defs, Object template) {
-        this.compiledDefs = defs;
-        this.compiledTemplate = template;
-    }
 
     @Override
     public Object render(Map<String, Object> context) {
