@@ -5,6 +5,11 @@ import io.github.sibmaks.jjtemplate.compiler.TemplateCompilerImpl;
 import java.util.Locale;
 
 /**
+ * Defines the API for compiling template scripts into executable templates.
+ * <p>
+ * Implementations of this interface transform parsed or raw template scripts
+ * into {@link CompiledTemplate} instances that can be rendered later.
+ * </p>
  *
  * @author sibmaks
  * @since 0.0.1
@@ -12,27 +17,28 @@ import java.util.Locale;
 public interface TemplateCompiler {
 
     /**
-     * Compile template script
+     * Compiles the provided template script into a {@link CompiledTemplate}.
      *
-     * @param script source template script
-     * @return compiled template
+     * @param script the source template script to compile
+     * @return the compiled template ready for rendering
      */
     CompiledTemplate compile(TemplateScript script);
 
     /**
-     * Get default compiler instance
+     * Returns the default {@link TemplateCompiler} instance
+     * configured with the system default {@link Locale}.
      *
-     * @return compiler instance
+     * @return the default compiler instance
      */
     static TemplateCompiler getInstance() {
         return getInstance(Locale.getDefault());
     }
 
     /**
-     * Get compiler instance with specific locale
+     * Returns a {@link TemplateCompiler} instance configured with the specified {@link Locale}.
      *
-     * @param locale compiler locale
-     * @return compiler instance
+     * @param locale the locale to use for compiler configuration
+     * @return a compiler instance for the given locale
      */
     static TemplateCompiler getInstance(Locale locale) {
         return new TemplateCompilerImpl(locale);
