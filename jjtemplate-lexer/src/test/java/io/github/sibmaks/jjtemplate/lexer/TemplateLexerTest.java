@@ -43,7 +43,7 @@ class TemplateLexerTest {
         var lexer = new TemplateLexer(template);
 
         var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
-        assertEquals("Unterminated template: missing closing '}}' at position " + template.length(), exception.getMessage());
+        assertEquals(String.format("Unterminated template: missing closing '}}' at position %d: %s", template.length(), template), exception.getMessage());
         assertEquals(template.length(), exception.getPosition());
     }
 
@@ -189,7 +189,7 @@ class TemplateLexerTest {
         var template = String.format("{{ %s }}", value);
         var lexer = new TemplateLexer(template);
         var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
-        assertEquals(String.format("Unexpected character '%s' at position 3", value), exception.getMessage());
+        assertEquals(String.format("Unexpected character '%s' at position 3: %s", value, template), exception.getMessage());
         assertEquals(3, exception.getPosition());
     }
 
@@ -198,7 +198,7 @@ class TemplateLexerTest {
         var template = "{{\t 'text";
         var lexer = new TemplateLexer(template);
         var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
-        assertEquals("Unterminated string literal at position 9", exception.getMessage());
+        assertEquals(String.format("Unterminated string literal at position 9: %s", template), exception.getMessage());
         assertEquals(9, exception.getPosition());
     }
 

@@ -14,8 +14,8 @@ public class TemplateLexerException extends RuntimeException {
      */
     private final int position;
 
-    public TemplateLexerException(String message, int position) {
-        super(message + " at position " + position);
+    public TemplateLexerException(String input, String message, int position) {
+        super(message + " at position " + position + ": " + input);
         this.position = position;
     }
 

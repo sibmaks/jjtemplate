@@ -72,10 +72,10 @@ public final class TemplateLexer {
         } catch (TemplateLexerException e) {
             throw e;
         } catch (Exception e) {
-            throw new TemplateLexerException("Unexpected error: " + e.getMessage(), pos);
+            throw new TemplateLexerException(input, "Unexpected error: " + e.getMessage(), pos);
         }
         if (mode == Mode.EXPR) {
-            throw new TemplateLexerException("Unterminated template: missing closing '}}'", pos);
+            throw new TemplateLexerException(input, "Unterminated template: missing closing '}}'", pos);
         }
         return out;
     }
@@ -116,7 +116,7 @@ public final class TemplateLexer {
         skipWhitespace();
         var start = pos;
         if (pos >= n) {
-            throw new TemplateLexerException("Unexpected end inside expression", pos);
+            throw new TemplateLexerException(input, "Unexpected end inside expression", pos);
         }
 
         // Close delimiter
@@ -168,7 +168,7 @@ public final class TemplateLexer {
                     return lexWord();
                 }
                 // Unknown character inside expr
-                throw new TemplateLexerException("Unexpected character '" + c + "'", pos);
+                throw new TemplateLexerException(input, "Unexpected character '" + c + "'", pos);
         }
     }
 
@@ -219,7 +219,7 @@ public final class TemplateLexer {
             }
         }
         if (!closed) {
-            throw new TemplateLexerException("Unterminated string literal", pos);
+            throw new TemplateLexerException(input, "Unterminated string literal", pos);
         }
         // Even if not closed, we emit STRING with what we have
         return new Token(TokenType.STRING, sb.toString(), start, pos);
