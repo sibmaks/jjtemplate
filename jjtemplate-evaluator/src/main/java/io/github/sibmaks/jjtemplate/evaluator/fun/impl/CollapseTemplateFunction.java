@@ -1,10 +1,9 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -12,11 +11,7 @@ import java.util.*;
  * @author sibmaks
  */
 public class CollapseTemplateFunction implements TemplateFunction {
-    private final TemplateEvaluator evaluator;
-
-    public CollapseTemplateFunction(TemplateEvaluator evaluator) {
-        this.evaluator = evaluator;
-    }
+    private static final Map<String, Object> OBJECT_PROPERTIES = ReflectionUtils.getAllProperties(new Object());
 
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
@@ -47,39 +42,13 @@ public class CollapseTemplateFunction implements TemplateFunction {
                 result.putAll(getProperties(o));
             }
             return result;
-        } else if (value instanceof Map<?, ?>) {
-            var map = (Map<?, ?>) value;
-            for (var entry : map.entrySet()) {
-                result.put(String.valueOf(entry.getKey()), entry.getValue());
-            }
-            return result;
         }
 
-        var type = value.getClass();
-        var fields = evaluator.getFields(type);
-        for (var entry : fields.entrySet()) {
-            var fieldName = entry.getKey();
-            var field = entry.getValue();
-            try {
-                var fieldValue = field.get(value);
-                result.put(fieldName, fieldValue);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+        var fields = ReflectionUtils.getAllProperties(value);
+        for (var key : OBJECT_PROPERTIES.keySet()) {
+            fields.remove(key);
         }
-        var methods = evaluator.getMethods(type);
-        for (var entry : methods.entrySet()) {
-            var methodName = entry.getKey();
-            var method = entry.getValue();
-            try {
-                var methodValue = method.invoke(value);
-                result.put(methodName, methodValue);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return result;
+        return fields;
     }
 
     @Override

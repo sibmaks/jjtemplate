@@ -27,7 +27,6 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public CompiledTemplate compile(TemplateScript script) {
         var defs = Optional.ofNullable(script.getDefinitions())
                 .orElseGet(List::of);
@@ -79,7 +78,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
         var branches = new LinkedHashMap<Expression, Object>();
         var caseDefinitionBuilder = Nodes.CaseDefinition.builder();
-        for (var ce : ((Map<String, Object>) valueSpec).entrySet()) {
+        @SuppressWarnings("unchecked")
+        var valueSpecMap = (Map<String, Object>) valueSpec;
+        for (var ce : valueSpecMap.entrySet()) {
             var condKey = ce.getKey();
             if ("else".equals(condKey)) {
                 caseDefinitionBuilder.elseNode(compileNode(ce.getValue()));

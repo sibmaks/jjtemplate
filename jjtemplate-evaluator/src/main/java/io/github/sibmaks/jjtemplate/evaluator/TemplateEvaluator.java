@@ -11,11 +11,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplat
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Interpreter for TemplateParser AST.
@@ -24,8 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * to all function invocations, instead of being appended to the args list.
  */
 public final class TemplateEvaluator {
-    private final Map<Class<?>, Map<String, Method>> methodCache = new ConcurrentHashMap<>();
-    private final Map<Class<?>, Map<String, Field>> fieldCache = new ConcurrentHashMap<>();
     private final Map<String, TemplateFunction> functions;
 
     public TemplateEvaluator(Locale locale) {
@@ -58,7 +52,7 @@ public final class TemplateEvaluator {
                 new FormatDateTemplateFunction(),
                 new FormatStringTemplateFunction(locale),
                 new NegTemplateFunction(),
-                new CollapseTemplateFunction(this),
+                new CollapseTemplateFunction(),
                 new ParseDateTemplateFunction(),
                 new ParseDateTimeTemplateFunction()
         );
@@ -143,7 +137,7 @@ public final class TemplateEvaluator {
             }
 
             if (!seg.isMethod()) {
-                current = getFieldOrProperty(current, seg.name);
+                current = ReflectionUtils.getProperty(current, seg.name);
                 continue;
             }
 
@@ -155,38 +149,6 @@ public final class TemplateEvaluator {
         }
 
         return ExpressionValue.of(current);
-    }
-
-    private Object getFieldOrProperty(Object currValue, String seg) {
-        if (currValue instanceof Map<?, ?>) {
-            var m = (Map<?, ?>) currValue;
-            return m.get(seg);
-        }
-        if (currValue instanceof List<?> && isInt(seg)) {
-            var list = (List<?>) currValue;
-            var idx = Integer.parseInt(seg);
-            if (idx < 0 || idx >= list.size()) {
-                throw new IllegalArgumentException("List index out of range: " + seg);
-            }
-            return list.get(idx);
-        }
-        if (currValue instanceof CharSequence && isInt(seg)) {
-            var idx = Integer.parseInt(seg);
-            var seq = (CharSequence) currValue;
-            if (idx < 0 || idx >= seq.length()) {
-                throw new IllegalArgumentException("String index out of range: " + seg);
-            }
-            return Character.toString(seq.charAt(idx));
-        }
-        if (currValue.getClass().isArray() && isInt(seg)) {
-            var idx = Integer.parseInt(seg);
-            var len = Array.getLength(currValue);
-            if (idx < 0 || idx >= len) {
-                throw new IllegalArgumentException("Array index out of range: " + seg);
-            }
-            return Array.get(currValue, idx);
-        }
-        return resolvePropertyReflective(currValue, seg);
     }
 
     private Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
@@ -226,34 +188,6 @@ public final class TemplateEvaluator {
         throw new IllegalArgumentException("No method " + methodName + " with args " + args.size());
     }
 
-    private Object resolvePropertyReflective(Object obj, String name) {
-        var type = obj.getClass();
-
-        // --- Field lookup cache ---
-        var fieldMap = getFields(type);
-        if (fieldMap.containsKey(name)) {
-            try {
-                var f = fieldMap.get(name);
-                return f.get(obj);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Cannot access field '" + name + "' of " + type, e);
-            }
-        }
-
-        // --- Method lookup cache ---
-        var methodMap = getMethods(type);
-        var m = methodMap.get(name);
-        if (m != null) {
-            try {
-                return m.invoke(obj);
-            } catch (Exception e) {
-                throw new RuntimeException("Error invoking getter '" + name + "' on " + type, e);
-            }
-        }
-
-        throw new IllegalArgumentException("Unknown property '" + name + "' for class " + type.getName());
-    }
-
     private boolean isInt(String s) {
         for (var i = 0; i < s.length(); i++) {
             if (!Character.isDigit(s.charAt(i))) {
@@ -287,18 +221,4 @@ public final class TemplateEvaluator {
         return templateFunction.invoke(args, pipeInput);
     }
 
-    public Map<String, Field> getFields(Class<?> type) {
-        return fieldCache.computeIfAbsent(type, ReflectionUtils::scanFields);
-    }
-
-    public Map<String, Method> getMethods(Class<?> type) {
-        var ignored = methodCache.computeIfAbsent(Object.class, ReflectionUtils::scanMethods);
-        return methodCache.computeIfAbsent(type, it -> {
-            var typed = ReflectionUtils.scanMethods(it);
-            for (var ignoredMethod : ignored.keySet()) {
-                typed.remove(ignoredMethod);
-            }
-            return typed;
-        });
-    }
 }

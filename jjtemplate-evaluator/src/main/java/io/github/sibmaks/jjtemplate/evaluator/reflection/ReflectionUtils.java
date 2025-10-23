@@ -1,9 +1,12 @@
 package io.github.sibmaks.jjtemplate.evaluator.reflection;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.AllArgsConstructor;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Array;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -11,48 +14,164 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class ReflectionUtils {
-    private static String decapitalize(String s) {
-        if (s.isEmpty()) {
-            return s;
-        }
-        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
-    }
 
-    /**
-     * Get all public fields of class
-     *
-     * @param type type to scan
-     * @return public fields
-     */
-    public static Map<String, Field> scanFields(Class<?> type) {
-        var map = new HashMap<String, Field>();
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+    private static final Map<Class<?>, Map<String, AccessDescriptor>> PROPERTY_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ConcurrentHashMap<>();
+
+    private static Map<String, AccessDescriptor> buildDescriptorMap(Class<?> type) {
+        var map = new LinkedHashMap<String, AccessDescriptor>();
         for (var f : type.getFields()) {
             f.setAccessible(true);
-            map.put(f.getName(), f);
+            try {
+                var getter = LOOKUP.unreflectGetter(f);
+                map.put(f.getName(), new AccessDescriptor(f.getName(), getter));
+            } catch (IllegalAccessException ignored) {
+            }
+        }
+        for (var m : type.getMethods()) {
+            var methodName = m.getName();
+            if (m.getParameterCount() == 0 && (methodName.startsWith("get") || methodName.startsWith("is"))) {
+                var name = propertyNameFromGetter(methodName);
+                m.setAccessible(true);
+                try {
+                    var mh = LOOKUP.unreflect(m);
+                    map.put(name, new AccessDescriptor(name, mh));
+                } catch (IllegalAccessException ignored) {
+                }
+            }
         }
         return map;
     }
 
-    /**
-     * Get all public methods of class
-     *
-     * @param type type to scan
-     * @return public methods
-     */
-    public static Map<String, Method> scanMethods(Class<?> type) {
-        var map = new HashMap<String, Method>();
-        for (var m : type.getMethods()) {
-            if (m.getParameterCount() != 0) {
-                continue;
+    private static AccessDescriptor buildDescriptor(Class<?> type, String name) {
+        var map = buildDescriptorMap(type);
+        var description = map.get(name);
+        if (description == null) {
+            throw new IllegalArgumentException(String.format("Unknown property '%s' of %s", name, type));
+        }
+        return description;
+    }
+
+    private static List<AccessDescriptor> buildAllDescriptors(Class<?> clazz) {
+        return new ArrayList<>(buildDescriptorMap(clazz).values());
+    }
+
+    private static String propertyNameFromGetter(String methodName) {
+        if (methodName.startsWith("get")) {
+            return decapitalize(methodName.substring(3));
+        }
+        if (methodName.startsWith("is")) {
+            return decapitalize(methodName.substring(2));
+        }
+        return methodName;
+    }
+
+    private static String decapitalize(String s) {
+        return s.isEmpty() ? s : Character.toLowerCase(s.charAt(0)) + s.substring(1);
+    }
+
+    private static boolean isInt(String s) {
+        for (var i = 0; i < s.length(); i++) {
+            if (!Character.isDigit(s.charAt(i))) {
+                return false;
             }
-            var name = m.getName();
-            if (name.startsWith("get") && name.length() > 3) {
-                map.put(decapitalize(name.substring(3)), m);
-            } else if (name.startsWith("is") && name.length() > 2
-                    && (m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class)) {
-                map.put(decapitalize(name.substring(2)), m);
+        }
+        return !s.isEmpty();
+    }
+
+    @AllArgsConstructor
+    private static class AccessDescriptor {
+        private String name;
+        private MethodHandle getter;
+
+        Object get(Object target) throws Throwable {
+            return getter == null ? null : getter.invoke(target);
+        }
+    }
+
+    public static Map<String, Object> getAllProperties(Object obj) {
+        if (obj == null) {
+            return Collections.emptyMap();
+        }
+        var type = obj.getClass();
+
+        if (obj instanceof Map<?, ?>) {
+            var map = (Map<?, ?>) obj;
+            var result = new LinkedHashMap<String, Object>();
+            for (var entry : map.entrySet()) {
+                if (entry.getKey() instanceof String) {
+                    var key = (String) entry.getKey();
+                    result.put(key, entry.getValue());
+                }
+            }
+            return result;
+        }
+
+        if (obj instanceof List<?>) {
+            var list = (List<?>) obj;
+            var result = new LinkedHashMap<String, Object>();
+            for (int i = 0; i < list.size(); i++) {
+                result.put(String.valueOf(i), list.get(i));
+            }
+            return result;
+        }
+
+        var descriptors = ALL_PROPERTIES_CACHE.computeIfAbsent(type, ReflectionUtils::buildAllDescriptors);
+        var map = new LinkedHashMap<String, Object>(descriptors.size());
+        for (var desc : descriptors) {
+            try {
+                map.put(desc.name, desc.get(obj));
+            } catch (Throwable ignored) {
+                // ignore unavailable fields
             }
         }
         return map;
     }
+
+    public static Object getProperty(Object obj, String name) {
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof Map<?, ?>) {
+            var map = (Map<?, ?>) obj;
+            return map.get(name);
+        }
+
+        var type = obj.getClass();
+        if (isInt(name)) {
+            var idx = Integer.parseInt(name);
+            if (obj.getClass().isArray()) {
+                var len = Array.getLength(obj);
+                if (idx < 0 || idx >= len) {
+                    throw new IllegalArgumentException("Array index out of range: " + idx);
+                }
+                return Array.get(obj, idx);
+            }
+            if (obj instanceof List<?>) {
+                var list = (List<?>) obj;
+                if (idx < 0 || idx >= list.size()) {
+                    throw new IllegalArgumentException("List index out of range: " + idx);
+                }
+                return list.get(idx);
+            }
+            if (obj instanceof CharSequence) {
+                var seq = (CharSequence) obj;
+                if (idx < 0 || idx >= seq.length()) {
+                    throw new IllegalArgumentException("String index out of range: " + idx);
+                }
+                return Character.toString(seq.charAt(idx));
+            }
+        }
+
+        var map = PROPERTY_CACHE.computeIfAbsent(type, c -> new ConcurrentHashMap<>());
+        var desc = map.computeIfAbsent(name, n -> buildDescriptor(type, n));
+        try {
+            return desc.get(obj);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to access property '" + name + "' of " + type, e);
+        }
+    }
 }
+

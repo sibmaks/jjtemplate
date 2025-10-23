@@ -212,7 +212,9 @@ final class CompiledTemplateImpl implements CompiledTemplate {
                     continue;
                 }
                 var v = evaluated.getValue();
-                if (v != null) out.add(v);
+                if (v != null) {
+                    out.add(v);
+                }
                 continue;
             }
             out.add(renderNode(el, ctx));

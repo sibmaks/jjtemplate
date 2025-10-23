@@ -202,7 +202,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Unknown property '%s' for %s", varName, listVarValue.getClass()), exception.getMessage());
+        assertEquals(String.format("Unknown property '%s' of %s", varName, listVarValue.getClass()), exception.getMessage());
     }
 
     @Test
@@ -510,7 +510,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Unknown property '%s' for %s", varName, object.getClass()), exception.getMessage());
+        assertEquals(String.format("Unknown property '%s' of %s", varName, object.getClass()), exception.getMessage());
     }
 
     @Test
@@ -531,7 +531,10 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(RuntimeException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Error invoking getter '%s' on %s", varName, object.getClass()), exception.getMessage());
+        assertEquals(String.format("Failed to access property '%s' of %s", varName, object.getClass()), exception.getMessage());
+        var cause = exception.getCause();
+        assertNotNull(cause);
+        assertEquals("internal", cause.getMessage());
     }
 
     static class Stub {
