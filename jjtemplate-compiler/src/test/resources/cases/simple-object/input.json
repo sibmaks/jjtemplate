@@ -1,0 +1,59 @@
+{
+  "definitions": [
+    {
+      "var": "text"
+    },
+    {
+      "simpleObj": {
+        "key": "value",
+        "child": {
+          "childKey": "childValue"
+        },
+        "array": [
+          {
+            "arrayKey": "arrayValue"
+          }
+        ]
+      }
+    },
+    {
+      "variableObject": {
+        "key": "{{ .var }}",
+        "child": {
+          "childKey": "{{ .var }}"
+        },
+        "array": [
+          {
+            "arrayKey": "{{ .var }}"
+          }
+        ]
+      }
+    }
+  ],
+  "template": {
+    "varObj": "{{ .simpleObj }}",
+    "variableObject": "{{ .variableObject }}",
+    "staticObj": {
+      "key": "value",
+      "child": {
+        "childKey": "childValue"
+      },
+      "array": [
+        {
+          "arrayKey": "arrayValue"
+        }
+      ]
+    },
+    "templateVariableObject": {
+      "key": "{{ .var }}",
+      "child": {
+        "childKey": "{{ .var }}"
+      },
+      "array": [
+        {
+          "arrayKey": "{{ .var }}"
+        }
+      ]
+    }
+  }
+}

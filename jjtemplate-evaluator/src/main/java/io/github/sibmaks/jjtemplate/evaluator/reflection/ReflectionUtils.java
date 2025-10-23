@@ -20,8 +20,9 @@ public class ReflectionUtils {
     private static final Map<Class<?>, List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ConcurrentHashMap<>();
 
     private static Map<String, AccessDescriptor> buildDescriptorMap(Class<?> type) {
-        var map = new LinkedHashMap<String, AccessDescriptor>();
-        for (var f : type.getFields()) {
+        var fields = type.getFields();
+        var map = new LinkedHashMap<String, AccessDescriptor>(fields.length);
+        for (var f : fields) {
             f.setAccessible(true);
             try {
                 var getter = LOOKUP.unreflectGetter(f);

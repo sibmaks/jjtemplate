@@ -25,7 +25,6 @@ final class CompiledTemplateImpl implements CompiledTemplate {
         return renderNode(compiledTemplate, local);
     }
 
-    @SuppressWarnings("unchecked")
     private void evalDefinitions(List<Map<String, Object>> defs, Map<String, Object> ctx) {
         for (var def : defs) {
             for (var e : def.entrySet()) {
@@ -101,13 +100,13 @@ final class CompiledTemplateImpl implements CompiledTemplate {
                     }
                     ctx.put(e.getKey(), out);
                 } else {
-                    ctx.put(e.getKey(), value);
+                    var renderedValue = renderNode(value, ctx);
+                    ctx.put(e.getKey(), renderedValue);
                 }
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Object renderNode(Object node, Map<String, Object> ctx) {
         if (node == null) {
             return null;

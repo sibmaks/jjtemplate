@@ -18,7 +18,7 @@ public class CollapseTemplateFunction implements TemplateFunction {
         if (args.isEmpty() && pipeArg.isEmpty()) {
             throw new IllegalArgumentException("collapse: at least 1 argument required");
         }
-        var result = new LinkedHashMap<String, Object>();
+        var result = new LinkedHashMap<String, Object>(args.size() + 1);
 
         for (var arg : args) {
             result.putAll(getProperties(arg.getValue()));

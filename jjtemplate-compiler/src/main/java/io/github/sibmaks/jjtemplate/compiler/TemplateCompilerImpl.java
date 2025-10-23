@@ -17,13 +17,86 @@ import java.util.regex.Pattern;
 
 public final class TemplateCompilerImpl implements TemplateCompiler {
 
-    private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\s*\\{\\{\\.(.*?)}}\\s*$", Pattern.DOTALL);
-    private static final Pattern WHOLE_COND = Pattern.compile("^\\s*\\{\\{\\?(.*?)}}\\s*$", Pattern.DOTALL);
+    private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\{\\{\\.(.*?)}}$", Pattern.DOTALL);
+    private static final Pattern WHOLE_COND = Pattern.compile("^\\{\\{\\?(.*?)}}$", Pattern.DOTALL);
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
     private final TemplateEvaluator templateEvaluator;
 
     public TemplateCompilerImpl(Locale locale) {
         this.templateEvaluator = new TemplateEvaluator(locale);
+    }
+
+    private static Pair<Boolean, Object> getStaticValue(Object value) {
+        if (value == null) {
+            return new Pair<>(true, null);
+        }
+        if (value instanceof Map<?, ?>) {
+            var nodeMap = (Map<?, ?>) value;
+            var resultMap = new LinkedHashMap<String, Object>(nodeMap.size());
+            for (var entry : nodeMap.entrySet()) {
+                var mapKey = getStaticValue(entry.getKey());
+                if (!mapKey.getFirst()) {
+                    return new Pair<>(false, value);
+                }
+                var mapValue = getStaticValue(entry.getValue());
+                if (!mapValue.getFirst()) {
+                    return new Pair<>(false, value);
+                }
+                resultMap.put((String) mapKey.getSecond(), mapValue.getSecond());
+            }
+            return new Pair<>(true, resultMap);
+        } else if (value instanceof List<?>) {
+            var nodeList = (List<?>) value;
+            var resultList = new ArrayList<>(nodeList.size());
+            for (var el : nodeList) {
+                var staticValue = getStaticValue(el);
+                if (!staticValue.getFirst()) {
+                    return new Pair<>(false, value);
+                }
+                resultList.add(staticValue.getSecond());
+            }
+            return new Pair<>(true, resultList);
+        } else if (value.getClass().isArray()) {
+            var len = Array.getLength(value);
+            var resultList = new ArrayList<>(len);
+            for (int i = 0; i < len; i++) {
+                var el = Array.get(value, i);
+                var staticValue = getStaticValue(el);
+                if (!staticValue.getFirst()) {
+                    return new Pair<>(false, value);
+                }
+                resultList.add(staticValue.getSecond());
+            }
+            return new Pair<>(true, resultList);
+        } else if (value instanceof Expression) {
+            if (value instanceof LiteralExpression) {
+                var literalExpression = (LiteralExpression) value;
+                return new Pair<>(true, literalExpression.value);
+            }
+            return new Pair<>(false, value);
+        } else if(value instanceof Nodes.CompiledObject) {
+            var compiledObject = (Nodes.CompiledObject) value;
+            var entries = compiledObject.getEntries();
+            var resultMap = new LinkedHashMap<String, Object>(entries.size());
+            for (var entry : entries) {
+                if(entry instanceof Nodes.CompiledObject.Field) {
+                    var field = (Nodes.CompiledObject.Field) entry;
+                    var staticKey = getStaticValue(field.getKey());
+                    if(!staticKey.getFirst()) {
+                        return new Pair<>(false, value);
+                    }
+                    var staticValue = getStaticValue(field.getValue());
+                    if (!staticValue.getFirst()) {
+                        return new Pair<>(false, value);
+                    }
+                    resultMap.put((String) staticKey.getSecond(), staticValue.getSecond());
+                } else {
+                    return new  Pair<>(false, value);
+                }
+            }
+            return new Pair<>(true, resultMap);
+        }
+        return new Pair<>(true, value);
     }
 
     @Override
@@ -58,9 +131,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                     continue;
                 }
                 // explicit
-                var sh = parseSimpleHeader(header);
-                if (sh != null) {
-                    compiled.put(sh.varName, compileNode(valueSpec));
+                var varName = parseSimpleHeader(header);
+                if (varName != null) {
+                    compiled.put(varName, compileNode(valueSpec));
                     continue;
                 }
                 throw new IllegalArgumentException("Unknown definition header: " + header);
@@ -134,6 +207,8 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private Object compileObject(Map<?, ?> nodeMap) {
         var entries = new ArrayList<Nodes.CompiledObject.Entry>();
+        var simple = true;
+        var simpleObject = new LinkedHashMap<String, Object>();
         for (var e : nodeMap.entrySet()) {
             var rawKey = String.valueOf(e.getKey());
             var ms = WHOLE_SPREAD.matcher(rawKey);
@@ -141,34 +216,53 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 // object spread key: "{{. expr}}" — value is ignored
                 var expression = compileExpression(rawKey);
                 entries.add(new Nodes.CompiledObject.Spread(expression));
+                simple = false;
                 continue;
             }
-            var keyCompiled = rawKey.contains("{{") ? compileString(rawKey) : rawKey;
+            var keyCompiled = compileString(rawKey);
             var valCompiled = compileNode(e.getValue());
+            if (simple) {
+                var staticKey = getStaticValue(keyCompiled);
+                if (!staticKey.getFirst()) {
+                    simple = false;
+                } else {
+                    var staticValue = getStaticValue(valCompiled);
+                    if (!staticValue.getFirst()) {
+                        simple = false;
+                    } else {
+                        simpleObject.put((String) staticKey.getSecond(), staticValue.getSecond());
+                    }
+                }
+            }
             entries.add(new Nodes.CompiledObject.Field(keyCompiled, valCompiled));
+        }
+        if (simple) {
+            return simpleObject;
         }
         return new Nodes.CompiledObject(entries);
     }
 
     private Object compileString(String raw) {
+        if (raw.startsWith("{{")) {
+            var ms = WHOLE_SPREAD.matcher(raw);
+            if (ms.matches()) {
+                var expression = compileExpression(raw);
+                var foldedExpression = tryFoldConstant(expression);
+                if (foldedExpression instanceof LiteralExpression) {
+                    return ((LiteralExpression) foldedExpression).value;
+                }
+                return new Nodes.SpreadNode(foldedExpression);
+            }
+            var mc = WHOLE_COND.matcher(raw);
+            if (mc.matches()) {
+                var expression = compileExpression(raw);
+                var foldedExpression = tryFoldConstant(expression);
+                return new Nodes.CondNode(foldedExpression);
+            }
+        }
         // literal (no tags) — keep as is
         if (!raw.contains("{{")) {
             return raw;
-        }
-        var ms = WHOLE_SPREAD.matcher(raw);
-        if (ms.matches()) {
-            var expression = compileExpression(raw);
-            var foldedExpression = tryFoldConstant(expression);
-            if (foldedExpression instanceof LiteralExpression) {
-                return ((LiteralExpression) foldedExpression).value;
-            }
-            return new Nodes.SpreadNode(foldedExpression);
-        }
-        var mc = WHOLE_COND.matcher(raw);
-        if (mc.matches()) {
-            var expression = compileExpression(raw);
-            var foldedExpression = tryFoldConstant(expression);
-            return new Nodes.CondNode(foldedExpression);
         }
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
         var lexer = new TemplateLexer(raw);
@@ -211,11 +305,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         return parser.parseExpression();
     }
 
-    private SimpleHeader parseSimpleHeader(String h) {
+    private String parseSimpleHeader(String h) {
         if (VARIABLE_NAME.matcher(h).matches()) {
-            var s = new SimpleHeader();
-            s.varName = h;
-            return s;
+            return h;
         }
         return null;
     }
@@ -324,10 +416,6 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     }
 
     // --- headers parsing ---
-    private static final class SimpleHeader {
-        String varName;
-    }
-
     private static final class CaseHeader {
         String varName;
         String expr;

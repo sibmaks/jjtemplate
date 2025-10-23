@@ -188,15 +188,6 @@ public final class TemplateEvaluator {
         throw new IllegalArgumentException("No method " + methodName + " with args " + args.size());
     }
 
-    private boolean isInt(String s) {
-        for (var i = 0; i < s.length(); i++) {
-            if (!Character.isDigit(s.charAt(i))) {
-                return false;
-            }
-        }
-        return !s.isEmpty();
-    }
-
     private ExpressionValue evalPipe(PipeExpression p, Context ctx) {
         var cur = eval(p.left, ctx);
         for (var call : p.chain) {
