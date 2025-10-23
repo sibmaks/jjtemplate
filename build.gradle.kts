@@ -7,7 +7,7 @@ plugins {
     id("jacoco")
 }
 
-allprojects {
+subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
@@ -112,4 +112,27 @@ dependencies {
     implementation(project(":jjtemplate-lexer"))
     implementation(project(":jjtemplate-evaluator"))
     implementation(project(":jjtemplate-compiler"))
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("aggregator") {
+            pom {
+                withXml {
+                    val dependenciesNode = asNode().appendNode("dependencies")
+
+                    subprojects.forEach { sub ->
+                        if (sub.plugins.hasPlugin("java") || sub.plugins.hasPlugin("kotlin")) {
+                            dependenciesNode.appendNode("dependency").apply {
+                                appendNode("groupId", sub.group.toString())
+                                appendNode("artifactId", sub.name)
+                                appendNode("version", sub.version.toString())
+                                appendNode("scope", "compile")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
