@@ -7,16 +7,18 @@ plugins {
     id("jacoco")
 }
 
-subprojects {
-    apply(plugin = "java")
-    apply(plugin = "jacoco")
-    apply(plugin = "maven-publish")
-
+allprojects {
     val versionFromProperty = "${project.property("version")}"
     val versionFromEnv: String? = System.getenv("VERSION")
 
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
+}
+
+subprojects {
+    apply(plugin = "java")
+    apply(plugin = "jacoco")
+    apply(plugin = "maven-publish")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
