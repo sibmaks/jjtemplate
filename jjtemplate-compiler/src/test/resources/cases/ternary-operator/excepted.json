@@ -1,0 +1,8 @@
+{
+  "alwaysTrue": "ok",
+  "alwaysFalse": "ok",
+  "variableTrue": "ok",
+  "variableFalse": "ok",
+  "variableNestingTrue": "ok",
+  "variableNestingFalse": "ok"
+}

@@ -54,6 +54,13 @@ public final class TemplateParser {
             } while (match(TokenType.PIPE));
             expr = new PipeExpression(expr, chain);
         }
+        // Ternary operator
+        if (match(TokenType.QUESTION)) {
+            var ifTrue = parseExpression(); // right after '?'
+            expect(TokenType.COLON, ":");
+            var ifFalse = parseExpression();
+            expr = new TernaryExpression(expr, ifTrue, ifFalse);
+        }
         return expr;
     }
 
@@ -243,6 +250,7 @@ public final class TemplateParser {
      */
     private boolean isStopToken(Token t) {
         switch (t.type) {
+            case QUESTION:
             case PIPE:
             case CLOSE:
             case COMMA:

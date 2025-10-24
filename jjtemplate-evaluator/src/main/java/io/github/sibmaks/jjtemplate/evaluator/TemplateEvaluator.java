@@ -112,6 +112,16 @@ public final class TemplateEvaluator {
             var pipeExpression = (PipeExpression) expression;
             return evalPipe(pipeExpression, context);
         }
+        if (expression instanceof TernaryExpression) {
+            var ternary = (TernaryExpression) expression;
+            var cond = eval(ternary.condition, context).getValue();
+            var test = (Boolean) cond;
+            if (test) {
+                return eval(ternary.ifTrue, context);
+            } else {
+                return eval(ternary.ifFalse, context);
+            }
+        }
         throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
     }
 

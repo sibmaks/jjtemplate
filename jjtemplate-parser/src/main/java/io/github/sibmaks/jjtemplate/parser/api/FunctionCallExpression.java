@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -16,6 +17,7 @@ import java.util.List;
  */
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
 public class FunctionCallExpression implements Expression {
     /**
      * The name of the function being called.
@@ -26,14 +28,4 @@ public class FunctionCallExpression implements Expression {
      */
     public final List<Expression> args;
 
-    /**
-     * Creates a new {@code FunctionCallExpression} instance.
-     *
-     * @param name the name of the function
-     * @param args the list of argument expressions
-     */
-    public FunctionCallExpression(String name, List<Expression> args) {
-        this.name = name;
-        this.args = args;
-    }
 }

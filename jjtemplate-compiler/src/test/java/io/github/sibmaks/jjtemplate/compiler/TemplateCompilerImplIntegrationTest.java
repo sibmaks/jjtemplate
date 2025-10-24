@@ -55,7 +55,6 @@ class TemplateCompilerImplIntegrationTest {
         try (var paths = Files.list(resourcesDir)) {
             return paths
                     .filter(Files::isDirectory)
-                    .peek(it -> System.out.printf("Directory: %s%n", it))
                     .map(Path::toAbsolutePath)
                     .collect(Collectors.toList());
         } catch (IOException e) {
@@ -80,6 +79,7 @@ class TemplateCompilerImplIntegrationTest {
 
         return cases
                 .stream()
+                .sorted()
                 .map(TemplateCompilerImplIntegrationTest::buildArguments);
     }
 }

@@ -13,6 +13,7 @@ public enum TokenType {
     DOT, // '.'
     COMMA, // ','
     COLON, // ';'
+    QUESTION, // ';'
     LPAREN,
     RPAREN,
     LBRACE,

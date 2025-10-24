@@ -137,6 +137,9 @@ public final class TemplateLexer {
             case ',':
                 pos++;
                 return new Token(TokenType.COMMA, ",", start, pos);
+            case '?':
+                pos++;
+                return new Token(TokenType.QUESTION, "?", start, pos);
             case ':':
                 pos++;
                 return new Token(TokenType.COLON, ":", start, pos);

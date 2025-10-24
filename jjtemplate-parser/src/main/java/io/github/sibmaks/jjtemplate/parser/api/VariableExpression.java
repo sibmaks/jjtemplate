@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -18,20 +19,12 @@ import java.util.List;
  */
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
 public final class VariableExpression implements Expression {
     /**
      * The ordered list of segments that form this variable expression.
      */
     public final List<Segment> segments;
-
-    /**
-     * Creates a new {@code VariableExpression} instance.
-     *
-     * @param segments the list of variable segments composing this expression
-     */
-    public VariableExpression(List<Segment> segments) {
-        this.segments = segments;
-    }
 
     /**
      * Represents a single segment of a variable expression.

@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -14,18 +15,10 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
 public class LiteralExpression implements Expression {
     /**
      * The literal value of this expression.
      */
     public final Object value;
-
-    /**
-     * Creates a new {@code LiteralExpression} instance.
-     *
-     * @param value the literal value represented by this expression
-     */
-    public LiteralExpression(Object value) {
-        this.value = value;
-    }
 }

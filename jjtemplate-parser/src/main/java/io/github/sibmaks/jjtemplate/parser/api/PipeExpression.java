@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
 public class PipeExpression implements Expression {
     /**
      * The left-hand expression whose result is passed through the pipe chain.
@@ -26,15 +28,4 @@ public class PipeExpression implements Expression {
      * The sequence of function calls applied to the left-hand expression.
      */
     public final List<FunctionCallExpression> chain;
-
-    /**
-     * Creates a new {@code PipeExpression} instance.
-     *
-     * @param left  the input expression to be processed by the pipe chain
-     * @param chain the list of function calls forming the pipe chain
-     */
-    public PipeExpression(Expression left, List<FunctionCallExpression> chain) {
-        this.left = left;
-        this.chain = chain;
-    }
 }

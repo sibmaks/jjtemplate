@@ -1,0 +1,10 @@
+{
+  "template": {
+    "alwaysTrue": "{{ true ? 'ok' : 'fail' }}",
+    "alwaysFalse": "{{ false ? 'fail' : 'ok' }}",
+    "variableTrue": "{{ .booleanTrue ? 'ok' : 'fail' }}",
+    "variableFalse": "{{ .booleanFalse ? 'fail' : 'ok' }}",
+    "variableNestingTrue": "{{ .booleanTrue ? (.booleanTrue | not ? 'fail' : 'ok') : 'fail' }}",
+    "variableNestingFalse": "{{ .booleanFalse ? 'fail' : (.booleanFalse | not ? 'ok' : 'fail') }}"
+  }
+}

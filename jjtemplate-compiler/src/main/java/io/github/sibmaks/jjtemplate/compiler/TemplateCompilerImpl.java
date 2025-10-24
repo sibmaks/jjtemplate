@@ -74,15 +74,15 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 return new Pair<>(true, literalExpression.value);
             }
             return new Pair<>(false, value);
-        } else if(value instanceof Nodes.CompiledObject) {
+        } else if (value instanceof Nodes.CompiledObject) {
             var compiledObject = (Nodes.CompiledObject) value;
             var entries = compiledObject.getEntries();
             var resultMap = new LinkedHashMap<String, Object>(entries.size());
             for (var entry : entries) {
-                if(entry instanceof Nodes.CompiledObject.Field) {
+                if (entry instanceof Nodes.CompiledObject.Field) {
                     var field = (Nodes.CompiledObject.Field) entry;
                     var staticKey = getStaticValue(field.getKey());
-                    if(!staticKey.getFirst()) {
+                    if (!staticKey.getFirst()) {
                         return new Pair<>(false, value);
                     }
                     var staticValue = getStaticValue(field.getValue());
@@ -91,7 +91,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                     }
                     resultMap.put((String) staticKey.getSecond(), staticValue.getSecond());
                 } else {
-                    return new  Pair<>(false, value);
+                    return new Pair<>(false, value);
                 }
             }
             return new Pair<>(true, resultMap);
@@ -119,7 +119,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 // case
                 var ch = parseCaseHeader(header);
                 if (ch != null) {
-                    var defn = compileCase(valueSpec, ch);
+                    var defn = compileCase(valueSpec, ch.expr);
                     compiled.put(ch.varName, defn);
                     continue;
                 }
@@ -145,7 +145,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         return new CompiledTemplateImpl(templateEvaluator, compiledDefs, compiledTemplate);
     }
 
-    private Nodes.CaseDefinition compileCase(Object valueSpec, CaseHeader ch) {
+    private Nodes.CaseDefinition compileCase(Object valueSpec, String caseExpression) {
         if (!(valueSpec instanceof Map<?, ?>)) {
             throw new IllegalArgumentException("case definition expects mapping object");
         }
@@ -167,7 +167,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             branches.put(condition, compileNode(ce.getValue()));
         }
         return caseDefinitionBuilder
-                .switchExpr(compileExpression(ch.expr))
+                .switchExpr(compileExpression(caseExpression))
                 .branches(branches)
                 .build();
     }
@@ -409,6 +409,13 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 }
             }
             return false;
+        }
+
+        if(expr instanceof TernaryExpression) {
+            var ternary = (TernaryExpression) expr;
+            return dependsOnContext(ternary.condition) ||
+                    dependsOnContext(ternary.ifTrue) ||
+                    dependsOnContext(ternary.ifFalse);
         }
 
         // LiteralExpression never depends on context
