@@ -6,6 +6,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
+import io.github.sibmaks.jjtemplate.lexer.TemplateLexerException;
 import io.github.sibmaks.jjtemplate.lexer.Token;
 import io.github.sibmaks.jjtemplate.lexer.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
@@ -268,12 +269,16 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var lexer = new TemplateLexer(raw);
         var tokens = lexer.tokens();
         var parser = new TemplateParser(tokens);
-        var expression = parser.parseTemplate();
-        var foldedExpression = tryFoldConstant(expression);
-        if (foldedExpression instanceof LiteralExpression) {
-            return ((LiteralExpression) foldedExpression).value;
+        try {
+            var expression = parser.parseTemplate();
+            var foldedExpression = tryFoldConstant(expression);
+            if (foldedExpression instanceof LiteralExpression) {
+                return ((LiteralExpression) foldedExpression).value;
+            }
+            return foldedExpression;
+        } catch (TemplateLexerException e) {
+            throw new IllegalArgumentException("String compilation error: '" + raw + "'", e);
         }
-        return foldedExpression;
     }
 
     private Expression compileAsExpression(String expr) {
@@ -411,7 +416,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             return false;
         }
 
-        if(expr instanceof TernaryExpression) {
+        if (expr instanceof TernaryExpression) {
             var ternary = (TernaryExpression) expr;
             return dependsOnContext(ternary.condition) ||
                     dependsOnContext(ternary.ifTrue) ||
