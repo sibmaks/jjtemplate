@@ -18,6 +18,42 @@ import static org.junit.jupiter.api.Assertions.*;
 class TemplateLexerTest {
 
     @Test
+    void emptyInput() {
+        var lexer = new TemplateLexer("");
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(0, tokens.size());
+    }
+
+    @Test
+    void oneBracketIsJustAText() {
+        var lexer = new TemplateLexer("{");
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(1, tokens.size());
+
+        var token = tokens.get(0);
+        assertEquals(TokenType.TEXT, token.type);
+        assertEquals(0, token.start);
+        assertEquals(1, token.end);
+        assertEquals("{", token.lexeme);
+    }
+
+    @Test
+    void unexpectedEnd() {
+        var lexer = new TemplateLexer("{{ . ");
+        var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
+        assertEquals("Unexpected end inside expression at position 5: {{ . ", exception.getMessage());
+    }
+
+    @Test
+    void notClosedTemplate() {
+        var lexer = new TemplateLexer("{{ true }");
+        var exception = assertThrows(TemplateLexerException.class, lexer::tokens);
+        assertEquals("Unexpected character '}' at position 8: {{ true }",  exception.getMessage());
+    }
+
+    @Test
     void staticText() {
         var template = String.format("'%s'", UUID.randomUUID());
         var lexer = new TemplateLexer(template);
@@ -182,7 +218,6 @@ class TemplateLexerTest {
             "п",
             "я",
             "%",
-            "$",
             "$"
     })
     void unexpectedCharacterInTemplate(String value) {
@@ -383,6 +418,127 @@ class TemplateLexerTest {
         assertEquals(3 + 1 + varName.length() + 1, endToken.start);
         assertEquals(3 + 1 + varName.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
+    }
+
+    @Test
+    void templateExpressionInParenthesis() {
+        var template = "{{ (true ) }}";
+        var lexer = new TemplateLexer(template);
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(5, tokens.size());
+
+        var beginToken = tokens.get(0);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(0, beginToken.start);
+        assertEquals(2, beginToken.end);
+        assertEquals("{{", beginToken.lexeme);
+
+        var lParentToken = tokens.get(1);
+        assertEquals(TokenType.LPAREN, lParentToken.type);
+        assertEquals(3, lParentToken.start);
+        assertEquals(3 + 1, lParentToken.end);
+        assertEquals("(", lParentToken.lexeme);
+
+        var boolToken = tokens.get(2);
+        assertEquals(TokenType.BOOLEAN, boolToken.type);
+        assertEquals(3 + 1, boolToken.start);
+        assertEquals(3 + 1 + "true".length(), boolToken.end);
+        assertEquals("true", boolToken.lexeme);
+
+        var rParentToken = tokens.get(3);
+        assertEquals(TokenType.RPAREN, rParentToken.type);
+        assertEquals(3 + 1 + "true".length() + 1, rParentToken.start);
+        assertEquals(3 + 1 + "true".length() + 1 + 1, rParentToken.end);
+        assertEquals(")", rParentToken.lexeme);
+
+        var endToken = tokens.get(4);
+        assertEquals(TokenType.CLOSE, endToken.type);
+        assertEquals(3 + 1 + "true".length() + 1 + 1 + 1, endToken.start);
+        assertEquals(3 + 1 + "true".length() + 1 + 1 + 1 + 2, endToken.end);
+        assertEquals("}}", endToken.lexeme);
+    }
+
+    @Test
+    void templateExpressionWithSeveralArgs() {
+        var template = "{{ func(arg0,arg1) }}";
+        var lexer = new TemplateLexer(template);
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(8, tokens.size());
+
+        var beginToken = tokens.get(0);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(0, beginToken.start);
+        assertEquals(2, beginToken.end);
+        assertEquals("{{", beginToken.lexeme);
+
+        var funcToken = tokens.get(1);
+        assertEquals(TokenType.IDENT, funcToken.type);
+        assertEquals("func", funcToken.lexeme);
+
+        var lParentToken = tokens.get(2);
+        assertEquals(TokenType.LPAREN, lParentToken.type);
+        assertEquals("(", lParentToken.lexeme);
+
+        var arg0Token = tokens.get(3);
+        assertEquals(TokenType.IDENT, arg0Token.type);
+        assertEquals("arg0", arg0Token.lexeme);
+
+        var commaToken = tokens.get(4);
+        assertEquals(TokenType.COMMA, commaToken.type);
+        assertEquals(",", commaToken.lexeme);
+
+        var arg1Token = tokens.get(5);
+        assertEquals(TokenType.IDENT, arg1Token.type);
+        assertEquals("arg1", arg1Token.lexeme);
+
+        var rParentToken = tokens.get(6);
+        assertEquals(TokenType.RPAREN, rParentToken.type);
+        assertEquals(")", rParentToken.lexeme);
+
+        var closeToken = tokens.get(7);
+        assertEquals(TokenType.CLOSE, closeToken.type);
+        assertEquals("}}", closeToken.lexeme);
+    }
+
+    @Test
+    void templateExpressionWithTernaryOperator() {
+        var template = "{{ true ? 'true-value' : 'false-value'  }}";
+        var lexer = new TemplateLexer(template);
+        var tokens = lexer.tokens();
+        assertNotNull(tokens);
+        assertEquals(7, tokens.size());
+
+        var beginToken = tokens.get(0);
+        assertEquals(TokenType.OPEN_EXPR, beginToken.type);
+        assertEquals(0, beginToken.start);
+        assertEquals(2, beginToken.end);
+        assertEquals("{{", beginToken.lexeme);
+
+        var conditionToken = tokens.get(1);
+        assertEquals(TokenType.BOOLEAN, conditionToken.type);
+        assertEquals("true", conditionToken.lexeme);
+
+        var questionToken = tokens.get(2);
+        assertEquals(TokenType.QUESTION, questionToken.type);
+        assertEquals("?", questionToken.lexeme);
+
+        var trueStatementToken = tokens.get(3);
+        assertEquals(TokenType.STRING, trueStatementToken.type);
+        assertEquals("true-value", trueStatementToken.lexeme);
+
+        var statementDividerToken = tokens.get(4);
+        assertEquals(TokenType.COLON, statementDividerToken.type);
+        assertEquals(":", statementDividerToken.lexeme);
+
+        var falseStatementToken = tokens.get(5);
+        assertEquals(TokenType.STRING, falseStatementToken.type);
+        assertEquals("false-value", falseStatementToken.lexeme);
+
+        var closeToken = tokens.get(6);
+        assertEquals(TokenType.CLOSE, closeToken.type);
+        assertEquals("}}", closeToken.lexeme);
     }
 
     @Test

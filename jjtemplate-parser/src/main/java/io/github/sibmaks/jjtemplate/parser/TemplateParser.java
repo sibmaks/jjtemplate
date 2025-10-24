@@ -255,8 +255,6 @@ public final class TemplateParser {
             case CLOSE:
             case COMMA:
             case RPAREN:
-            case RBRACKET:
-            case RBRACE:
                 return true;
             default:
                 return false;

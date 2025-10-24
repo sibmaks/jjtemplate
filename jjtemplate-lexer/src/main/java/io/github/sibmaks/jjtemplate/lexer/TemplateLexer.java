@@ -1,6 +1,9 @@
 package io.github.sibmaks.jjtemplate.lexer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Lexical analyzer for the templating contract described by the user.
@@ -40,6 +43,12 @@ public final class TemplateLexer {
     private int pos = 0;
     private Mode mode = Mode.TEXT;
 
+    /**
+     * Creates a new {@code TemplateLexer} instance for the given input.
+     *
+     * @param input the full template source text to be tokenized
+     * @throws NullPointerException if {@code input} is {@code null}
+     */
     public TemplateLexer(String input) {
         this.input = Objects.requireNonNull(input, "input");
         this.n = input.length();
@@ -58,9 +67,14 @@ public final class TemplateLexer {
     }
 
     /**
-     * Produce all tokens for the input. The stream alternates between TEXT and expression tokens depending on tags.
+     * Returns a list of all {@link Token}s produced from the input.
+     * <p>
+     * The lexer alternates between {@code TEXT} and {@code EXPR} modes depending
+     * on whether it is inside or outside of {@code {{ ... }}} tags.
+     * </p>
      *
-     * @return parsed tokens
+     * @return an ordered list of tokens representing the parsed template
+     * @throws TemplateLexerException if an invalid or unterminated construct is encountered
      */
     public List<Token> tokens() {
         var out = new ArrayList<Token>();
@@ -149,18 +163,6 @@ public final class TemplateLexer {
             case ')':
                 pos++;
                 return new Token(TokenType.RPAREN, ")", start, pos);
-            case '{':
-                pos++;
-                return new Token(TokenType.LBRACE, "{", start, pos);
-            case '}':
-                pos++;
-                return new Token(TokenType.RBRACE, "}", start, pos);
-            case '[':
-                pos++;
-                return new Token(TokenType.LBRACKET, "[", start, pos);
-            case ']':
-                pos++;
-                return new Token(TokenType.RBRACKET, "]", start, pos);
             case '\'':
                 return lexString();
             default:
@@ -299,7 +301,8 @@ public final class TemplateLexer {
     }
 
     /**
-     * Mode indicates whether we are lexing raw TEXT or an expression within a tag.
+     * Internal lexer mode indicating whether parsing occurs in raw text ({@code TEXT})
+     * or inside a template expression ({@code EXPR}).
      */
     private enum Mode {TEXT, EXPR}
 
