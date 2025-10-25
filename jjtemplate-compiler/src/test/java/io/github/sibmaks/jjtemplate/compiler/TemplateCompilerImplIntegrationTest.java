@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -12,9 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +33,7 @@ class TemplateCompilerImplIntegrationTest {
         try {
             var templateScript = OBJECT_MAPPER.readValue(it.resolve("input.json").toFile(), TemplateScript.class);
             var contextPath = it.resolve("variables.json").toFile();
-            Map<String, Object> context = Map.of();
+            var context = Map.<String, Object>of();
             if (contextPath.exists()) {
                 context = OBJECT_MAPPER.readValue(contextPath, new TypeReference<>() {
                 });
@@ -78,6 +77,44 @@ class TemplateCompilerImplIntegrationTest {
                 (compiledAt - begin) / 1000000.0,
                 (renderedAt - compiledAt) / 1000000.0
         );
+    }
+
+    @EnabledIf("isLoadEnabled")
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithLoad(String caseName, TemplateScript templateScript, Map<String, Object> context, Object excepted) {
+        var measurementsAmount = 10_000;
+        var measurementsCompiled = new double[measurementsAmount];
+        var measurementsRendered = new double[measurementsAmount];
+        for (int i = 0; i < measurementsAmount; i++) {
+            var begin = System.nanoTime();
+            var compiled = compiler.compile(templateScript);
+            var compiledAt = System.nanoTime();
+            assertNotNull(compiled);
+            var rendered = compiled.render(context);
+            var renderedAt = System.nanoTime();
+            assertEquals(excepted, rendered);
+            measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
+            measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
+        }
+        var compileStats = Arrays.stream(measurementsCompiled).summaryStatistics();
+        var renderStats = Arrays.stream(measurementsRendered).summaryStatistics();
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms (%.4f - %.4f), rendered: %.4f ms (%.4f - %.4f), took: %.4f ms%n",
+                caseName,
+                compileStats.getAverage(),
+                compileStats.getMin(),
+                compileStats.getMax(),
+                renderStats.getAverage(),
+                renderStats.getMin(),
+                renderStats.getMax(),
+                compileStats.getSum() + renderStats.getSum()
+        );
+    }
+
+    static boolean isLoadEnabled() {
+        var property = System.getProperty("io.github.sibmaks.jjtemplate.compiler.loadEnabled");
+        return Boolean.parseBoolean(property);
     }
 
     public static Stream<Arguments> cases() {
