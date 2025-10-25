@@ -65,11 +65,19 @@ class TemplateCompilerImplIntegrationTest {
     @ParameterizedTest
     @MethodSource("cases")
     void testScenario(String caseName, TemplateScript templateScript, Map<String, Object> context, Object excepted) {
-        System.out.println(caseName);
+        var begin = System.nanoTime();
         var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
         assertNotNull(compiled);
         var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
         assertEquals(excepted, rendered);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
     }
 
     public static Stream<Arguments> cases() {

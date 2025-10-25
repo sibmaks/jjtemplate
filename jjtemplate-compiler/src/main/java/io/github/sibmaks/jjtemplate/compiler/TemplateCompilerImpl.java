@@ -5,7 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
-import io.github.sibmaks.jjtemplate.lexer.*;
+import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
 import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
 import io.github.sibmaks.jjtemplate.lexer.api.Token;
@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
 
 public final class TemplateCompilerImpl implements TemplateCompiler {
 
-    private static final Pattern WHOLE_SPREAD = Pattern.compile("^\\{\\{\\.(.*?)}}$", Pattern.DOTALL);
-    private static final Pattern WHOLE_COND = Pattern.compile("^\\{\\{\\?(.*?)}}$", Pattern.DOTALL);
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
     private final TemplateEvaluator templateEvaluator;
 
@@ -63,7 +61,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         if (node instanceof LiteralExpression) {
             return true;
         }
-        if(node instanceof Expression) {
+        if (node instanceof Expression) {
             return false;
         }
         if (node instanceof Nodes.StaticNode) {
@@ -102,7 +100,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             }
             return true;
         }
-        if(node instanceof Nodes.SpreadNode) {
+        if (node instanceof Nodes.SpreadNode) {
             return false;
         }
         return !(node instanceof Nodes.CondNode);
@@ -237,8 +235,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
         for (var e : nodeMap.entrySet()) {
             var rawKey = String.valueOf(e.getKey());
-            var spreadMatcher = WHOLE_SPREAD.matcher(rawKey);
-            if (spreadMatcher.matches()) {
+            if (rawKey.startsWith("{{.") && rawKey.endsWith("}}")) {
                 // object spread key: "{{. expr}}" — value is ignored
                 var expression = compileExpression(rawKey);
                 var folded = tryFoldConstant(expression);
@@ -269,9 +266,8 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     }
 
     private Object compileString(String raw) {
-        if (raw.startsWith("{{")) {
-            var ms = WHOLE_SPREAD.matcher(raw);
-            if (ms.matches()) {
+        if (raw.endsWith("}}")) {
+            if (raw.startsWith("{{.")) {
                 var expression = compileExpression(raw);
                 var foldedExpression = tryFoldConstant(expression);
                 if (foldedExpression instanceof LiteralExpression) {
@@ -279,16 +275,11 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 }
                 return new Nodes.SpreadNode(foldedExpression);
             }
-            var mc = WHOLE_COND.matcher(raw);
-            if (mc.matches()) {
+            if (raw.startsWith("{{?")) {
                 var expression = compileExpression(raw);
                 var foldedExpression = tryFoldConstant(expression);
                 return new Nodes.CondNode(foldedExpression);
             }
-        }
-        // literal (no tags) — keep as is
-        if (!raw.contains("{{")) {
-            return raw;
         }
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
         var lexer = new TemplateLexer(raw);
