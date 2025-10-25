@@ -1,7 +1,7 @@
 package io.github.sibmaks.jjtemplate.parser;
 
-import io.github.sibmaks.jjtemplate.lexer.Token;
-import io.github.sibmaks.jjtemplate.lexer.TokenType;
+import io.github.sibmaks.jjtemplate.lexer.api.Token;
+import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.api.FunctionCallExpression;
 import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
 import io.github.sibmaks.jjtemplate.parser.api.PipeExpression;

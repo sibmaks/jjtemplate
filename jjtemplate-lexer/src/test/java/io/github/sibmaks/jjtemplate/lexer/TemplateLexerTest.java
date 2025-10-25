@@ -1,8 +1,12 @@
 package io.github.sibmaks.jjtemplate.lexer;
 
+import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
+import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
+import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -183,11 +187,10 @@ class TemplateLexerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "case", "then", "else", "range", "of"
-    })
-    void templateKeywords(String string) {
-        var template = String.format("{{ %s }}", string);
+    @EnumSource(Keyword.class)
+    void templateKeywords(Keyword keyword) {
+        var lexem = keyword.getLexem();
+        var template = String.format("{{ %s }}", lexem);
         var lexer = new TemplateLexer(template);
         var tokens = lexer.tokens();
         assertNotNull(tokens);
@@ -202,13 +205,13 @@ class TemplateLexerTest {
         var token = tokens.get(1);
         assertEquals(TokenType.KEYWORD, token.type);
         assertEquals(3, token.start);
-        assertEquals(3 /* '{{ ' */ + string.length(), token.end);
-        assertEquals(string, token.lexeme);
+        assertEquals(3 /* '{{ ' */ + lexem.length(), token.end);
+        assertEquals(lexem, token.lexeme);
 
         var endToken = tokens.get(2);
         assertEquals(TokenType.CLOSE, endToken.type);
-        assertEquals(3 /* '{{ ' */ + string.length() + 1, endToken.start);
-        assertEquals(3 /* '{{ ' */ + string.length() + 1 + 2, endToken.end);
+        assertEquals(3 /* '{{ ' */ + lexem.length() + 1, endToken.start);
+        assertEquals(3 /* '{{ ' */ + lexem.length() + 1 + 2, endToken.end);
         assertEquals("}}", endToken.lexeme);
     }
 

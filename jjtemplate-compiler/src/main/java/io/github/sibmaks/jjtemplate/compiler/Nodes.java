@@ -1,10 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +15,10 @@ import java.util.Map;
 final class Nodes {
 
     /**
-     * {{. expr}} inside array or object — spread node
+     * Represents a spread expression node within an array or object context.
+     * <p>
+     * Corresponds to {@code {{. expr}}} — inserts or merges evaluated content.
+     * </p>
      */
     @Getter
     @Builder
@@ -29,7 +29,11 @@ final class Nodes {
     }
 
     /**
-     * {{? expr}} — conditional insertion node (skip if null)
+     * Represents a conditional insertion node.
+     * <p>
+     * Corresponds to {@code {{? expr}}} — the expression is evaluated,
+     * and the result is inserted only if non-null.
+     * </p>
      */
     @Getter
     @Builder
@@ -40,7 +44,8 @@ final class Nodes {
     }
 
     /**
-     * Object with spread or dynamic keys
+     * Represents a compiled object node that may contain static fields,
+     * dynamic keys, and spread expressions.
      */
     @Getter
     @Builder
@@ -53,7 +58,7 @@ final class Nodes {
         }
 
         /**
-         * Normal key-value pair
+         * Represents a standard object key-value entry.
          */
         @Getter
         @Builder
@@ -65,7 +70,10 @@ final class Nodes {
         }
 
         /**
-         * {{. expr}} inside object — merges map fields
+         * Represents a spread entry inside an object.
+         * <p>
+         * Corresponds to {@code {{. expr}}} — merges map fields from the evaluated expression.
+         * </p>
          */
         @Getter
         @Builder
@@ -77,7 +85,19 @@ final class Nodes {
     }
 
     /**
-     * {@code varName case <expr>}
+     * Represents a static node that holds a literal or constant value.
+     */
+    @Getter
+    @RequiredArgsConstructor
+    public static final class StaticNode {
+        private final Object value;
+    }
+
+    /**
+     * Represents a {@code case} construct in a template.
+     * <p>
+     * Corresponds to syntax like {@code varName case <expr>}, including branches and optional {@code else}.
+     * </p>
      */
     @Getter
     @Builder
@@ -91,7 +111,11 @@ final class Nodes {
     }
 
     /**
-     * {@code varName range item,index of <expr>}
+     * Represents a {@code range} construct in a template.
+     * <p>
+     * Corresponds to syntax like {@code varName range item,index of <expr>},
+     * defining loop variables and the body node to be repeated.
+     * </p>
      */
     @Getter
     @Builder

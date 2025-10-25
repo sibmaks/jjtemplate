@@ -1,5 +1,6 @@
-package io.github.sibmaks.jjtemplate.lexer;
+package io.github.sibmaks.jjtemplate.lexer.api;
 
+import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 

@@ -1,9 +1,10 @@
 package io.github.sibmaks.jjtemplate.lexer;
 
+import io.github.sibmaks.jjtemplate.lexer.api.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Lexical analyzer for the templating contract described by the user.
@@ -37,7 +38,6 @@ import java.util.Set;
  * </ul>
  */
 public final class TemplateLexer {
-    private static final Set<String> KEYWORDS = Set.of("case", "then", "else", "range", "of");
     private final String input;
     private final int n;
     private int pos = 0;
@@ -274,14 +274,18 @@ public final class TemplateLexer {
         do pos++; // consume first
         while (pos < n && isIdentPart(peek()));
         var word = input.substring(start, pos);
-        if ("true".equals(word) || "false".equals(word)) {
-            return new Token(TokenType.BOOLEAN, word, start, pos);
+        if (Reserved.TRUE.eq(word)) {
+            return new Token(TokenType.BOOLEAN, Reserved.TRUE.getLexem(), start, pos);
         }
-        if ("null".equals(word)) {
-            return new Token(TokenType.NULL, word, start, pos);
+        if (Reserved.FALSE.eq(word)) {
+            return new Token(TokenType.BOOLEAN, Reserved.FALSE.getLexem(), start, pos);
         }
-        if (KEYWORDS.contains(word)) {
-            return new Token(TokenType.KEYWORD, word, start, pos);
+        if (Reserved.NULL.eq(word)) {
+            return new Token(TokenType.NULL, Reserved.NULL.getLexem(), start, pos);
+        }
+        var keyword = Keyword.find(word);
+        if (keyword != null) {
+            return new Token(TokenType.KEYWORD, keyword.getLexem(), start, pos);
         }
         return new Token(TokenType.IDENT, word, start, pos);
     }

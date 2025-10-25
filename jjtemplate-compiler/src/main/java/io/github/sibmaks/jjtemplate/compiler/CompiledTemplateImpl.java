@@ -111,6 +111,10 @@ final class CompiledTemplateImpl implements CompiledTemplate {
         if (node == null) {
             return null;
         }
+        if (node instanceof Nodes.StaticNode) {
+            var staticNode = (Nodes.StaticNode) node;
+            return staticNode.getValue();
+        }
         if (node instanceof Expression) {
             var expr = (Expression) node;
             var evaluated = evaluator.evaluate(expr, new Context(ctx));

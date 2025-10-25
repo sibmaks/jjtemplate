@@ -1,4 +1,4 @@
-package io.github.sibmaks.jjtemplate.lexer;
+package io.github.sibmaks.jjtemplate.lexer.api;
 
 import lombok.Getter;
 

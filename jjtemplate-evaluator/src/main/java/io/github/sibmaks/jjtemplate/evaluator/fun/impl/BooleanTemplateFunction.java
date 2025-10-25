@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.lexer.api.Reserved;
 
 import java.util.List;
 
@@ -27,10 +28,10 @@ public class BooleanTemplateFunction implements TemplateFunction {
         if (value instanceof String) {
             try {
                 var strValue = (String) value;
-                if("true".equals(strValue)) {
+                if(Reserved.TRUE.eq(strValue)) {
                     return ExpressionValue.of(true);
                 }
-                if("false".equals(strValue)) {
+                if(Reserved.FALSE.eq(strValue)) {
                     return ExpressionValue.of(false);
                 }
             } catch (Exception ignored) {

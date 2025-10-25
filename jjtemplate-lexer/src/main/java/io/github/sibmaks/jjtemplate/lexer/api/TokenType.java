@@ -1,4 +1,6 @@
-package io.github.sibmaks.jjtemplate.lexer;
+package io.github.sibmaks.jjtemplate.lexer.api;
+
+import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 
 /**
  * Defines all possible types of tokens recognized by the {@link TemplateLexer}.

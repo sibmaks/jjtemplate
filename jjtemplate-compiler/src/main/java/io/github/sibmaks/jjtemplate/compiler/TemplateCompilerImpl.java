@@ -5,10 +5,11 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
-import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
-import io.github.sibmaks.jjtemplate.lexer.TemplateLexerException;
-import io.github.sibmaks.jjtemplate.lexer.Token;
-import io.github.sibmaks.jjtemplate.lexer.TokenType;
+import io.github.sibmaks.jjtemplate.lexer.*;
+import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
+import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
+import io.github.sibmaks.jjtemplate.lexer.api.Token;
+import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
@@ -27,77 +28,84 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         this.templateEvaluator = new TemplateEvaluator(locale);
     }
 
-    private static Pair<Boolean, Object> getStaticValue(Object value) {
-        if (value == null) {
-            return new Pair<>(true, null);
+    private static Object unwrapStatic(Object node) {
+        if (node instanceof Nodes.StaticNode) {
+            var staticNode = (Nodes.StaticNode) node;
+            return staticNode.getValue();
         }
-        if (value instanceof Map<?, ?>) {
-            var nodeMap = (Map<?, ?>) value;
-            var resultMap = new LinkedHashMap<String, Object>(nodeMap.size());
-            for (var entry : nodeMap.entrySet()) {
-                var mapKey = getStaticValue(entry.getKey());
-                if (!mapKey.getFirst()) {
-                    return new Pair<>(false, value);
-                }
-                var mapValue = getStaticValue(entry.getValue());
-                if (!mapValue.getFirst()) {
-                    return new Pair<>(false, value);
-                }
-                resultMap.put((String) mapKey.getSecond(), mapValue.getSecond());
-            }
-            return new Pair<>(true, resultMap);
-        } else if (value instanceof List<?>) {
-            var nodeList = (List<?>) value;
-            var resultList = new ArrayList<>(nodeList.size());
+        if (node instanceof LiteralExpression) {
+            var literalExpression = (LiteralExpression) node;
+            return literalExpression.value;
+        }
+        if (node instanceof List<?>) {
+            var nodeList = (List<?>) node;
+            var result = new ArrayList<>();
             for (var el : nodeList) {
-                var staticValue = getStaticValue(el);
-                if (!staticValue.getFirst()) {
-                    return new Pair<>(false, value);
+                result.add(unwrapStatic(el));
+            }
+            return result;
+        }
+        if (node instanceof Map<?, ?>) {
+            var nodeMap = (Map<?, ?>) node;
+            var result = new LinkedHashMap<>();
+            for (var e : nodeMap.entrySet()) {
+                result.put(unwrapStatic(e.getKey()), unwrapStatic(e.getValue()));
+            }
+            return result;
+        }
+        return node;
+    }
+
+    private boolean isStatic(Object node) {
+        if (node == null) {
+            return true;
+        }
+        if (node instanceof LiteralExpression) {
+            return true;
+        }
+        if(node instanceof Expression) {
+            return false;
+        }
+        if (node instanceof Nodes.StaticNode) {
+            return true;
+        }
+        if (node instanceof Map<?, ?>) {
+            var nodeMap = (Map<?, ?>) node;
+            for (var e : nodeMap.entrySet()) {
+                if (!isStatic(e.getKey()) || !isStatic(e.getValue())) {
+                    return false;
                 }
-                resultList.add(staticValue.getSecond());
             }
-            return new Pair<>(true, resultList);
-        } else if (value.getClass().isArray()) {
-            var len = Array.getLength(value);
-            var resultList = new ArrayList<>(len);
-            for (int i = 0; i < len; i++) {
-                var el = Array.get(value, i);
-                var staticValue = getStaticValue(el);
-                if (!staticValue.getFirst()) {
-                    return new Pair<>(false, value);
+            return true;
+        }
+
+        if (node instanceof List<?>) {
+            var nodeList = (List<?>) node;
+            for (var el : nodeList) {
+                if (!isStatic(el)) {
+                    return false;
                 }
-                resultList.add(staticValue.getSecond());
             }
-            return new Pair<>(true, resultList);
-        } else if (value instanceof Expression) {
-            if (value instanceof LiteralExpression) {
-                var literalExpression = (LiteralExpression) value;
-                return new Pair<>(true, literalExpression.value);
-            }
-            return new Pair<>(false, value);
-        } else if (value instanceof Nodes.CompiledObject) {
-            var compiledObject = (Nodes.CompiledObject) value;
-            var entries = compiledObject.getEntries();
-            var resultMap = new LinkedHashMap<String, Object>(entries.size());
-            for (var entry : entries) {
+            return true;
+        }
+        if (node instanceof Nodes.CompiledObject) {
+            var compiledObject = (Nodes.CompiledObject) node;
+            for (var entry : compiledObject.getEntries()) {
                 if (entry instanceof Nodes.CompiledObject.Field) {
                     var field = (Nodes.CompiledObject.Field) entry;
-                    var staticKey = getStaticValue(field.getKey());
-                    if (!staticKey.getFirst()) {
-                        return new Pair<>(false, value);
+                    if (!isStatic(field.getKey()) || !isStatic(field.getValue())) {
+                        return false;
                     }
-                    var staticValue = getStaticValue(field.getValue());
-                    if (!staticValue.getFirst()) {
-                        return new Pair<>(false, value);
-                    }
-                    resultMap.put((String) staticKey.getSecond(), staticValue.getSecond());
                 } else {
-                    return new Pair<>(false, value);
+                    return false;
                 }
             }
-            return new Pair<>(true, resultMap);
+            return true;
         }
-        return new Pair<>(true, value);
+        if(node instanceof Nodes.SpreadNode) {
+            return false;
+        }
+        return !(node instanceof Nodes.CondNode);
     }
 
     @Override
@@ -156,11 +164,11 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var valueSpecMap = (Map<String, Object>) valueSpec;
         for (var ce : valueSpecMap.entrySet()) {
             var condKey = ce.getKey();
-            if ("else".equals(condKey)) {
+            if (Keyword.ELSE.eq(condKey)) {
                 caseDefinitionBuilder.elseNode(compileNode(ce.getValue()));
                 continue;
             }
-            if ("then".equals(condKey)) {
+            if (Keyword.THEN.eq(condKey)) {
                 caseDefinitionBuilder.thenNode(compileNode(ce.getValue()));
                 continue;
             }
@@ -175,71 +183,88 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private Object compileNode(Object node) {
         if (node == null) {
-            return null;
+            return new Nodes.StaticNode(null);
         }
+
         if (node instanceof String) {
-            return compileString((String) node);
+            var compiled = compileString((String) node);
+            if (isStatic(compiled)) {
+                return new Nodes.StaticNode(unwrapStatic(compiled));
+            }
+            return compiled;
         }
+
         if (node instanceof Map<?, ?>) {
             var nodeMap = (Map<?, ?>) node;
-            return compileObject(nodeMap);
+            var compiled = compileObject(nodeMap);
+            if (isStatic(compiled)) {
+                return new Nodes.StaticNode(unwrapStatic(compiled));
+            }
+            return compiled;
         }
+
         if (node instanceof List<?>) {
             var nodeList = (List<?>) node;
-            var compiled = new ArrayList<>();
+            var compiledList = new ArrayList<>();
             for (var el : nodeList) {
-                var compileNode = compileNode(el);
-                compiled.add(compileNode);
+                compiledList.add(compileNode(el));
             }
-            return compiled;
+            if (isStatic(compiledList)) {
+                return new Nodes.StaticNode(unwrapStatic(compiledList));
+            }
+            return compiledList;
         }
+
         if (node.getClass().isArray()) {
-            var compiled = new ArrayList<>();
-            var len = Array.getLength(node);
+            var compiledList = new ArrayList<>();
+            int len = Array.getLength(node);
             for (int i = 0; i < len; i++) {
-                var el = Array.get(node, i);
-                var compileNode = compileNode(el);
-                compiled.add(compileNode);
+                compiledList.add(compileNode(Array.get(node, i)));
             }
-            return compiled;
+            if (isStatic(compiledList)) {
+                return new Nodes.StaticNode(unwrapStatic(compiledList));
+            }
+            return compiledList;
         }
-        return node; // number, boolean
+
+        return new Nodes.StaticNode(node);
     }
 
     private Object compileObject(Map<?, ?> nodeMap) {
         var entries = new ArrayList<Nodes.CompiledObject.Entry>();
-        var simple = true;
-        var simpleObject = new LinkedHashMap<String, Object>();
+        var staticMap = new LinkedHashMap<String, Object>(nodeMap.size());
+        var allStatic = true;
+
         for (var e : nodeMap.entrySet()) {
             var rawKey = String.valueOf(e.getKey());
-            var ms = WHOLE_SPREAD.matcher(rawKey);
-            if (ms.matches()) {
+            var spreadMatcher = WHOLE_SPREAD.matcher(rawKey);
+            if (spreadMatcher.matches()) {
                 // object spread key: "{{. expr}}" — value is ignored
                 var expression = compileExpression(rawKey);
-                entries.add(new Nodes.CompiledObject.Spread(expression));
-                simple = false;
+                var folded = tryFoldConstant(expression);
+                entries.add(new Nodes.CompiledObject.Spread(folded));
+                allStatic = false;
                 continue;
             }
-            var keyCompiled = compileString(rawKey);
-            var valCompiled = compileNode(e.getValue());
-            if (simple) {
-                var staticKey = getStaticValue(keyCompiled);
-                if (!staticKey.getFirst()) {
-                    simple = false;
-                } else {
-                    var staticValue = getStaticValue(valCompiled);
-                    if (!staticValue.getFirst()) {
-                        simple = false;
-                    } else {
-                        simpleObject.put((String) staticKey.getSecond(), staticValue.getSecond());
-                    }
-                }
+
+            var compiledKey = compileString(rawKey);
+            var compiledVal = compileNode(e.getValue());
+
+            if (allStatic && isStatic(compiledKey) && isStatic(compiledVal)) {
+                var keyValue = unwrapStatic(compiledKey);
+                var valValue = unwrapStatic(compiledVal);
+                staticMap.put(String.valueOf(keyValue), valValue);
+            } else {
+                allStatic = false;
             }
-            entries.add(new Nodes.CompiledObject.Field(keyCompiled, valCompiled));
+
+            entries.add(new Nodes.CompiledObject.Field(compiledKey, compiledVal));
         }
-        if (simple) {
-            return simpleObject;
+
+        if (allStatic) {
+            return new Nodes.StaticNode(staticMap);
         }
+
         return new Nodes.CompiledObject(entries);
     }
 
