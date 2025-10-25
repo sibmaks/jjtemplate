@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "unused": "to-remove",
+      "unusedCase case .someExpression": {
+        "then": "dead-code",
+        "else": "dead-code"
+      },
+      "unusedRange range item,index of .someExpression": "deadCode"
+    }
+  ],
+  "template": "ok"
+}

@@ -1,0 +1,25 @@
+{
+  "arrayOfObjects": [
+    {
+      "id": 0,
+      "item": [
+        {
+          "key1": "value1"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "item": [
+        {
+          "key2": "value2"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "item": [
+      ]
+    }
+  ]
+}

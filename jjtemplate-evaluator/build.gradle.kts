@@ -8,7 +8,6 @@ dependencies {
 
     testImplementation(platform(libs.junit.bom))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.junit.jupiter)
+    testImplementation(libs.bundles.mockito)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

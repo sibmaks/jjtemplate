@@ -8,5 +8,10 @@
   ],
   "varObject": {
     "key": "new-value"
+  },
+  "varParentObject": {
+    "child": {
+      "key": "value"
+    }
   }
 }

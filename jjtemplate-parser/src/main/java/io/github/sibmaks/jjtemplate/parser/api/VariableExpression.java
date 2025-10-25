@@ -1,9 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -25,6 +22,11 @@ public final class VariableExpression implements Expression {
      * The ordered list of segments that form this variable expression.
      */
     public final List<Segment> segments;
+
+    @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visitVariable(this);
+    }
 
     /**
      * Represents a single segment of a variable expression.

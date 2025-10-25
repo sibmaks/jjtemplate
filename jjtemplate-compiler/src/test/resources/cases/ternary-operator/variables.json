@@ -1,4 +1,6 @@
 {
   "booleanTrue": true,
-  "booleanFalse": false
+  "booleanFalse": false,
+  "ok": "ok",
+  "fail": "fail"
 }

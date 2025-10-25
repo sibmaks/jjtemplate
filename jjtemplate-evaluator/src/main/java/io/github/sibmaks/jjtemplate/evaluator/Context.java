@@ -8,7 +8,13 @@ import java.util.Map;
  * @author sibmaks
  */
 public final class Context {
+    private static final Context EMPTY = new Context();
+
     private final Map<String, Object> vars;
+
+    private Context() {
+        this.vars = Map.of();
+    }
 
     public Context(Map<String, Object> vars) {
         this.vars = vars == null ? Map.of() : vars;
@@ -19,6 +25,10 @@ public final class Context {
             return ExpressionValue.empty();
         }
         return ExpressionValue.of(vars.get(name));
+    }
+
+    public static Context empty() {
+        return EMPTY;
     }
 
 }

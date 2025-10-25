@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "varResult case true": {
+        "then": "then case"
+      }
+    }
+  ],
+  "template": "{{ .varResult }}"
+}

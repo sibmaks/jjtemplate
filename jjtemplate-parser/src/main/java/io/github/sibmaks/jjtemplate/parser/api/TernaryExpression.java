@@ -33,5 +33,9 @@ public final class TernaryExpression implements Expression {
      */
     public final Expression ifFalse;
 
+    @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visitTernary(this);
+    }
 }
 

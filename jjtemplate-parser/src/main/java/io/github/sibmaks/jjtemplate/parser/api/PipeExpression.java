@@ -28,4 +28,9 @@ public class PipeExpression implements Expression {
      * The sequence of function calls applied to the left-hand expression.
      */
     public final List<FunctionCallExpression> chain;
+
+    @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visitPipe(this);
+    }
 }

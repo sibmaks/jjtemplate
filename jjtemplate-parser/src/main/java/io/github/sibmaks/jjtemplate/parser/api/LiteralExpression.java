@@ -21,4 +21,9 @@ public class LiteralExpression implements Expression {
      * The literal value of this expression.
      */
     public final Object value;
+
+    @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visitLiteral(this);
+    }
 }

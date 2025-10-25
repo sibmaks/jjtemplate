@@ -12,7 +12,10 @@
     "stringFalseKey": "{{ boolean .stringFalse }}",
     "stringFalsePipeKey": "{{ .stringFalse | boolean }}",
 
-    "nullKey": "{{ boolean .nullVar }}",
-    "nullPipeKey": "{{ .nullVar | boolean }}"
+    "nullKey": "{{ boolean null }}",
+    "nullPipeKey": "{{ null | boolean }}",
+
+    "nullVarKey": "{{ boolean .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | boolean }}"
   }
 }

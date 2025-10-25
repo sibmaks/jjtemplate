@@ -4,5 +4,11 @@
   "variableTrue": "ok",
   "variableFalse": "ok",
   "variableNestingTrue": "ok",
-  "variableNestingFalse": "ok"
+  "variableNestingFalse": "ok",
+  "defTrue": "ok",
+  "defFalse": "ok",
+  "staticConditionTrue": "ok",
+  "staticConditionFalse": "ok",
+  "staticDefConditionTrue": "ok",
+  "staticDefConditionFalse": "ok"
 }

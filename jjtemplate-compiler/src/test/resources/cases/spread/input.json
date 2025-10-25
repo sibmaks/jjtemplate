@@ -1,4 +1,10 @@
 {
+  "definitions": [
+    {
+      "defTrue": true,
+      "defFalse": false
+    }
+  ],
   "template": {
     "array": [
       "prefix",
@@ -8,6 +14,36 @@
     "object": {
       "key": "value",
       "{{. .varObject }}": true
-    }
+    },
+    "staticArray": [
+      "{{. list 'a', true, 42, 3.1415 }}"
+    ],
+    "nullSpread": [
+      "{{. .notExistsVar }}"
+    ],
+    "funcOperator": [
+      "{{. str .defTrue }}",
+      "{{. str .defFalse }}"
+    ],
+    "funcStaticOperator": [
+      "{{. str true  }}",
+      "{{. str false }}"
+    ],
+    "pipeOperator": [
+      "{{. .defTrue | str }}",
+      "{{. .defFalse | str }}"
+    ],
+    "pipeStaticOperator": [
+      "{{. true | str }}",
+      "{{. false | str }}"
+    ],
+    "ternaryOperator": [
+      "{{. .defTrue ? .varParentObject.child : null }}",
+      "{{. .defFalse ? null : .varParentObject.child }}"
+    ],
+    "ternaryStaticOperator": [
+      "{{. (false | not) ? .varParentObject.child : null }}",
+      "{{. (true | not) ? null : .varParentObject.child }}"
+    ]
   }
 }

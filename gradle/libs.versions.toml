@@ -1,11 +1,14 @@
 [versions]
 lombok = "1.18.42"
+slf4j = "2.0.17"
 jackson = "2.20.0"
 junit-bom = "5.10.0"
 mockito = "5.20.0"
 
 [libraries]
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
@@ -19,4 +22,8 @@ jackson = [
     "jackson-core",
     "jackson-databind",
     "jackson-datatype-jsr310"
+]
+mockito = [
+    'mockito-core',
+    'mockito-junit-jupiter'
 ]

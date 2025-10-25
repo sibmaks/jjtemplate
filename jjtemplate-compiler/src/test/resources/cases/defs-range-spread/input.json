@@ -1,0 +1,23 @@
+{
+  "definitions": [
+    {
+      "listOfNodes": [
+        {
+          "key1": "value1"
+        },
+        {
+          "key2": "value2"
+        }
+      ]
+    },
+    {
+      "varObject range item,index of .listOfNodes": {
+        "id": "{{ .index }}",
+        "{{. .item }}": true
+      }
+    }
+  ],
+  "template": {
+    "arrayOfObjects": "{{ .varObject }}"
+  }
+}

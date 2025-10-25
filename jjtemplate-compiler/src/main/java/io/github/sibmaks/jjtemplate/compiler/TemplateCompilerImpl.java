@@ -3,7 +3,9 @@ package io.github.sibmaks.jjtemplate.compiler;
 import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
-import io.github.sibmaks.jjtemplate.evaluator.Context;
+import io.github.sibmaks.jjtemplate.compiler.optimizer.TemplateOptimizer;
+import io.github.sibmaks.jjtemplate.compiler.visitor.AstTreeConvertVisitor;
+import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
@@ -11,99 +13,59 @@ import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
 import io.github.sibmaks.jjtemplate.lexer.api.Token;
 import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
-import io.github.sibmaks.jjtemplate.parser.api.*;
+import io.github.sibmaks.jjtemplate.parser.api.Expression;
+import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
 
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+/**
+ * Default implementation of the {@link TemplateCompiler} interface.
+ * <p>
+ * Responsible for compiling template scripts into executable AST structures.
+ * It handles parsing of template expressions, variable definitions, ranges,
+ * and conditional cases, then applies optimization passes to produce a
+ * {@link CompiledTemplate} ready for rendering.
+ * </p>
+ *
+ * <p>Main compilation stages:</p>
+ * <ol>
+ *   <li>Parsing source definitions and the main template into {@link AstNode} trees.</li>
+ *   <li>Transforming expressions into AST nodes via {@link AstTreeConvertVisitor}.</li>
+ *   <li>Optimizing the AST using {@link TemplateOptimizer} (constant folding, dead-code elimination, etc.).</li>
+ *   <li>Building a {@link CompiledTemplateImpl} for efficient runtime rendering.</li>
+ * </ol>
+ *
+ * @author sibmaks
+ * @since 0.0.1
+ */
 public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
+    /**
+     * Evaluates expressions and performs constant folding during compilation.
+     */
     private final TemplateEvaluator templateEvaluator;
+
+    /**
+     * Converts parsed expression trees into executable AST nodes.
+     */
+    private final AstTreeConvertVisitor astTreeConvert;
 
     public TemplateCompilerImpl(Locale locale) {
         this.templateEvaluator = new TemplateEvaluator(locale);
+        this.astTreeConvert = new AstTreeConvertVisitor(templateEvaluator);
     }
 
-    private static Object unwrapStatic(Object node) {
-        if (node instanceof Nodes.StaticNode) {
-            var staticNode = (Nodes.StaticNode) node;
-            return staticNode.getValue();
-        }
-        if (node instanceof LiteralExpression) {
-            var literalExpression = (LiteralExpression) node;
-            return literalExpression.value;
-        }
-        if (node instanceof List<?>) {
-            var nodeList = (List<?>) node;
-            var result = new ArrayList<>();
-            for (var el : nodeList) {
-                result.add(unwrapStatic(el));
-            }
-            return result;
-        }
-        if (node instanceof Map<?, ?>) {
-            var nodeMap = (Map<?, ?>) node;
-            var result = new LinkedHashMap<>();
-            for (var e : nodeMap.entrySet()) {
-                result.put(unwrapStatic(e.getKey()), unwrapStatic(e.getValue()));
-            }
-            return result;
-        }
-        return node;
-    }
-
-    private boolean isStatic(Object node) {
-        if (node == null) {
-            return true;
-        }
-        if (node instanceof LiteralExpression) {
-            return true;
-        }
-        if (node instanceof Expression) {
-            return false;
-        }
-        if (node instanceof Nodes.StaticNode) {
-            return true;
-        }
-        if (node instanceof Map<?, ?>) {
-            var nodeMap = (Map<?, ?>) node;
-            for (var e : nodeMap.entrySet()) {
-                if (!isStatic(e.getKey()) || !isStatic(e.getValue())) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        if (node instanceof List<?>) {
-            var nodeList = (List<?>) node;
-            for (var el : nodeList) {
-                if (!isStatic(el)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        if (node instanceof Nodes.CompiledObject) {
-            var compiledObject = (Nodes.CompiledObject) node;
-            for (var entry : compiledObject.getEntries()) {
-                if (entry instanceof Nodes.CompiledObject.Field) {
-                    var field = (Nodes.CompiledObject.Field) entry;
-                    if (!isStatic(field.getKey()) || !isStatic(field.getValue())) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-            return true;
-        }
-        if (node instanceof Nodes.SpreadNode) {
-            return false;
-        }
-        return !(node instanceof Nodes.CondNode);
+    private static Nodes.StaticNode unwrapList(List<AstNode> compiledList) {
+        var values = compiledList.stream()
+                .map(it -> (Nodes.StaticNode) it)
+                .filter(it -> !it.isCond() || it.getValue() != null)
+                .map(Nodes.StaticNode::getValue)
+                .collect(Collectors.toList());
+        return Nodes.StaticNode.of(values);
     }
 
     @Override
@@ -115,10 +77,10 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             throw new IllegalArgumentException("'template' field required");
         }
 
-        var compiledDefs = new ArrayList<Map<String, Object>>();
+        var compiledDefs = new ArrayList<Map<String, AstNode>>();
         for (var d : defs) {
             var def = (Map<String, Object>) d;
-            var compiled = new LinkedHashMap<String, Object>();
+            var compiled = new LinkedHashMap<String, AstNode>();
             for (var e : def.entrySet()) {
                 var header = e.getKey();
                 var valueSpec = e.getValue();
@@ -139,24 +101,22 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 }
                 // explicit
                 var varName = parseSimpleHeader(header);
-                if (varName != null) {
-                    compiled.put(varName, compileNode(valueSpec));
-                    continue;
-                }
-                throw new IllegalArgumentException("Unknown definition header: " + header);
+                compiled.put(varName, compileNode(valueSpec));
             }
             compiledDefs.add(compiled);
         }
 
         var compiledTemplate = compileNode(template);
-        return new CompiledTemplateImpl(templateEvaluator, compiledDefs, compiledTemplate);
+        var optimizer = new TemplateOptimizer(templateEvaluator);
+        var optimized = optimizer.optimize(compiledDefs, compiledTemplate);
+        return new CompiledTemplateImpl(templateEvaluator, optimized.getDefinitions(), optimized.getTemplate());
     }
 
     private Nodes.CaseDefinition compileCase(Object valueSpec, String caseExpression) {
         if (!(valueSpec instanceof Map<?, ?>)) {
             throw new IllegalArgumentException("case definition expects mapping object");
         }
-        var branches = new LinkedHashMap<Expression, Object>();
+        var branches = new LinkedHashMap<Expression, AstNode>();
         var caseDefinitionBuilder = Nodes.CaseDefinition.builder();
         @SuppressWarnings("unchecked")
         var valueSpecMap = (Map<String, Object>) valueSpec;
@@ -179,56 +139,99 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 .build();
     }
 
-    private Object compileNode(Object node) {
+    private AstNode compileNode(Object node) {
         if (node == null) {
-            return new Nodes.StaticNode(null);
+            return Nodes.StaticNode.empty();
         }
 
         if (node instanceof String) {
-            var compiled = compileString((String) node);
-            if (isStatic(compiled)) {
-                return new Nodes.StaticNode(unwrapStatic(compiled));
-            }
-            return compiled;
+            return compileString((String) node);
         }
 
         if (node instanceof Map<?, ?>) {
             var nodeMap = (Map<?, ?>) node;
-            var compiled = compileObject(nodeMap);
-            if (isStatic(compiled)) {
-                return new Nodes.StaticNode(unwrapStatic(compiled));
-            }
-            return compiled;
+            return compileObject(nodeMap);
         }
 
         if (node instanceof List<?>) {
             var nodeList = (List<?>) node;
-            var compiledList = new ArrayList<>();
+            var compiledList = new ArrayList<AstNode>();
+            var staticList = true;
             for (var el : nodeList) {
-                compiledList.add(compileNode(el));
+                var child = compileNode(el);
+                if (!staticList || child instanceof Nodes.StaticNode) {
+                    compiledList.add(child);
+                    continue;
+                }
+                if (child instanceof Nodes.SpreadNode) {
+                    var spreadNode = (Nodes.SpreadNode) child;
+                    var spreadNodeExpression = spreadNode.getExpression();
+                    if (spreadNodeExpression instanceof LiteralExpression) {
+                        var literalExpression = (LiteralExpression) spreadNodeExpression;
+                        var value = literalExpression.value;
+                        if (value == null) {
+                            continue;
+                        }
+                        if (value instanceof List<?>) {
+                            var subList = (List<?>) value;
+                            compiledList.addAll(
+                                    subList.stream()
+                                            .map(Nodes.StaticNode::of)
+                                            .collect(Collectors.toList())
+                            );
+                        } else {
+                            compiledList.add(Nodes.StaticNode.of(value));
+                        }
+                    } else {
+                        compiledList.add(child);
+                        staticList = false;
+                    }
+                } else if (!(child instanceof Nodes.CondNode)) {
+                    compiledList.add(child);
+                    staticList = false;
+                } else {
+                    var condNode = (Nodes.CondNode) child;
+                    var condNodeExpression = condNode.getExpression();
+                    if (condNodeExpression instanceof LiteralExpression) {
+                        var literalExpression = (LiteralExpression) condNodeExpression;
+                        var value = literalExpression.value;
+                        if (value != null) {
+                            compiledList.add(Nodes.StaticNode.of(value));
+                        }
+                        continue;
+                    }
+                    compiledList.add(new Nodes.CondNode(condNodeExpression));
+                    staticList = false;
+                }
             }
-            if (isStatic(compiledList)) {
-                return new Nodes.StaticNode(unwrapStatic(compiledList));
+            if (staticList) {
+                return unwrapList(compiledList);
             }
-            return compiledList;
+            return new Nodes.ListNode(compiledList);
         }
 
         if (node.getClass().isArray()) {
-            var compiledList = new ArrayList<>();
-            int len = Array.getLength(node);
-            for (int i = 0; i < len; i++) {
-                compiledList.add(compileNode(Array.get(node, i)));
+            var compiledList = new ArrayList<AstNode>();
+            var staticList = true;
+            var len = Array.getLength(node);
+            for (var i = 0; i < len; i++) {
+                var el = Array.get(node, i);
+                var child = compileNode(el);
+                if (staticList && !(child instanceof Nodes.StaticNode)) {
+                    staticList = false;
+                }
+                compiledList.add(child);
             }
-            if (isStatic(compiledList)) {
-                return new Nodes.StaticNode(unwrapStatic(compiledList));
+            if (staticList) {
+                return unwrapList(compiledList);
             }
-            return compiledList;
+            return new Nodes.ListNode(compiledList);
         }
 
-        return new Nodes.StaticNode(node);
+        return Nodes.StaticNode.of(node);
     }
 
-    private Object compileObject(Map<?, ?> nodeMap) {
+    private AstNode compileObject(Map<?, ?> nodeMap) {
         var entries = new ArrayList<Nodes.CompiledObject.Entry>();
         var staticMap = new LinkedHashMap<String, Object>(nodeMap.size());
         var allStatic = true;
@@ -238,8 +241,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             if (rawKey.startsWith("{{.") && rawKey.endsWith("}}")) {
                 // object spread key: "{{. expr}}" — value is ignored
                 var expression = compileExpression(rawKey);
-                var folded = tryFoldConstant(expression);
-                entries.add(new Nodes.CompiledObject.Spread(folded));
+                entries.add(new Nodes.CompiledObject.Spread(expression));
                 allStatic = false;
                 continue;
             }
@@ -247,38 +249,42 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             var compiledKey = compileString(rawKey);
             var compiledVal = compileNode(e.getValue());
 
-            if (allStatic && isStatic(compiledKey) && isStatic(compiledVal)) {
-                var keyValue = unwrapStatic(compiledKey);
-                var valValue = unwrapStatic(compiledVal);
-                staticMap.put(String.valueOf(keyValue), valValue);
-            } else {
-                allStatic = false;
+            if (allStatic) {
+                if (compiledKey instanceof Nodes.StaticNode && compiledVal instanceof Nodes.StaticNode) {
+                    var keyValue = ((Nodes.StaticNode) compiledKey).getValue();
+                    var valValue = ((Nodes.StaticNode) compiledVal).getValue();
+                    staticMap.put(String.valueOf(keyValue), valValue);
+                } else {
+                    allStatic = false;
+                }
             }
 
             entries.add(new Nodes.CompiledObject.Field(compiledKey, compiledVal));
         }
 
         if (allStatic) {
-            return new Nodes.StaticNode(staticMap);
+            return Nodes.StaticNode.of(staticMap);
         }
 
         return new Nodes.CompiledObject(entries);
     }
 
-    private Object compileString(String raw) {
+    private AstNode compileString(String raw) {
         if (raw.endsWith("}}")) {
             if (raw.startsWith("{{.")) {
                 var expression = compileExpression(raw);
-                var foldedExpression = tryFoldConstant(expression);
-                if (foldedExpression instanceof LiteralExpression) {
-                    return ((LiteralExpression) foldedExpression).value;
+                var astNode = expression.accept(astTreeConvert);
+                if (astNode instanceof Nodes.StaticNode) {
+                    var value = ((Nodes.StaticNode) astNode).getValue();
+                    var literalExpression = new LiteralExpression(value);
+                    return new Nodes.SpreadNode(literalExpression);
                 }
-                return new Nodes.SpreadNode(foldedExpression);
+                var expressionNode = (Nodes.ExpressionNode) astNode;
+                return new Nodes.SpreadNode(expressionNode.getExpression());
             }
             if (raw.startsWith("{{?")) {
                 var expression = compileExpression(raw);
-                var foldedExpression = tryFoldConstant(expression);
-                return new Nodes.CondNode(foldedExpression);
+                return new Nodes.CondNode(expression);
             }
         }
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
@@ -287,11 +293,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var parser = new TemplateParser(tokens);
         try {
             var expression = parser.parseTemplate();
-            var foldedExpression = tryFoldConstant(expression);
-            if (foldedExpression instanceof LiteralExpression) {
-                return ((LiteralExpression) foldedExpression).value;
-            }
-            return foldedExpression;
+            return expression.accept(astTreeConvert);
         } catch (TemplateLexerException e) {
             throw new IllegalArgumentException("String compilation error: '" + raw + "'", e);
         }
@@ -330,7 +332,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         if (VARIABLE_NAME.matcher(h).matches()) {
             return h;
         }
-        return null;
+        throw new IllegalArgumentException("Illegal variable name '" + h + "'");
     }
 
     private CaseHeader parseCaseHeader(String h) {
@@ -341,7 +343,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var var = h.substring(0, i).trim();
         var expr = h.substring(i + 6).trim();
         if (!VARIABLE_NAME.matcher(var).matches()) {
-            return null;
+            throw new IllegalArgumentException("Illegal variable name '" + var + "'");
         }
         var c = new CaseHeader();
         c.varName = var;
@@ -369,8 +371,14 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
         var item = parts[0].trim();
         var index = parts[1].trim();
-        if (!VARIABLE_NAME.matcher(var).matches() || !VARIABLE_NAME.matcher(item).matches() || !VARIABLE_NAME.matcher(index).matches()) {
-            return null;
+        if (!VARIABLE_NAME.matcher(var).matches()) {
+            throw new IllegalArgumentException("Illegal variable name '" + var + "'");
+        }
+        if (!VARIABLE_NAME.matcher(item).matches()) {
+            throw new IllegalArgumentException("Illegal variable name '" + item + "'");
+        }
+        if (!VARIABLE_NAME.matcher(index).matches()) {
+            throw new IllegalArgumentException("Illegal variable name '" + index + "'");
         }
         var r = new RangeHeader();
         r.varName = var;
@@ -378,69 +386,6 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         r.index = index;
         r.expr = "{{ " + expr + " }}";
         return r;
-    }
-
-    /**
-     * Try to evaluate expression at compile time.
-     * If expression is pure (no variable access) — it’s folded into a literal value.
-     */
-    private Expression tryFoldConstant(Expression expr) {
-        try {
-            // Walk expression tree to check if it depends on variables
-            if (!dependsOnContext(expr)) {
-                var value = templateEvaluator.evaluate(expr, new Context(Map.of())).getValue();
-                return new LiteralExpression(value);
-            }
-        } catch (Exception ignore) {
-            // ignore folding failures (like divide by zero or unknown function)
-        }
-        return expr; // keep expression as is
-    }
-
-    private boolean dependsOnContext(Expression expr) {
-        if (expr == null) {
-            return false;
-        }
-
-        // VariableExpression always depends on context
-        if (expr instanceof VariableExpression) {
-            return true;
-        }
-
-        if (expr instanceof FunctionCallExpression) {
-            var call = (FunctionCallExpression) expr;
-            for (var a : call.args) {
-                if (dependsOnContext(a)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        if (expr instanceof PipeExpression) {
-            var pipe = (PipeExpression) expr;
-            if (dependsOnContext(pipe.left)) {
-                return true;
-            }
-            for (var call : pipe.chain) {
-                for (var a : call.args) {
-                    if (dependsOnContext(a)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        if (expr instanceof TernaryExpression) {
-            var ternary = (TernaryExpression) expr;
-            return dependsOnContext(ternary.condition) ||
-                    dependsOnContext(ternary.ifTrue) ||
-                    dependsOnContext(ternary.ifFalse);
-        }
-
-        // LiteralExpression never depends on context
-        return false;
     }
 
     // --- headers parsing ---
