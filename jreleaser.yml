@@ -27,7 +27,10 @@ distributions:
 
 release:
   github:
-    artifacts: true
+    owner: sibmaks
+    name: jjtemplate
+    tagName: v{{projectVersion}}
+    releaseName: Release {{projectVersion}}
 
 deploy:
   active: ALWAYS
@@ -54,3 +57,4 @@ deploy:
 signing:
   active: ALWAYS
   armored: true
+  mode: MEMORY
