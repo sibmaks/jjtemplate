@@ -52,4 +52,5 @@ deploy:
           - build/staging-deploy
 
 signing:
-  active: NEVER
+  active: ALWAYS
+  armored: true

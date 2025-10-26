@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
+    id("signing")
     id("org.jreleaser") version "1.20.0"
 }
 
@@ -20,12 +21,18 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
+    apply(plugin = "signing")
+    apply(plugin = "org.jreleaser")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
 
     repositories {
         mavenCentral()
+    }
+
+    configurations {
+        create("deployerJars")
     }
 
     tasks.withType<JavaCompile>().configureEach {
@@ -122,6 +129,10 @@ dependencies {
     implementation(project(":jjtemplate-lexer"))
     implementation(project(":jjtemplate-evaluator"))
     implementation(project(":jjtemplate-compiler"))
+}
+
+configurations {
+    create("deployerJars")
 }
 
 publishing {
