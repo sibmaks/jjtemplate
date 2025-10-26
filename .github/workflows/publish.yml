@@ -35,7 +35,7 @@ jobs:
         uses: gradle/actions/wrapper-validation@v3
       - name: Run JReleaser
         run: |
-          ./gradlew jreleaserFullRelease
+          ./gradlew jreleaserDeploy
         env:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.SONATYPE_TOKEN }}
