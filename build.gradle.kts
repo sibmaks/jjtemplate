@@ -87,6 +87,7 @@ subprojects {
                 from(components["java"])
                 pom {
                     packaging = "jar"
+                    description = "$artifactId jar"
                     url = "https://github.com/sibmaks/jjtemplate"
 
                     licenses {
@@ -139,6 +140,7 @@ publishing {
             pom {
                 packaging = "pom"
                 url = "https://github.com/sibmaks/jjtemplate"
+                description = "JJTemplate root"
 
                 licenses {
                     license {
