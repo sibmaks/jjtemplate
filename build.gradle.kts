@@ -185,3 +185,7 @@ publishing {
         }
     }
 }
+
+jreleaser {
+    configFile.set(rootProject.layout.projectDirectory.file("jreleaser.yml"))
+}
