@@ -14,10 +14,9 @@ deploy:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
-          - target/staging-deploy
+          - build/publications/mavenJava
         username: "{{ env.SONATYPE_USERNAME }}"
         password: "{{ env.SONATYPE_TOKEN }}"
 
 signing:
-  active: ALWAYS
-  armored: true
+  active: NEVER

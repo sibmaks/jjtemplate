@@ -34,7 +34,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
       - name: Publish package
-        run: ./gradlew jreleaserFullRelease
+        run: ./gradlew publish jreleaserFullRelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
