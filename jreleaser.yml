@@ -19,12 +19,6 @@ project:
     - api
     - java
 
-distributions:
-  jjtemplate:
-    type: JAVA_BINARY
-    java:
-      version: "11"
-
 release:
   github:
     owner: sibmaks
