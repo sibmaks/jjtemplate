@@ -87,6 +87,7 @@ subprojects {
                 from(components["java"])
                 pom {
                     packaging = "jar"
+                    name = artifactId
                     description = "Part of JJTemplate project"
                     url = "https://github.com/sibmaks/jjtemplate"
 
@@ -140,6 +141,7 @@ publishing {
             pom {
                 packaging = "pom"
                 url = "https://github.com/sibmaks/jjtemplate"
+                name = artifactId
                 description = "Template engine for Java projects"
 
                 licenses {
