@@ -26,7 +26,6 @@ distributions:
       version: "11"
 
 deploy:
-  active: ALWAYS
   maven:
     mavenCentral:
       sonatype:
