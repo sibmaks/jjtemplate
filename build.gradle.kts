@@ -21,8 +21,6 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
-    apply(plugin = "signing")
-    apply(plugin = "org.jreleaser")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -118,7 +116,7 @@ subprojects {
         repositories {
             maven {
                 name = "Staging"
-                url = uri("${project.layout.buildDirectory}/staging-deploy")
+                url = uri("${rootProject.layout.buildDirectory}/staging-deploy")
             }
         }
     }
@@ -183,7 +181,7 @@ publishing {
     repositories {
         maven {
             name = "Staging"
-            url = uri("${project.layout.buildDirectory}/staging-deploy")
+            url = uri("${rootProject.layout.buildDirectory}/staging-deploy")
         }
     }
 }
