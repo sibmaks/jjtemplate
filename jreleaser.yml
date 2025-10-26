@@ -27,7 +27,7 @@ distributions:
 
 release:
   github:
-    enabled: false
+    artifacts: true
 
 deploy:
   active: ALWAYS

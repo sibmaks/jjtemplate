@@ -20,13 +20,25 @@ jobs:
           VERSION=${GITHUB_REF##*/}
           VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - uses: ncipollo/release-action@v1
-        id: create_release
-        name: Create GitHub release
+      - uses: actions/setup-java@v4
         with:
-          draft: true
-          generateReleaseNotes: true
-          makeLatest: true
-          name: Release ${{ env.VERSION }}
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+          java-version: '11'
+          distribution: 'adopt'
+          cache: 'gradle'
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Run JReleaser
+        run: |
+          ./gradlew jreleaserFullRelease
+        env:
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.SONATYPE_TOKEN }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
