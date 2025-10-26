@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
+    id("org.jreleaser") version "1.20.0"
 }
 
 allprojects {
@@ -106,17 +107,6 @@ subprojects {
                 }
             }
         }
-
-        repositories {
-            maven {
-                name = "sonatype"
-                url = uri("https://central.sonatype.com/api/v1/publisher/deployments")
-                credentials {
-                    username = project.findProperty("sonatypeUsername") as String? ?: System.getenv("SONATYPE_USERNAME")
-                    password = project.findProperty("sonatypePassword") as String? ?: System.getenv("SONATYPE_TOKEN")
-                }
-            }
-        }
     }
 }
 
@@ -169,18 +159,6 @@ publishing {
                         }
                     }
                 }
-            }
-        }
-    }
-
-
-    repositories {
-        maven {
-            name = "sonatype"
-            url = uri("https://central.sonatype.com/api/v1/publisher/deployments")
-            credentials {
-                username = project.findProperty("sonatypeUsername") as String? ?: System.getenv("SONATYPE_USERNAME")
-                password = project.findProperty("sonatypePassword") as String? ?: System.getenv("SONATYPE_TOKEN")
             }
         }
     }

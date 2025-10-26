@@ -1,0 +1,27 @@
+project:
+  name: jjtemplate
+  description: "Lightweight Java template engine"
+  license: Apache-2.0
+  authors:
+    - Maksim Drobyshev
+  links:
+    homepage: https://github.com/sibmaks/jjtemplate
+
+release:
+  github:
+    token: "{{ env.GITHUB_TOKEN }}"
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        stagingRepositories:
+          - target/staging-deploy
+        username: "{{ env.SONATYPE_USERNAME }}"
+        password: "{{ env.SONATYPE_TOKEN }}"
+
+signing:
+  active: ALWAYS
+  armored: true
