@@ -26,10 +26,11 @@ distributions:
       version: "11"
 
 deploy:
+  active: ALWAYS
   maven:
     mavenCentral:
       sonatype:
-        active: RELEASE
+        active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
           - build/staging-deploy
