@@ -7,10 +7,6 @@ project:
   links:
     homepage: https://github.com/sibmaks/jjtemplate
 
-release:
-  github:
-    token: "{{ env.GITHUB_TOKEN }}"
-
 deploy:
   maven:
     mavenCentral:
