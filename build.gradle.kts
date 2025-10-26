@@ -107,6 +107,13 @@ subprojects {
                 }
             }
         }
+
+        repositories {
+            maven {
+                name = "Staging"
+                url = uri("${project.layout.buildDirectory}/staging-deploy")
+            }
+        }
     }
 }
 
@@ -160,6 +167,12 @@ publishing {
                     }
                 }
             }
+        }
+    }
+    repositories {
+        maven {
+            name = "Staging"
+            url = uri("${project.layout.buildDirectory}/staging-deploy")
         }
     }
 }
