@@ -137,7 +137,7 @@ publishing {
     publications {
         create<MavenPublication>("aggregator") {
             pom {
-                packaging = "jar"
+                packaging = "pom"
                 url = "https://github.com/sibmaks/jjtemplate"
 
                 licenses {
