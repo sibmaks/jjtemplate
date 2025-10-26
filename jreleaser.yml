@@ -38,7 +38,7 @@ deploy:
     active: ALWAYS
     mavenCentral:
       sonatype:
-        active: ALWAYS
+        active: RELEASE_PRERELEASE
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
           - build/staging-deploy

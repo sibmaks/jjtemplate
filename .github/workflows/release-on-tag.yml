@@ -37,10 +37,10 @@ jobs:
         uses: gradle/actions/wrapper-validation@v3
       - name: Build Stage
         run: |
-          ./gradlew publish
+          ./gradlew clean publish
       - name: Run JReleaser
         run: |
-          ./gradlew jreleaserFullRelease
+          ./gradlew jreleaserFullRelease --info
         env:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
