@@ -25,6 +25,10 @@ distributions:
     java:
       version: "11"
 
+release:
+  github:
+    enabled: false
+
 deploy:
   active: ALWAYS
   maven:
