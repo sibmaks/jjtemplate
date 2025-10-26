@@ -64,6 +64,8 @@ Composable expressions: via `|` (pipe operator)
 
 Ternary conditions: `condition ? value1 : value2`
 
+See more examples [here](examples.md).
+
 # Goals
 
 * Minimize template render time

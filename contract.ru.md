@@ -1067,7 +1067,7 @@ var context = Map.of("varList", List.of(
 На вход принимает:
 - java.time.LocalDate
 - java.time.LocalDateTime
-- java.time.ZonedLocalDateTime
+- java.time.ZonedDateTime
 - java.util.Date
 
 ### Шаблон
