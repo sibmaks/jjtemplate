@@ -87,27 +87,27 @@ subprojects {
                 from(components["java"])
                 pom {
                     packaging = "jar"
-                    description = "$artifactId jar"
+                    description = "Part of JJTemplate project"
                     url = "https://github.com/sibmaks/jjtemplate"
 
                     licenses {
                         license {
-                            name.set("Apache License, version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            name = "Apache License, version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
 
                     scm {
-                        connection.set("scm:https://github.com/sibmaks/jjtemplate.git")
-                        developerConnection.set("scm:git:ssh://github.com/sibmaks")
-                        url.set("https://github.com/sibmaks/jjtemplate")
+                        connection = "scm:https://github.com/sibmaks/jjtemplate.git"
+                        developerConnection = "scm:git:ssh://github.com/sibmaks"
+                        url = "https://github.com/sibmaks/jjtemplate"
                     }
 
                     developers {
                         developer {
-                            id.set("sibmaks")
-                            name.set("Maksim Drobyshev")
-                            email.set("sibmaks@vk.com")
+                            id = "sibmaks"
+                            name = "Maksim Drobyshev"
+                            email = "sibmaks@vk.com"
                         }
                     }
                 }
@@ -140,26 +140,26 @@ publishing {
             pom {
                 packaging = "pom"
                 url = "https://github.com/sibmaks/jjtemplate"
-                description = "JJTemplate root"
+                description = "Template engine for Java projects"
 
                 licenses {
                     license {
-                        name.set("Apache License, version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                        name = "Apache License, version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
 
                 scm {
-                    connection.set("scm:https://github.com/sibmaks/jjtemplate.git")
-                    developerConnection.set("scm:git:ssh://github.com/sibmaks")
-                    url.set("https://github.com/sibmaks/jjtemplate")
+                    connection = "scm:https://github.com/sibmaks/jjtemplate.git"
+                    developerConnection = "scm:git:ssh://github.com/sibmaks"
+                    url = "https://github.com/sibmaks/jjtemplate"
                 }
 
                 developers {
                     developer {
-                        id.set("sibmaks")
-                        name.set("Maksim Drobyshev")
-                        email.set("sibmaks@vk.com")
+                        id = "sibmaks"
+                        name = "Maksim Drobyshev"
+                        email = "sibmaks@vk.com"
                     }
                 }
 
@@ -189,5 +189,5 @@ publishing {
 }
 
 jreleaser {
-    configFile.set(rootProject.layout.projectDirectory.file("jreleaser.yml"))
+    configFile = rootProject.layout.projectDirectory.file("jreleaser.yml")
 }
