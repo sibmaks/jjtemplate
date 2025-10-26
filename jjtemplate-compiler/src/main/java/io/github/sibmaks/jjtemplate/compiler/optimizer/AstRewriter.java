@@ -244,19 +244,6 @@ final class AstRewriter implements AstVisitor<AstNode> {
                     out.add(folded.getValue());
                 }
             }
-        } else if (value.getClass().isArray()) {
-            var len = Array.getLength(value);
-            for (var i = 0; i < len; i++) {
-                var it = Array.get(value, i);
-                var localContext = new LinkedHashMap<String, Object>();
-                localContext.put(node.getItem(), it); // nullable
-                localContext.put(node.getIndex(), i++);
-                var templateExecution = new TemplateExecutionVisitor(evaluator, localContext);
-                var folded = body.accept(templateExecution);
-                if (!folded.isEmpty()) {
-                    out.add(folded.getValue());
-                }
-            }
         } else {
             return Optional.empty();
         }

@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.compiler;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.sibmaks.jjtemplate.compiler.api.Definition;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,11 +63,56 @@ class TemplateCompilerImplIntegrationTest {
         }
     }
 
+    static boolean isLoadEnabled() {
+        var property = System.getProperty("io.github.sibmaks.jjtemplate.compiler.loadEnabled");
+        return Boolean.parseBoolean(property);
+    }
+
     @ParameterizedTest
     @MethodSource("cases")
-    void testScenario(String caseName, TemplateScript templateScript, Map<String, Object> context, Object excepted) {
+    void testScenario(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
         var begin = System.nanoTime();
         var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
+        assertNotNull(compiled);
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        assertEquals(excepted, rendered);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithArrays(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var modifiedDefinitions = new ArrayList<Definition>();
+        for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
+            var modifiedDefinition = new Definition();
+            for (var entry : definition.entrySet()) {
+                modifiedDefinition.put(entry.getKey(), listsToArrays(entry.getValue()));
+            }
+            modifiedDefinitions.add(modifiedDefinition);
+        }
+        var modifiedTemplateScript = TemplateScript.builder()
+                .template(listsToArrays(templateScript.getTemplate()))
+                .definitions(modifiedDefinitions)
+                .build();
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(modifiedTemplateScript);
         var compiledAt = System.nanoTime();
         assertNotNull(compiled);
         var rendered = compiled.render(context);
@@ -112,11 +159,6 @@ class TemplateCompilerImplIntegrationTest {
         );
     }
 
-    static boolean isLoadEnabled() {
-        var property = System.getProperty("io.github.sibmaks.jjtemplate.compiler.loadEnabled");
-        return Boolean.parseBoolean(property);
-    }
-
     public static Stream<Arguments> cases() {
         var resourcesDir = Paths.get("src", "test", "resources", "cases");
 
@@ -126,5 +168,43 @@ class TemplateCompilerImplIntegrationTest {
                 .stream()
                 .sorted()
                 .map(TemplateCompilerImplIntegrationTest::buildArguments);
+    }
+
+    /**
+     * Рекурсивно заменяет все List на массивы.
+     * Работает с Map, List и примитивными значениями.
+     */
+    @SuppressWarnings("unchecked")
+    public static Object listsToArrays(Object value) {
+        if (value instanceof Map<?, ?>) {
+            var map = (Map<String, Object>) value;
+            Map<Object, Object> newMap = new LinkedHashMap<>();
+            for (var entry : map.entrySet()) {
+                newMap.put(entry.getKey(), listsToArrays(entry.getValue()));
+            }
+            return newMap;
+        }
+
+        if (value instanceof List<?>) {
+            var list = (List<Object>) value;
+            Object[] arr = new Object[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                arr[i] = listsToArrays(list.get(i));
+            }
+            return arr;
+        }
+
+        // Для массивов — применяем рекурсивно к элементам
+        if (value != null && value.getClass().isArray()) {
+            int len = Array.getLength(value);
+            Object[] arr = new Object[len];
+            for (int i = 0; i < len; i++) {
+                arr[i] = listsToArrays(Array.get(value, i));
+            }
+            return arr;
+        }
+
+        // Примитивные значения возвращаем как есть
+        return value;
     }
 }
