@@ -35,10 +35,7 @@ jobs:
         uses: gradle/actions/wrapper-validation@v3
       - name: Run JReleaser
         run: |
-          ./gradlew \
-            -Djreleaser.signing.active=ALWAYS \
-            -Djreleaser.signing.mode=COMMAND \
-            jreleaserFullRelease
+          ./gradlew jreleaserFullRelease
         env:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USER_NAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
