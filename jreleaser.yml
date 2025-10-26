@@ -10,7 +10,7 @@ project:
       groupId: io.github.sibmaks.jjtemplate
       version: "11"
       artifactId: jjtemplate
-      multiProject: false
+      multiProject: true
   links:
     homepage: https://github.com/sibmaks/jjtemplate
   tags:
@@ -24,7 +24,7 @@ release:
     owner: sibmaks
     name: jjtemplate
     tagName: v{{projectVersion}}
-    releaseName: Release {{projectVersion}}
+    releaseName: Release me {{projectVersion}}
 
 deploy:
   active: ALWAYS

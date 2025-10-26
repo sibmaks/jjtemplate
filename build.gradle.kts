@@ -129,8 +129,8 @@ dependencies {
     implementation(project(":jjtemplate-compiler"))
 }
 
-configurations {
-    create("deployerJars")
+tasks.named("jreleaserFullRelease") {
+    dependsOn("publishAllPublicationsToStagingRepository")
 }
 
 publishing {
