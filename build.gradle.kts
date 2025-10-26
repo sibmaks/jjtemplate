@@ -116,7 +116,7 @@ subprojects {
         repositories {
             maven {
                 name = "Staging"
-                url = uri("${rootProject.layout.buildDirectory}/staging-deploy")
+                url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
             }
         }
     }
@@ -181,7 +181,7 @@ publishing {
     repositories {
         maven {
             name = "Staging"
-            url = uri("${rootProject.layout.buildDirectory}/staging-deploy")
+            url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
         }
     }
 }
