@@ -131,10 +131,6 @@ dependencies {
     implementation(project(":jjtemplate-compiler"))
 }
 
-tasks.named("jreleaserFullRelease") {
-    dependsOn("publishAllPublicationsToStagingRepository")
-}
-
 publishing {
     publications {
         create<MavenPublication>("aggregator") {

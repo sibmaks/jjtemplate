@@ -20,11 +20,16 @@ project:
     - java
 
 release:
+  generic:
+    owner: sibmaks
+    name: jjtemplate
+    tagName: v{{projectVersion}}
+    releaseName: Release {{projectVersion}}
   github:
     owner: sibmaks
     name: jjtemplate
     tagName: v{{projectVersion}}
-    releaseName: Release me {{projectVersion}}
+    releaseName: Release {{projectVersion}}
 
 deploy:
   active: ALWAYS
