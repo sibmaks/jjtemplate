@@ -38,6 +38,14 @@ jobs:
       - name: Build Stage
         run: |
           ./gradlew clean publish
+      - name: Publish to SonarQube
+        run: |
+          ./gradlew sonar \
+            -Dsonar.branch.name=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}} \
+            -Dsonar.projectVersion=${VERSION#v}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Run JReleaser
         run: |
           ./gradlew jreleaserFullRelease

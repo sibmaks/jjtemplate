@@ -20,6 +20,16 @@ allprojects {
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
 
+    sonarqube {
+        properties {
+            property("sonar.organization", "sibmaks")
+            property("sonar.projectKey", "jjtemplate")
+            property("sonar.host.url", "https://sonarcloud.io")
+            property("sonar.sourceEncoding", "UTF-8")
+            property("sonar.java.coveragePlugin", "jacoco")
+        }
+    }
+
     publishing {
         repositories {
             maven {
@@ -150,4 +160,10 @@ publishing {
 
 jreleaser {
     configFile = rootProject.layout.projectDirectory.file("jreleaser.yml")
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println(project.version)
+    }
 }
