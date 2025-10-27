@@ -47,16 +47,16 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         var switchVal = evaluated.getValue();
         AstNode selected = null;
         var matched = false;
-        for (var br : node.getBranches().entrySet()) {
-            var evaluatedItem = evaluator.evaluate(br.getKey(), localContext);
-            if (evaluatedItem.isEmpty()) {
-                continue;
-            }
-            var keyVal = evaluatedItem.getValue();
-            if (Objects.equals(switchVal, keyVal)) {
-                selected = br.getValue();
-                matched = true;
-                break;
+        var branches = node.getBranches();
+        for (var branch : branches.entrySet()) {
+            var evaluatedItem = evaluator.evaluate(branch.getKey(), localContext);
+            if (!evaluatedItem.isEmpty()) {
+                var keyVal = evaluatedItem.getValue();
+                if (Objects.equals(switchVal, keyVal)) {
+                    selected = branch.getValue();
+                    matched = true;
+                    break;
+                }
             }
         }
         if (!matched && Boolean.TRUE.equals(switchVal) && node.getThenNode() != null) {
@@ -107,32 +107,39 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         var out = new LinkedHashMap<String, Object>();
         for (var entry : node.getEntries()) {
             if (entry instanceof Nodes.CompiledObject.Spread) {
-                var spread = (Nodes.CompiledObject.Spread) entry;
-                var evaluated = evaluator.evaluate(spread.getExpression(), new Context(context));
-                if (evaluated.isEmpty()) {
-                    continue;
-                }
-                var value = evaluated.getValue();
-                if (value == null) {
-                    continue;
-                }
-                if (!(value instanceof Map)) {
-                    throw new IllegalArgumentException("object spread expects a map");
-                }
-                @SuppressWarnings("unchecked")
-                var m = (Map<String, Object>) value;
-                out.putAll(m);
-                continue;
+                visitObjectSpreadField((Nodes.CompiledObject.Spread) entry, out);
+            } else {
+                visitObjectSimpleField((Nodes.CompiledObject.Field) entry, out);
             }
-            var field = (Nodes.CompiledObject.Field) entry;
-            var fieldKey = field.getKey();
-            var keyNode = fieldKey.accept(this);
-            var key = String.valueOf(keyNode.getValue());
-            var fieldValue = field.getValue();
-            var val = fieldValue.accept(this);
-            out.put(key, val.getValue());
         }
         return Nodes.StaticNode.of(out);
+    }
+
+    private void visitObjectSimpleField(Nodes.CompiledObject.Field entry, LinkedHashMap<String, Object> out) {
+        var fieldKey = entry.getKey();
+        var keyNode = fieldKey.accept(this);
+        var key = String.valueOf(keyNode.getValue());
+        var fieldValue = entry.getValue();
+        var val = fieldValue.accept(this);
+        out.put(key, val.getValue());
+    }
+
+    private void visitObjectSpreadField(Nodes.CompiledObject.Spread spread, LinkedHashMap<String, Object> out) {
+        var spreadExpression = spread.getExpression();
+        var evaluated = evaluator.evaluate(spreadExpression, new Context(context));
+        if (evaluated.isEmpty()) {
+            return;
+        }
+        var value = evaluated.getValue();
+        if (value == null) {
+            return;
+        }
+        if (!(value instanceof Map)) {
+            throw new IllegalArgumentException("object spread expects a map");
+        }
+        @SuppressWarnings("unchecked")
+        var m = (Map<String, Object>) value;
+        out.putAll(m);
     }
 
     @Override

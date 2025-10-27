@@ -33,7 +33,8 @@ public class FloatTemplateFunction implements TemplateFunction {
             try {
                 var bigDecimal = new BigDecimal((String) value);
                 return ExpressionValue.of(bigDecimal);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                throw new TemplateEvalException("float: cannot convert: " + value, e);
             }
         }
         throw new TemplateEvalException("float: cannot convert: " + value);

@@ -118,7 +118,7 @@ public final class TemplateEvaluator {
             if (!(cond instanceof Boolean)) {
                 throw new IllegalArgumentException("cond must be a boolean: " + cond);
             }
-            var test = (Boolean) cond;
+            var test = (boolean) cond;
             if (test) {
                 return eval(ternary.ifTrue, context);
             } else {

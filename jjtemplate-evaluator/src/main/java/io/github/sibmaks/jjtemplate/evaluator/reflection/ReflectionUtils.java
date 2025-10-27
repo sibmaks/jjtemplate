@@ -1,6 +1,8 @@
 package io.github.sibmaks.jjtemplate.evaluator.reflection;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -13,7 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author sibmaks
  * @since 0.0.1
  */
-public class ReflectionUtils {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ReflectionUtils {
 
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final Map<Class<?>, Map<String, AccessDescriptor>> PROPERTY_CACHE = new ConcurrentHashMap<>();
@@ -28,6 +31,7 @@ public class ReflectionUtils {
                 var getter = LOOKUP.unreflectGetter(f);
                 map.put(f.getName(), new AccessDescriptor(f.getName(), getter));
             } catch (IllegalAccessException ignored) {
+                // skip forbidden fields
             }
         }
         for (var m : type.getMethods()) {
@@ -39,6 +43,7 @@ public class ReflectionUtils {
                     var mh = LOOKUP.unreflect(m);
                     map.put(name, new AccessDescriptor(name, mh));
                 } catch (IllegalAccessException ignored) {
+                    // skip forbidden methods
                 }
             }
         }

@@ -60,6 +60,7 @@ public final class AstTreeConvertVisitor implements ExpressionVisitor<AstNode> {
             var value = evaluated.getValue();
             return Nodes.StaticNode.of(value);
         } catch (Exception ignored) {
+            // ignore folding exceptions
         }
         return new Nodes.ExpressionNode(expr);
     }

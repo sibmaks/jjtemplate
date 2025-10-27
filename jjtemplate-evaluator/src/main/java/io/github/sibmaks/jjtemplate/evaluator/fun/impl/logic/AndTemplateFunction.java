@@ -12,8 +12,9 @@ import java.util.List;
 public class AndTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var x = (Boolean) first(args, pipeArg).getValue();
-        var y = (Boolean) (args.size() > 1 ? args.get(1).getValue() : pipeArg.getValue());
+        var firstArg = first(args, pipeArg);
+        var x = (boolean) firstArg.getValue();
+        var y = (boolean) (args.size() > 1 ? args.get(1).getValue() : pipeArg.getValue());
         return ExpressionValue.of(x && y);
     }
 

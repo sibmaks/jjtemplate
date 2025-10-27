@@ -70,6 +70,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
                     return new LiteralExpression(result.getValue());
                 }
             } catch (Exception ignored) {
+                // ignore inlining exceptions
             }
         }
 
@@ -111,6 +112,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
                     return new LiteralExpression(result.getValue());
                 }
             } catch (Exception ignored) {
+                // ignore inlining exceptions
             }
         }
 
@@ -129,7 +131,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
         if (c instanceof LiteralExpression) {
             var cond = ((LiteralExpression) c).value;
             if (cond instanceof Boolean) {
-                return (Boolean) cond ? t : f;
+                return (boolean) cond ? t : f;
             }
         }
         return new TernaryExpression(c, t, f);

@@ -93,9 +93,10 @@ class FormatDateTemplateFunctionTest {
         var format = "dd.MM.yyyy'T'HH:mm:ss";
         var localDate = new Date();
         var args = List.of(
-                ExpressionValue.of(format)
+                ExpressionValue.of(format),
+                ExpressionValue.of(localDate)
         );
-        var actual = function.invoke(args, ExpressionValue.of(localDate));
+        var actual = function.invoke(args, ExpressionValue.empty());
         assertFalse(actual.isEmpty());
 
         var formatter = new SimpleDateFormat(format);

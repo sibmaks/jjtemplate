@@ -13,13 +13,13 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExpressionValue {
-    private static final ExpressionValue EMPTY = new ExpressionValue(true, null);
+    private static final ExpressionValue EMPTY_INSTANCE = new ExpressionValue(true, null);
 
     private final boolean empty;
     private final Object value;
 
     public static ExpressionValue empty() {
-        return EMPTY;
+        return EMPTY_INSTANCE;
     }
 
     public static ExpressionValue of(Object value) {

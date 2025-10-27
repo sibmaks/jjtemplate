@@ -80,9 +80,9 @@ public final class TemplateOptimizer {
         var deps = new LinkedHashMap<String, Set<String>>();
         for (var layer : defs) {
             for (var e : layer.entrySet()) {
-                var var = e.getKey();
+                var varName = e.getKey();
                 var refs = AstVarRefCollector.collect(e.getValue());
-                deps.put(var, refs);
+                deps.put(varName, refs);
             }
         }
 

@@ -15,6 +15,7 @@ import java.util.Map;
  * @author sibmaks
  * @since 0.0.1
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Nodes {
 
     /**
@@ -153,14 +154,14 @@ public final class Nodes {
     @ToString
     @RequiredArgsConstructor
     public static final class StaticNode implements AstNode {
-        private static final StaticNode EMPTY = StaticNode.builder()
+        private static final StaticNode EMPTY_INSTANCE = StaticNode.builder()
                 .empty(true)
                 .build();
-        private static final StaticNode EMPTY_SPREAD = StaticNode.builder()
+        private static final StaticNode EMPTY_SPREAD_INSTANCE = StaticNode.builder()
                 .empty(true)
                 .spread(true)
                 .build();
-        private static final StaticNode EMPTY_COND = StaticNode.builder()
+        private static final StaticNode EMPTY_COND_INSTANCE = StaticNode.builder()
                 .empty(true)
                 .cond(true)
                 .build();
@@ -176,15 +177,15 @@ public final class Nodes {
         }
 
         public static StaticNode empty() {
-            return EMPTY;
+            return EMPTY_INSTANCE;
         }
 
         public static StaticNode notCondition() {
-            return EMPTY_COND;
+            return EMPTY_COND_INSTANCE;
         }
 
         public static StaticNode notSpread() {
-            return EMPTY_SPREAD;
+            return EMPTY_SPREAD_INSTANCE;
         }
 
         public static StaticNode of(Object value) {

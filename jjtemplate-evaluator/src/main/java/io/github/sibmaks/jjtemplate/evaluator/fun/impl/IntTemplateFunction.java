@@ -32,7 +32,8 @@ public class IntTemplateFunction implements TemplateFunction {
             try {
                 var intValue = Integer.valueOf((String) value);
                 return ExpressionValue.of(intValue);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                throw new TemplateEvalException("int: cannot convert: " + value, e);
             }
         }
         throw new TemplateEvalException("int: cannot convert: " + value);

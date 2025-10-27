@@ -34,7 +34,8 @@ public class BooleanTemplateFunction implements TemplateFunction {
                 if(Reserved.FALSE.eq(strValue)) {
                     return ExpressionValue.of(false);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                throw new TemplateEvalException("boolean: cannot convert: " + value, e);
             }
         }
         throw new TemplateEvalException("boolean: cannot convert: " + value);
