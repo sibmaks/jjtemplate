@@ -854,6 +854,52 @@ var context = Map.of("v1", true, "v2", false);
 }
 ```
 
+## Булевая операция НЕ ИЛИ '^': `xor`
+
+### Шаблон
+
+```json
+{
+  "definitions": [
+    {
+      "trueVar": true,
+      "falseVar": false
+    }
+  ],
+  "template": {
+    "trueAndTrueKey": "{{ xor .trueVar, .trueVar }}",
+    "trueAndTruePipeKey": "{{ .trueVar | xor .trueVar }}",
+
+    "trueAndFalseKey": "{{ xor .trueVar, .falseVar }}",
+    "trueAndFalsePipeKey": "{{ .trueVar | xor .falseVar }}",
+
+    "falseAndFalseKey": "{{ xor .falseVar, .falseVar }}",
+    "falseAndFalsePipeKey": "{{ .falseVar | xor .falseVar }}",
+
+    "falseAndTrueKey": "{{ xor .falseVar, .trueVar }}",
+    "falseAndTruePipeKey": "{{ .falseVar | xor .trueVar }}"
+  }
+}
+```
+
+### Ожидаемый вывод
+
+```json
+{
+  "trueAndTrueKey": false,
+  "trueAndTruePipeKey": false,
+
+  "trueAndFalseKey": true,
+  "trueAndFalsePipeKey": true,
+
+  "falseAndFalseKey": false,
+  "falseAndFalsePipeKey": false,
+
+  "falseAndTrueKey": true,
+  "falseAndTruePipeKey": true
+}
+```
+
 ## Создание списка: `list`
 
 ### Шаблон

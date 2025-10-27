@@ -21,14 +21,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author sibmaks
  */
 @ExtendWith(MockitoExtension.class)
-class GTCompareTemplateFunctionTest {
+class LTCompareTemplateFunctionTest {
     @InjectMocks
-    private GTCompareTemplateFunction function;
+    private LTCompareTemplateFunction function;
 
     @Test
     void checkFunctionName() {
         var actual = function.getName();
-        assertEquals("gt", actual);
+        assertEquals("lt", actual);
     }
 
     @Test
@@ -63,9 +63,39 @@ class GTCompareTemplateFunctionTest {
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
+    @Test
+    void withInvalidTypeArguments() {
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(
+                        List.of(
+                                ExpressionValue.of(42),
+                                ExpressionValue.of(true)
+                        ),
+                        ExpressionValue.empty()
+                )
+        );
+        assertEquals("Expected number: " + true, exception.getMessage());
+    }
+
+    @Test
+    void withInvalidStringArguments() {
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(
+                        List.of(
+                                ExpressionValue.of(42),
+                                ExpressionValue.of("true")
+                        ),
+                        ExpressionValue.empty()
+                )
+        );
+        assertEquals("Expected number: true", exception.getMessage());
+    }
+
     @ParameterizedTest
     @MethodSource("cmpCases")
-    void cmp(Number left, Number right, boolean excepted) {
+    void cmp(Object left, Object right, boolean excepted) {
         var actual = function.invoke(
                 List.of(
                         ExpressionValue.of(left),
@@ -78,7 +108,7 @@ class GTCompareTemplateFunctionTest {
 
     @ParameterizedTest
     @MethodSource("cmpCases")
-    void cmpWithPipe(Number left, Number right, boolean excepted) {
+    void cmpWithPipe(Object left, Object right, boolean excepted) {
         var actual = function.invoke(
                 List.of(
                         ExpressionValue.of(right)
@@ -90,17 +120,25 @@ class GTCompareTemplateFunctionTest {
 
     public static Stream<Arguments> cmpCases() {
         return Stream.of(
-                Arguments.of(0, 1, false),
-                Arguments.of(0, -1, true),
-                Arguments.of(1, -1, true),
-                Arguments.of(-1, 1, false),
+                Arguments.of(0, 1, true),
+                Arguments.of(0, -1, false),
+                Arguments.of(1, -1, false),
+                Arguments.of(-1, 1, true),
                 Arguments.of(0, 0, false),
-                Arguments.of(Long.MIN_VALUE, Long.MAX_VALUE, false),
-                Arguments.of(Long.MAX_VALUE, Long.MIN_VALUE, true),
-                Arguments.of(Double.MIN_VALUE, Double.MAX_VALUE, false),
-                Arguments.of(Double.MAX_VALUE, Double.MIN_VALUE, true),
-                Arguments.of(BigDecimal.valueOf(Double.MIN_VALUE), BigDecimal.valueOf(Double.MAX_VALUE), false),
-                Arguments.of(BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MIN_VALUE), true)
+                Arguments.of(Long.MIN_VALUE, Long.MAX_VALUE, true),
+                Arguments.of(Long.MAX_VALUE, Long.MIN_VALUE, false),
+                Arguments.of(Double.MIN_VALUE, Double.MAX_VALUE, true),
+                Arguments.of(Double.MAX_VALUE, Double.MIN_VALUE, false),
+                Arguments.of(BigDecimal.valueOf(Double.MIN_VALUE), BigDecimal.valueOf(Double.MAX_VALUE), true),
+                Arguments.of(BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MIN_VALUE), false),
+
+                Arguments.of(BigDecimal.valueOf(Double.MIN_VALUE).toString(), BigDecimal.valueOf(Double.MAX_VALUE), true),
+                Arguments.of(BigDecimal.valueOf(Double.MIN_VALUE), BigDecimal.valueOf(Double.MAX_VALUE).toString(), true),
+                Arguments.of(BigDecimal.valueOf(Double.MIN_VALUE).toString(), BigDecimal.valueOf(Double.MAX_VALUE).toString(), true),
+
+                Arguments.of(BigDecimal.valueOf(Double.MAX_VALUE).toString(), BigDecimal.valueOf(Double.MIN_VALUE), false),
+                Arguments.of(BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MIN_VALUE).toString(), false),
+                Arguments.of(BigDecimal.valueOf(Double.MAX_VALUE).toString(), BigDecimal.valueOf(Double.MIN_VALUE).toString(), false)
         );
     }
 

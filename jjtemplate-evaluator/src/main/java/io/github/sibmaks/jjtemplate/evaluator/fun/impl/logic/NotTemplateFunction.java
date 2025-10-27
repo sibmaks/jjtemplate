@@ -15,7 +15,7 @@ public class NotTemplateFunction implements TemplateFunction {
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         var argument = first(args, pipeArg);
         if (argument.isEmpty()) {
-            return argument;
+            throw new TemplateEvalException("not: invalid args");
         }
         var value = argument.getValue();
         if (!(value instanceof Boolean)) {

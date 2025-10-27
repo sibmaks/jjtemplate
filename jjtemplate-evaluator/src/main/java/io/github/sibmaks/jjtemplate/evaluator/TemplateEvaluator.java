@@ -49,6 +49,7 @@ public final class TemplateEvaluator {
                 new GECompareTemplateFunction(),
                 new AndTemplateFunction(),
                 new OrTemplateFunction(),
+                new XorTemplateFunction(),
                 new FormatDateTemplateFunction(),
                 new FormatStringTemplateFunction(locale),
                 new NegTemplateFunction(),
