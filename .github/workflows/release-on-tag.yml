@@ -14,19 +14,45 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Extract Version Number
         run: |
           echo "Extracting version from tag..."
           VERSION=${GITHUB_REF##*/}
           VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - uses: ncipollo/release-action@v1
-        id: create_release
-        name: Create GitHub release
+      - uses: actions/setup-java@v4
         with:
-          draft: true
-          generateReleaseNotes: true
-          makeLatest: true
-          name: Release ${{ env.VERSION }}
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+          java-version: '11'
+          distribution: 'adopt'
+          cache: 'gradle'
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Build Stage
+        run: |
+          ./gradlew clean publish
+      - name: Run JReleaser
+        run: |
+          ./gradlew jreleaserFullRelease
+        env:
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.SONATYPE_TOKEN }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: JReleaser release output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-release
+          path: |
+            build/jreleaser/trace.log
+            build/jreleaser/output.properties

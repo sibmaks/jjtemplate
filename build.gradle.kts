@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
+    id("signing")
     id("org.jreleaser") version "1.20.0"
 }
 
@@ -26,6 +27,10 @@ subprojects {
 
     repositories {
         mavenCentral()
+    }
+
+    configurations {
+        create("deployerJars")
     }
 
     tasks.withType<JavaCompile>().configureEach {
@@ -82,26 +87,28 @@ subprojects {
                 from(components["java"])
                 pom {
                     packaging = "jar"
+                    name = artifactId
+                    description = "Part of JJTemplate project"
                     url = "https://github.com/sibmaks/jjtemplate"
 
                     licenses {
                         license {
-                            name.set("Apache License, version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            name = "Apache License, version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
 
                     scm {
-                        connection.set("scm:https://github.com/sibmaks/jjtemplate.git")
-                        developerConnection.set("scm:git:ssh://github.com/sibmaks")
-                        url.set("https://github.com/sibmaks/jjtemplate")
+                        connection = "scm:https://github.com/sibmaks/jjtemplate.git"
+                        developerConnection = "scm:git:ssh://github.com/sibmaks"
+                        url = "https://github.com/sibmaks/jjtemplate"
                     }
 
                     developers {
                         developer {
-                            id.set("sibmaks")
-                            name.set("Maksim Drobyshev")
-                            email.set("sibmaks@vk.com")
+                            id = "sibmaks"
+                            name = "Maksim Drobyshev"
+                            email = "sibmaks@vk.com"
                         }
                     }
                 }
@@ -111,7 +118,7 @@ subprojects {
         repositories {
             maven {
                 name = "Staging"
-                url = uri("${project.layout.buildDirectory}/staging-deploy")
+                url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
             }
         }
     }
@@ -128,27 +135,29 @@ publishing {
     publications {
         create<MavenPublication>("aggregator") {
             pom {
-                packaging = "jar"
+                packaging = "pom"
                 url = "https://github.com/sibmaks/jjtemplate"
+                name = artifactId
+                description = "Template engine for Java projects"
 
                 licenses {
                     license {
-                        name.set("Apache License, version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                        name = "Apache License, version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
 
                 scm {
-                    connection.set("scm:https://github.com/sibmaks/jjtemplate.git")
-                    developerConnection.set("scm:git:ssh://github.com/sibmaks")
-                    url.set("https://github.com/sibmaks/jjtemplate")
+                    connection = "scm:https://github.com/sibmaks/jjtemplate.git"
+                    developerConnection = "scm:git:ssh://github.com/sibmaks"
+                    url = "https://github.com/sibmaks/jjtemplate"
                 }
 
                 developers {
                     developer {
-                        id.set("sibmaks")
-                        name.set("Maksim Drobyshev")
-                        email.set("sibmaks@vk.com")
+                        id = "sibmaks"
+                        name = "Maksim Drobyshev"
+                        email = "sibmaks@vk.com"
                     }
                 }
 
@@ -172,7 +181,11 @@ publishing {
     repositories {
         maven {
             name = "Staging"
-            url = uri("${project.layout.buildDirectory}/staging-deploy")
+            url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
         }
     }
+}
+
+jreleaser {
+    configFile = rootProject.layout.projectDirectory.file("jreleaser.yml")
 }

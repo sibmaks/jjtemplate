@@ -10,7 +10,7 @@ project:
       groupId: io.github.sibmaks.jjtemplate
       version: "11"
       artifactId: jjtemplate
-      multiProject: false
+      multiProject: true
   links:
     homepage: https://github.com/sibmaks/jjtemplate
   tags:
@@ -19,18 +19,25 @@ project:
     - api
     - java
 
-distributions:
-  jjtemplate:
-    type: JAVA_BINARY
-    java:
-      version: "11"
+release:
+  generic:
+    owner: sibmaks
+    name: jjtemplate
+    tagName: v{{projectVersion}}
+    releaseName: Release {{projectVersion}}
+  github:
+    owner: sibmaks
+    name: jjtemplate
+    tagName: v{{projectVersion}}
+    releaseName: Release {{projectVersion}}
 
 deploy:
   active: ALWAYS
   maven:
+    active: ALWAYS
     mavenCentral:
       sonatype:
-        active: RELEASE
+        active: RELEASE_PRERELEASE
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
           - build/staging-deploy
@@ -47,4 +54,6 @@ deploy:
           - build/staging-deploy
 
 signing:
-  active: NEVER
+  active: ALWAYS
+  armored: true
+  mode: MEMORY
