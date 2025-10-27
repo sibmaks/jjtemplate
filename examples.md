@@ -153,7 +153,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
 
 ---
 
-## Case definition
+## Switch definition
 
 **Template:**
 
@@ -177,7 +177,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
 ```java
 import java.util.Map;
 
-Map.of("status","fail");
+var context = Map.of("status", "fail");
 ```
 
 **Output:**
@@ -186,6 +186,37 @@ Map.of("status","fail");
 {
   "message": "Something went wrong"
 }
+```
+
+## Inner switch
+
+**Template:**
+
+```json
+{
+  "definitions": [
+    {
+      "booleanVar": false,
+      "anotherBooleanVar": true
+    },
+    {
+      "defResult switch .booleanVar": {
+        "true": "fail-out",
+        "false switch .anotherBooleanVar": {
+          "true": "ok",
+          "false": "fail-in"
+        }
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}
+```
+
+**Output:**
+
+```json
+"ok"
 ```
 
 ---

@@ -164,6 +164,12 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         for (var ce : valueSpecMap.entrySet()) {
             var condKey = ce.getKey();
             var value = ce.getValue();
+            var nestedSwitch = parseSwitchHeader(condKey);
+            if (nestedSwitch != null) {
+                var nested = compileSwitch(value, nestedSwitch.expr);
+                branches.put(compileExpression("{{ " + nestedSwitch.varName + " }}"), nested);
+                continue;
+            }
             var compiledNode = compileNode(value);
             if (Keyword.ELSE.eq(condKey)) {
                 definitionBuilder.elseNode(compiledNode);
