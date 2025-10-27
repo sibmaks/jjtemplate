@@ -117,7 +117,7 @@ public final class TemplateEvaluator {
             var ternary = (TernaryExpression) expression;
             var cond = eval(ternary.condition, context).getValue();
             if (!(cond instanceof Boolean)) {
-                throw new IllegalArgumentException("cond must be a boolean: " + cond);
+                throw new TemplateEvalException("cond must be a boolean: " + cond);
             }
             var test = (boolean) cond;
             if (test) {

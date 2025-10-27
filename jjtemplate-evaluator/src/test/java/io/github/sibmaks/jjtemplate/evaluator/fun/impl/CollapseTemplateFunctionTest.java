@@ -45,6 +45,13 @@ class CollapseTemplateFunctionTest {
     }
 
     @Test
+    void withNullArguments() {
+        var value = function.invoke(List.of(ExpressionValue.of(null)), ExpressionValue.of(null));
+        assertFalse(value.isEmpty());
+        assertEquals(Map.of(), value.getValue());
+    }
+
+    @Test
     void singleMapAsPipe() {
         var map = Map.of("key", "value");
         var value = function.invoke(List.of(), ExpressionValue.of(map));

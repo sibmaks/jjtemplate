@@ -1,9 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  *
@@ -11,6 +8,7 @@ import lombok.ToString;
  */
 @Getter
 @ToString
+@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExpressionValue {
     private static final ExpressionValue EMPTY_INSTANCE = new ExpressionValue(true, null);

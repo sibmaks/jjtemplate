@@ -1,7 +1,11 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -10,15 +14,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
  * @author sibmaks
  */
+@ExtendWith(MockitoExtension.class)
 class FormatDateTemplateFunctionTest {
-    private final FormatDateTemplateFunction function = new FormatDateTemplateFunction();
+    @InjectMocks
+    private FormatDateTemplateFunction function;
 
     @Test
     void checkFunctionName() {
@@ -147,6 +152,19 @@ class FormatDateTemplateFunctionTest {
         var formatter = new SimpleDateFormat(format);
         var excepted = formatter.format(localDate);
         assertEquals(excepted, actual.getValue());
+    }
+
+    @Test
+    void onInvalidDateType() {
+        var format = "dd.MM.yyyy";
+        var args = List.of(
+                ExpressionValue.of(format)
+        );
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args, ExpressionValue.of(String.class))
+        );
+        assertEquals("Cannot convert " + String.class + " to TemporalAccessor", exception.getMessage());
     }
 
 }

@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  *
  * @author sibmaks
+ * @since 0.0.1
  */
 public class EmptyTemplateFunction implements TemplateFunction {
     @Override
@@ -21,6 +22,9 @@ public class EmptyTemplateFunction implements TemplateFunction {
             return ExpressionValue.of(true);
         }
         var value = argument.getValue();
+        if(value == null) {
+            return ExpressionValue.of(true);
+        }
         if (value instanceof CharSequence) {
             return ExpressionValue.of(((CharSequence) value).length() == 0);
         }
