@@ -10,11 +10,23 @@ plugins {
 }
 
 allprojects {
+    apply(plugin = "java")
+    apply(plugin = "maven-publish")
+
     val versionFromProperty = "${project.property("version")}"
     val versionFromEnv: String? = System.getenv("VERSION")
 
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
+
+    publishing {
+        repositories {
+            maven {
+                name = "Staging"
+                url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
+            }
+        }
+    }
 }
 
 subprojects {
@@ -86,39 +98,11 @@ subprojects {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
                 pom {
+                    configureCommonPom(this)
                     packaging = "jar"
                     name = artifactId
                     description = "Part of JJTemplate project"
-                    url = "https://github.com/sibmaks/jjtemplate"
-
-                    licenses {
-                        license {
-                            name = "Apache License, version 2.0"
-                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-                        }
-                    }
-
-                    scm {
-                        connection = "scm:https://github.com/sibmaks/jjtemplate.git"
-                        developerConnection = "scm:git:ssh://github.com/sibmaks"
-                        url = "https://github.com/sibmaks/jjtemplate"
-                    }
-
-                    developers {
-                        developer {
-                            id = "sibmaks"
-                            name = "Maksim Drobyshev"
-                            email = "sibmaks@vk.com"
-                        }
-                    }
                 }
-            }
-        }
-
-        repositories {
-            maven {
-                name = "Staging"
-                url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
             }
         }
     }
@@ -135,31 +119,10 @@ publishing {
     publications {
         create<MavenPublication>("aggregator") {
             pom {
+                configureCommonPom(this)
                 packaging = "pom"
-                url = "https://github.com/sibmaks/jjtemplate"
                 name = artifactId
                 description = "Template engine for Java projects"
-
-                licenses {
-                    license {
-                        name = "Apache License, version 2.0"
-                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-                    }
-                }
-
-                scm {
-                    connection = "scm:https://github.com/sibmaks/jjtemplate.git"
-                    developerConnection = "scm:git:ssh://github.com/sibmaks"
-                    url = "https://github.com/sibmaks/jjtemplate"
-                }
-
-                developers {
-                    developer {
-                        id = "sibmaks"
-                        name = "Maksim Drobyshev"
-                        email = "sibmaks@vk.com"
-                    }
-                }
 
                 withXml {
                     val dependenciesNode = asNode().appendNode("dependencies")
@@ -176,12 +139,6 @@ publishing {
                     }
                 }
             }
-        }
-    }
-    repositories {
-        maven {
-            name = "Staging"
-            url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
         }
     }
 }
