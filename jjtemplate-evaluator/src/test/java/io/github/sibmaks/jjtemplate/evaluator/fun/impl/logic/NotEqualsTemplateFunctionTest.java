@@ -32,39 +32,47 @@ class NotEqualsTemplateFunctionTest {
 
     @Test
     void withoutArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("neq: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withOnlyOneArgument() {
+        var args = List.of(ExpressionValue.of(42));
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(ExpressionValue.of(42)), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("neq: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withOnlyOnePipeArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(42);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.of(42))
+                () -> function.invoke(args, pipe)
         );
         assertEquals("neq: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withTooMuchArguments() {
+        var args = List.of(
+                ExpressionValue.of(42),
+                ExpressionValue.of(43)
+        );
+        var pipe = ExpressionValue.of(44);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(
-                        ExpressionValue.of(42),
-                        ExpressionValue.of(42)
-                ), ExpressionValue.of(42))
+                () -> function.invoke(args, pipe)
         );
         assertEquals("neq: 2 arguments required", exception.getMessage());
     }

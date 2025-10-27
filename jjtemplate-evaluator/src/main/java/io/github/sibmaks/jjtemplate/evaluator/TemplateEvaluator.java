@@ -195,7 +195,7 @@ public final class TemplateEvaluator {
             try {
                 return m.invoke(target, converted);
             } catch (Exception e) {
-                throw new RuntimeException("Error calling method " + methodName, e);
+                throw new TemplateEvalException("Error calling method " + methodName, e);
             }
         }
 

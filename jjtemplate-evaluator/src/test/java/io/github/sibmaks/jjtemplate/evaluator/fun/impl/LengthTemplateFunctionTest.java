@@ -40,12 +40,12 @@ class LengthTemplateFunctionTest {
 
     @Test
     void unsupportedArgumentType() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(String.class);
+
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(),
-                        ExpressionValue.of(String.class)
-                )
+                () -> function.invoke(args, pipe)
         );
         assertEquals("len: unsupported type: " + Class.class, exception.getMessage());
     }

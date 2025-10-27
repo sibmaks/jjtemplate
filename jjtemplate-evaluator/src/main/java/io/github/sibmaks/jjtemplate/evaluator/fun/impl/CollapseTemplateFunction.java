@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
@@ -16,7 +17,7 @@ public class CollapseTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         if (args.isEmpty() && pipeArg.isEmpty()) {
-            throw new IllegalArgumentException("collapse: at least 1 argument required");
+            throw new TemplateEvalException("collapse: at least 1 argument required");
         }
         var result = new LinkedHashMap<String, Object>(args.size() + 1);
 

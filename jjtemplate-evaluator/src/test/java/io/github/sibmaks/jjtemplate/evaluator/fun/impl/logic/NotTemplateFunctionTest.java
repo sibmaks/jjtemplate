@@ -31,18 +31,22 @@ class NotTemplateFunctionTest {
 
     @Test
     void withoutArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("not: invalid args", exception.getMessage());
     }
 
     @Test
     void notBooleanArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(42);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.of(42))
+                () -> function.invoke(args, pipe)
         );
         assertEquals("not: arg not boolean", exception.getMessage());
     }

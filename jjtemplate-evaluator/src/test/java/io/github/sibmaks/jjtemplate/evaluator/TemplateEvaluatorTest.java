@@ -359,7 +359,8 @@ class TemplateEvaluatorTest {
         var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new FunctionCallExpression("var", List.of());
-        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, mock()));
+        var context = mock(Context.class);
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals("Function 'var' not found", exception.getMessage());
     }
 
