@@ -28,6 +28,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
       - name: Build and analyze
+        run: ./gradlew build sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build --info

@@ -7,6 +7,7 @@ plugins {
     id("jacoco")
     id("signing")
     id("org.jreleaser") version "1.20.0"
+    id("org.sonarqube") version "7.0.1.6134"
 }
 
 allprojects {
@@ -33,6 +34,7 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
+    apply(plugin = "org.sonarqube")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -73,6 +75,9 @@ subprojects {
 
     tasks.jacocoTestReport {
         dependsOn(tasks.test)
+        reports {
+            xml.required.set(true)
+        }
     }
 
     tasks.jar {
