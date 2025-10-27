@@ -126,10 +126,10 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 var header = e.getKey();
                 var valueSpec = e.getValue();
 
-                // case
-                var ch = parseCaseHeader(header);
+                // switch
+                var ch = parseSwitchHeader(header);
                 if (ch != null) {
-                    var defn = compileCase(valueSpec, ch.expr);
+                    var defn = compileSwitch(valueSpec, ch.expr);
                     compiled.put(ch.varName, defn);
                     continue;
                 }
@@ -153,12 +153,12 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         return new CompiledTemplateImpl(templateEvaluator, optimized.getDefinitions(), optimized.getTemplate());
     }
 
-    private Nodes.CaseDefinition compileCase(Object valueSpec, String caseExpression) {
+    private Nodes.SwitchDefinition compileSwitch(Object valueSpec, String switchExpression) {
         if (!(valueSpec instanceof Map<?, ?>)) {
-            throw new IllegalArgumentException("case definition expects mapping object");
+            throw new IllegalArgumentException("switch definition expects mapping object");
         }
         var branches = new LinkedHashMap<Expression, AstNode>();
-        var caseDefinitionBuilder = Nodes.CaseDefinition.builder();
+        var definitionBuilder = Nodes.SwitchDefinition.builder();
         @SuppressWarnings("unchecked")
         var valueSpecMap = (Map<String, Object>) valueSpec;
         for (var ce : valueSpecMap.entrySet()) {
@@ -166,16 +166,16 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             var value = ce.getValue();
             var compiledNode = compileNode(value);
             if (Keyword.ELSE.eq(condKey)) {
-                caseDefinitionBuilder.elseNode(compiledNode);
+                definitionBuilder.elseNode(compiledNode);
             } else if (Keyword.THEN.eq(condKey)) {
-                caseDefinitionBuilder.thenNode(compiledNode);
+                definitionBuilder.thenNode(compiledNode);
             } else {
                 var condition = compileAsExpression(condKey);
                 branches.put(condition, compiledNode);
             }
         }
-        return caseDefinitionBuilder
-                .switchExpr(compileExpression(caseExpression))
+        return definitionBuilder
+                .switchExpr(compileExpression(switchExpression))
                 .branches(branches)
                 .build();
     }
@@ -331,17 +331,18 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         throw new IllegalArgumentException("Illegal variable name '" + h + "'");
     }
 
-    private CaseHeader parseCaseHeader(String h) {
-        var i = h.indexOf(" case ");
+    private SwitchHeader parseSwitchHeader(String h) {
+        var lexem = Keyword.SWITCH.getLexem();
+        var i = h.indexOf(" " + lexem + " ");
         if (i < 0) {
             return null;
         }
         var varName = h.substring(0, i).trim();
-        var expr = h.substring(i + 6).trim();
+        var expr = h.substring(i + lexem.length() + 2 /*spaces*/).trim();
         if (!VARIABLE_NAME.matcher(varName).matches()) {
             throw new IllegalArgumentException("Illegal variable name '" + varName + "'");
         }
-        var c = new CaseHeader();
+        var c = new SwitchHeader();
         c.varName = varName;
         c.expr = "{{ " + expr + " }}";
         return c;
@@ -385,7 +386,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     }
 
     // --- headers parsing ---
-    private static final class CaseHeader {
+    private static final class SwitchHeader {
         String varName;
         String expr;
     }

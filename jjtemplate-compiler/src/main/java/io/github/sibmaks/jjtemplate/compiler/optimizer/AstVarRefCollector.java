@@ -85,7 +85,7 @@ final class AstVarRefCollector implements AstVisitor<Void> {
     }
 
     @Override
-    public Void visitCase(Nodes.CaseDefinition node) {
+    public Void visitSwitch(Nodes.SwitchDefinition node) {
         var switchExpr = node.getSwitchExpr();
         switchExpr.accept(new ExpressionVarRefCollector(accumulator));
         var branches = node.getBranches();

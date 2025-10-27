@@ -159,7 +159,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
     }
 
     @Override
-    public AstNode visitCase(Nodes.CaseDefinition node) {
+    public AstNode visitSwitch(Nodes.SwitchDefinition node) {
         var changed = false;
 
         var rawSwitchExpression = node.getSwitchExpr();
@@ -187,7 +187,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
         if (!changed) {
             return node;
         }
-        return Nodes.CaseDefinition.builder()
+        return Nodes.SwitchDefinition.builder()
                 .switchExpr(switchExpression)
                 .branches(branches)
                 .thenNode(thenNode)

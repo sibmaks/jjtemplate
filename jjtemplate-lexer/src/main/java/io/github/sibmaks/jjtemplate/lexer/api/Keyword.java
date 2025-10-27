@@ -16,7 +16,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum Keyword {
-    CASE("case"),
+    SWITCH("switch"),
     THEN("then"),
     ELSE("else"),
     RANGE("range"),

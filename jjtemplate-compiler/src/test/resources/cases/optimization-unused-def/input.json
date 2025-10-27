@@ -2,7 +2,7 @@
   "definitions": [
     {
       "unused": "to-remove",
-      "unusedCase case .someExpression": {
+      "unusedCase switch .someExpression": {
         "then": "dead-code",
         "else": "dead-code"
       },
