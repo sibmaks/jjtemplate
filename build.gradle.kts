@@ -151,7 +151,7 @@ publishing {
 sonarqube {
     properties {
         property("sonar.organization", "sibmaks")
-        property("sonar.projectKey", "jjtemplate")
+        property("sonar.projectKey", "sibmaks_jjtemplate")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.sourceEncoding", "UTF-8")
         property("sonar.java.coveragePlugin", "jacoco")
