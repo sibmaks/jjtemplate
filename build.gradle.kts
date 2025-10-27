@@ -170,6 +170,7 @@ sonarqube {
             property("${sub.name}.sonar.junit.reportPaths", "build/test-results/test")
             property("${sub.name}.sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
         }
+        println("Sonar properties: $properties")
     }
 }
 
