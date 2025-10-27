@@ -63,7 +63,7 @@ Supports expressions, pipe calls, and ternary operators (`?`, `:`).
 Variable definitions: static, conditional (`case`), and range-based (`range`)
 
 Built-in functions: `str`, `int`, `float`, `boolean`, `len`, `empty`, `not`, `eq`, `neq`, `lt`, `le`, `gt`, `ge`, `and`,
-`or`, `list`, `concat`, `default`, `collapse`, `format`, `formatDate`, `parseDate`, `parseDateTime`
+`or`, `xor`, `list`, `concat`, `default`, `collapse`, `format`, `formatDate`, `parseDate`, `parseDateTime`
 
 Composable expressions: via `|` (pipe operator)
 

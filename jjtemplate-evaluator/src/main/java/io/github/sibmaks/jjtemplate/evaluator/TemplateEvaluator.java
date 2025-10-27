@@ -49,6 +49,7 @@ public final class TemplateEvaluator {
                 new GECompareTemplateFunction(),
                 new AndTemplateFunction(),
                 new OrTemplateFunction(),
+                new XorTemplateFunction(),
                 new FormatDateTemplateFunction(),
                 new FormatStringTemplateFunction(locale),
                 new NegTemplateFunction(),
@@ -116,7 +117,7 @@ public final class TemplateEvaluator {
             var ternary = (TernaryExpression) expression;
             var cond = eval(ternary.condition, context).getValue();
             if (!(cond instanceof Boolean)) {
-                throw new IllegalArgumentException("cond must be a boolean: " + cond);
+                throw new TemplateEvalException("cond must be a boolean: " + cond);
             }
             var test = (boolean) cond;
             if (test) {
@@ -194,7 +195,7 @@ public final class TemplateEvaluator {
             try {
                 return m.invoke(target, converted);
             } catch (Exception e) {
-                throw new RuntimeException("Error calling method " + methodName, e);
+                throw new TemplateEvalException("Error calling method " + methodName, e);
             }
         }
 

@@ -163,13 +163,15 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var valueSpecMap = (Map<String, Object>) valueSpec;
         for (var ce : valueSpecMap.entrySet()) {
             var condKey = ce.getKey();
+            var value = ce.getValue();
+            var compiledNode = compileNode(value);
             if (Keyword.ELSE.eq(condKey)) {
-                caseDefinitionBuilder.elseNode(compileNode(ce.getValue()));
+                caseDefinitionBuilder.elseNode(compiledNode);
             } else if (Keyword.THEN.eq(condKey)) {
-                caseDefinitionBuilder.thenNode(compileNode(ce.getValue()));
+                caseDefinitionBuilder.thenNode(compiledNode);
             } else {
                 var condition = compileAsExpression(condKey);
-                branches.put(condition, compileNode(ce.getValue()));
+                branches.put(condition, compiledNode);
             }
         }
         return caseDefinitionBuilder

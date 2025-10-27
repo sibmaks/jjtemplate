@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
@@ -38,7 +39,7 @@ public class FormatDateTemplateFunction implements TemplateFunction {
             var formatter = new SimpleDateFormat(format);
             return formatter.format((Date) date);
         }
-        throw new IllegalArgumentException("Cannot convert " + date + " to TemporalAccessor");
+        throw new TemplateEvalException("Cannot convert " + date + " to TemporalAccessor");
     }
 
     @Override

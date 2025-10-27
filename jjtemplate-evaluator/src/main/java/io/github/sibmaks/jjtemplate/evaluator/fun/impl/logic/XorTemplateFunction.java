@@ -11,7 +11,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class OrTemplateFunction implements TemplateFunction {
+public class XorTemplateFunction implements TemplateFunction {
     private static ExpressionValue second(List<ExpressionValue> args, ExpressionValue pipeArg) {
         return args.size() > 1 ? args.get(1) : pipeArg;
     }
@@ -19,25 +19,25 @@ public class OrTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
         if (args.size() + (pipeArg.isEmpty() ? 0 : 1) != 2) {
-            throw new TemplateEvalException("or: 2 arguments required");
+            throw new TemplateEvalException("xor: 2 arguments required");
         }
         var firstArg = first(args, pipeArg);
         var firstValue = firstArg.getValue();
         if (!(firstValue instanceof Boolean)) {
-            throw new TemplateEvalException("or: All arguments must be a boolean");
+            throw new TemplateEvalException("xor: All arguments must be a boolean");
         }
         var secondArg = second(args, pipeArg);
         var secondValue = secondArg.getValue();
         if (!(secondValue instanceof Boolean)) {
-            throw new TemplateEvalException("or: All arguments must be a boolean");
+            throw new TemplateEvalException("xor: All arguments must be a boolean");
         }
         var x = (boolean) firstValue;
         var y = (boolean) secondValue;
-        return ExpressionValue.of(x || y);
+        return ExpressionValue.of(x ^ y);
     }
 
     @Override
     public String getName() {
-        return "or";
+        return "xor";
     }
 }

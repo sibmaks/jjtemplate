@@ -1,10 +1,7 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
-import io.github.sibmaks.jjtemplate.parser.api.FunctionCallExpression;
-import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
-import io.github.sibmaks.jjtemplate.parser.api.PipeExpression;
-import io.github.sibmaks.jjtemplate.parser.api.VariableExpression;
+import io.github.sibmaks.jjtemplate.parser.api.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -362,7 +359,8 @@ class TemplateEvaluatorTest {
         var evaluator = new TemplateEvaluator(Locale.ROOT);
 
         var expression = new FunctionCallExpression("var", List.of());
-        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, mock()));
+        var context = mock(Context.class);
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals("Function 'var' not found", exception.getMessage());
     }
 
@@ -535,6 +533,79 @@ class TemplateEvaluatorTest {
         var cause = exception.getCause();
         assertNotNull(cause);
         assertEquals("internal", cause.getMessage());
+    }
+
+    @Test
+    void checkTernaryOperatorLeft() {
+        var expression = new TernaryExpression(
+                new LiteralExpression(true),
+                new LiteralExpression("ok"),
+                new LiteralExpression("fail")
+        );
+        var context = mock(Context.class);
+
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
+
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals("ok", evaluated.getValue());
+    }
+
+    @Test
+    void checkTernaryOperatorRight() {
+        var expression = new TernaryExpression(
+                new LiteralExpression(false),
+                new LiteralExpression("fail"),
+                new LiteralExpression("ok")
+        );
+        var context = mock(Context.class);
+
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
+
+        var evaluated = evaluator.evaluate(expression, context);
+        assertNotNull(evaluated);
+        assertFalse(evaluated.isEmpty());
+        assertEquals("ok", evaluated.getValue());
+    }
+
+    @Test
+    void checkTernaryOperatorNotBooleanExpression() {
+        var expression = new TernaryExpression(
+                new LiteralExpression(42),
+                new LiteralExpression("fail"),
+                new LiteralExpression("fail")
+        );
+        var context = mock(Context.class);
+
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
+
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> evaluator.evaluate(expression, context)
+        );
+        assertEquals("cond must be a boolean: " + 42, exception.getMessage());
+    }
+
+    @Test
+    void checkNotSupportedExpression() {
+        var expression = new NotSupportedExpression();
+        var context = mock(Context.class);
+
+        var evaluator = new TemplateEvaluator(Locale.ROOT);
+
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> evaluator.evaluate(expression, context)
+        );
+        assertEquals("Unknown expr type: " + NotSupportedExpression.class, exception.getMessage());
+    }
+
+    static class NotSupportedExpression implements Expression {
+        @Override
+        public <R> R accept(ExpressionVisitor<R> visitor) {
+            return null;
+        }
     }
 
     static class Stub {

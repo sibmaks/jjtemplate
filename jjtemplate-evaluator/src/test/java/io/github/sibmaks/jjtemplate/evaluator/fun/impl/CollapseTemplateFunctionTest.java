@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +30,11 @@ class CollapseTemplateFunctionTest {
 
     @Test
     void withoutArguments() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                TemplateEvalException.class,
+                () -> function.invoke(args, pipe)
         );
         assertEquals("collapse: at least 1 argument required", exception.getMessage());
     }
@@ -39,15 +42,28 @@ class CollapseTemplateFunctionTest {
     @Test
     void singleMapAsArgument() {
         var map = Map.of("key", "value");
-        var value = function.invoke(List.of(ExpressionValue.of(map)), ExpressionValue.empty());
+        var args = List.of(ExpressionValue.of(map));
+        var pipe = ExpressionValue.empty();
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(map, value.getValue());
     }
 
     @Test
+    void withNullArguments() {
+        var args = List.of(ExpressionValue.of(null));
+        var pipe = ExpressionValue.of(null);
+        var value = function.invoke(args, pipe);
+        assertFalse(value.isEmpty());
+        assertEquals(Map.of(), value.getValue());
+    }
+
+    @Test
     void singleMapAsPipe() {
+        var args = List.<ExpressionValue>of();
         var map = Map.of("key", "value");
-        var value = function.invoke(List.of(), ExpressionValue.of(map));
+        var pipe = ExpressionValue.of(map);
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(map, value.getValue());
     }
@@ -56,7 +72,9 @@ class CollapseTemplateFunctionTest {
     void listOfSingleMapAsArgument() {
         var map = Map.of("key", "value");
         var list = List.of(map);
-        var value = function.invoke(List.of(ExpressionValue.of(list)), ExpressionValue.empty());
+        var args = List.of(ExpressionValue.of(list));
+        var pipe = ExpressionValue.empty();
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(map, value.getValue());
     }
@@ -65,7 +83,9 @@ class CollapseTemplateFunctionTest {
     void listOfSingleMapAsPipe() {
         var map = Map.of("key", "value");
         var list = List.of(map);
-        var value = function.invoke(List.of(), ExpressionValue.of(list));
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(list);
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(map, value.getValue());
     }
@@ -76,8 +96,10 @@ class CollapseTemplateFunctionTest {
         object.field = UUID.randomUUID().toString();
         object.method = UUID.randomUUID().toString();
         var list = List.of(object);
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(list);
 
-        var value = function.invoke(List.of(), ExpressionValue.of(list));
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(
                 Map.of(
@@ -93,8 +115,10 @@ class CollapseTemplateFunctionTest {
         var object = new Stub();
         object.field = UUID.randomUUID().toString();
         object.method = UUID.randomUUID().toString();
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(object);
 
-        var value = function.invoke(List.of(), ExpressionValue.of(object));
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(
                 Map.of(
@@ -112,8 +136,10 @@ class CollapseTemplateFunctionTest {
         object.method = UUID.randomUUID().toString();
         object.child = UUID.randomUUID().toString();
         var list = List.of(object);
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(list);
 
-        var value = function.invoke(List.of(), ExpressionValue.of(list));
+        var value = function.invoke(args, pipe);
         assertFalse(value.isEmpty());
         assertEquals(
                 Map.of(

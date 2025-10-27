@@ -10,11 +10,12 @@ import java.util.Objects;
 /**
  *
  * @author sibmaks
+ * @since 0.0.1
  */
 public class NotEqualsTemplateFunction implements TemplateFunction {
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        if (args.size() == 1) {
+        if (args.size() == 1 && !pipeArg.isEmpty()) {
             return ExpressionValue.of(
                     !Objects.equals(
                             args.get(0).getValue(),
@@ -22,7 +23,7 @@ public class NotEqualsTemplateFunction implements TemplateFunction {
                     )
             );
         }
-        if (args.size() == 2) {
+        if (args.size() == 2 && pipeArg.isEmpty()) {
             return ExpressionValue.of(
                     !Objects.equals(
                             args.get(0).getValue(),
@@ -30,7 +31,7 @@ public class NotEqualsTemplateFunction implements TemplateFunction {
                     )
             );
         }
-        throw new TemplateEvalException("neq: expected 1 or 2 args");
+        throw new TemplateEvalException("neq: 2 arguments required");
     }
 
     @Override

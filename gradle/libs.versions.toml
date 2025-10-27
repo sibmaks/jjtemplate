@@ -2,7 +2,7 @@
 lombok = "1.18.42"
 slf4j = "2.0.17"
 jackson = "2.20.0"
-junit-bom = "5.10.0"
+junit-bom = "5.14.0"
 mockito = "5.20.0"
 
 [libraries]

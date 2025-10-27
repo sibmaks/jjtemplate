@@ -33,32 +33,35 @@ class GECompareTemplateFunctionTest {
 
     @Test
     void withoutArguments() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
     @Test
     void withoutPipeArgument() {
+        var args = List.of(ExpressionValue.of(null));
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(ExpressionValue.of(null)), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
     @Test
     void withALotOfArguments() {
+        var empty = ExpressionValue.of(null);
+        var args = List.of(
+                empty, empty
+        );
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(
-                                ExpressionValue.of(null), ExpressionValue.of(null)
-                        ),
-                        ExpressionValue.of(null)
-                )
+                () -> function.invoke(args, empty)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
@@ -71,6 +74,18 @@ class GECompareTemplateFunctionTest {
                         ExpressionValue.of(left),
                         ExpressionValue.of(right)
                 ), ExpressionValue.empty()
+        );
+        assertFalse(actual.isEmpty());
+        assertEquals(excepted, actual.getValue());
+    }
+
+    @ParameterizedTest
+    @MethodSource("cmpCases")
+    void cmpWithPipe(Number left, Number right, boolean excepted) {
+        var actual = function.invoke(
+                List.of(
+                        ExpressionValue.of(right)
+                ), ExpressionValue.of(left)
         );
         assertFalse(actual.isEmpty());
         assertEquals(excepted, actual.getValue());
