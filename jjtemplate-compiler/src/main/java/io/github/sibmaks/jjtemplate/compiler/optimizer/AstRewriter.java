@@ -56,6 +56,33 @@ final class AstRewriter implements AstVisitor<AstNode> {
         return AstVisitorUtils.dispatch(node, astRewriter);
     }
 
+    private static Optional<AstNode> foldSwitchExpression(
+            LiteralExpression switchExpression,
+            Map<Expression, AstNode> branches,
+            AstNode thenNode,
+            AstNode elseNode
+    ) {
+        var val = switchExpression.value;
+        for (var e : branches.entrySet()) {
+            var keyExpression = e.getKey();
+            if (keyExpression instanceof LiteralExpression) {
+                var keyVal = ((LiteralExpression) keyExpression).value;
+                if (Objects.equals(val, keyVal)) {
+                    return Optional.ofNullable(e.getValue());
+                }
+            } else {
+                return Optional.empty();
+            }
+        }
+        if (Boolean.TRUE.equals(val) && thenNode != null) {
+            return Optional.of(thenNode);
+        }
+        if (elseNode != null) {
+            return Optional.of(elseNode);
+        }
+        return Optional.of(Nodes.StaticNode.empty());
+    }
+
     private Expression inlineExpr(Expression e) {
         return e.accept(new ExpressionInliner(constants, evaluator));
     }
@@ -183,6 +210,13 @@ final class AstRewriter implements AstVisitor<AstNode> {
         var rawElseNode = node.getElseNode();
         var elseNode = rawElseNode == null ? null : AstVisitorUtils.dispatch(rawElseNode, this);
         changed |= (elseNode != rawElseNode);
+
+        if (switchExpression instanceof LiteralExpression) {
+            var folded = foldSwitchExpression((LiteralExpression) switchExpression, branches, thenNode, elseNode);
+            if(folded.isPresent()) {
+                return folded.get();
+            }
+        }
 
         if (!changed) {
             return node;
