@@ -153,10 +153,9 @@ sonarqube {
         property("sonar.organization", "sibmaks")
         property("sonar.projectKey", "sibmaks_jjtemplate")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.projectBaseDir", projectDir)
         property("sonar.sourceEncoding", "UTF-8")
         property("sonar.java.coveragePlugin", "jacoco")
-        property("sonar.scm.provider", "git")
+        property("sonar.scm.disabled", "true")
 
         property("sonar.modules", subprojects.joinToString(",") { it.name })
 
