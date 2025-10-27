@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import org.junit.jupiter.api.Test;
@@ -24,9 +25,11 @@ class StringUpperTemplateFunctionTest {
 
     @Test
     void upperWithoutArguments() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                TemplateEvalException.class,
+                () -> function.invoke(args, pipe)
         );
         assertEquals("upper: 1 argument required", exception.getMessage());
     }

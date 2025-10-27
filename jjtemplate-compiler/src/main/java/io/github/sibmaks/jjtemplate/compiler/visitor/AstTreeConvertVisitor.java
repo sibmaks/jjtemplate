@@ -45,7 +45,8 @@ public final class AstTreeConvertVisitor implements ExpressionVisitor<AstNode> {
 
     @Override
     public AstNode visitFunction(FunctionCallExpression expr) {
-        if (!expr.args.stream().allMatch(a -> a instanceof LiteralExpression)) {
+        if (!expr.args.stream().
+                allMatch(LiteralExpression.class::isInstance)) {
             return new Nodes.ExpressionNode(expr);
         }
         return foldExpression(expr);
@@ -69,7 +70,7 @@ public final class AstTreeConvertVisitor implements ExpressionVisitor<AstNode> {
     public AstNode visitPipe(PipeExpression expr) {
         if (!(expr.left instanceof LiteralExpression) ||
                 !expr.chain.stream()
-                        .flatMap(c -> c.args.stream()).allMatch(a -> a instanceof LiteralExpression)) {
+                        .flatMap(c -> c.args.stream()).allMatch(LiteralExpression.class::isInstance)) {
             return new Nodes.ExpressionNode(expr);
         }
         return foldExpression(expr);

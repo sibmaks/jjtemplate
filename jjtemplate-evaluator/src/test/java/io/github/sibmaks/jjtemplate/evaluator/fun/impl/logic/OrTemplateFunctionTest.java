@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  *
@@ -35,39 +33,47 @@ class OrTemplateFunctionTest {
 
     @Test
     void withoutArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("or: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withOnlyOneArgument() {
+        var args = List.of(ExpressionValue.of(42));
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(ExpressionValue.of(42)), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("or: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withOnlyOnePipeArgument() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(42);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.of(42))
+                () -> function.invoke(args, pipe)
         );
         assertEquals("or: 2 arguments required", exception.getMessage());
     }
 
     @Test
     void withTooMuchArguments() {
+        var args = List.of(
+                ExpressionValue.of(42),
+                ExpressionValue.of(43)
+        );
+        var pipe = ExpressionValue.of(44);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(
-                        ExpressionValue.of(42),
-                        ExpressionValue.of(42)
-                ), ExpressionValue.of(42))
+                () -> function.invoke(args, pipe)
         );
         assertEquals("or: 2 arguments required", exception.getMessage());
     }
@@ -75,12 +81,14 @@ class OrTemplateFunctionTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void withNotBooleanArgument(boolean first) {
+        var args = List.of(
+                ExpressionValue.of(first ? 42 : true),
+                ExpressionValue.of(first ? true : 42)
+        );
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(
-                        ExpressionValue.of(first ? 42 : true),
-                        ExpressionValue.of(first ? true : 42)
-                ), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("or: All arguments must be a boolean", exception.getMessage());
     }

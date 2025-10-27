@@ -33,62 +33,63 @@ class LTCompareTemplateFunctionTest {
 
     @Test
     void withoutArguments() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
     @Test
     void withoutPipeArgument() {
+        var args = List.of(ExpressionValue.of(null));
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(List.of(ExpressionValue.of(null)), ExpressionValue.empty())
+                () -> function.invoke(args, pipe)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
     @Test
     void withALotOfArguments() {
+        var nullExpression = ExpressionValue.of(null);
+        var args = List.of(
+                nullExpression, nullExpression
+        );
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(
-                                ExpressionValue.of(null), ExpressionValue.of(null)
-                        ),
-                        ExpressionValue.of(null)
-                )
+                () -> function.invoke(args, nullExpression)
         );
         assertEquals("cmp: invalid args", exception.getMessage());
     }
 
     @Test
     void withInvalidTypeArguments() {
+        var args = List.of(
+                ExpressionValue.of(42),
+                ExpressionValue.of(true)
+        );
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(
-                                ExpressionValue.of(42),
-                                ExpressionValue.of(true)
-                        ),
-                        ExpressionValue.empty()
-                )
+                () -> function.invoke(args, pipe)
         );
         assertEquals("Expected number: " + true, exception.getMessage());
     }
 
     @Test
     void withInvalidStringArguments() {
+        var args = List.of(
+                ExpressionValue.of(42),
+                ExpressionValue.of("true")
+        );
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(
-                                ExpressionValue.of(42),
-                                ExpressionValue.of("true")
-                        ),
-                        ExpressionValue.empty()
-                )
+                () -> function.invoke(args, pipe)
         );
         assertEquals("Expected number: true", exception.getMessage());
     }

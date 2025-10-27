@@ -39,12 +39,11 @@ class DefaultTemplateFunctionTest {
 
     @Test
     void checkWhenTooManyArgs() {
+        var args = List.of(ExpressionValue.of(42), ExpressionValue.of(43));
+        var pipe = ExpressionValue.of(44);
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(
-                        List.of(ExpressionValue.of(42), ExpressionValue.of(43)),
-                        ExpressionValue.of(42)
-                )
+                () -> function.invoke(args, pipe)
         );
         assertEquals("default: 2 arguments required", exception.getMessage());
     }

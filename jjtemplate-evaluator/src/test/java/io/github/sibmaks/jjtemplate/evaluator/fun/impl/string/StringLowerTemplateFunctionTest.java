@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 
@@ -23,9 +24,11 @@ class StringLowerTemplateFunctionTest {
 
     @Test
     void lowerWithoutArguments() {
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.empty();
         var exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> function.invoke(List.of(), ExpressionValue.empty())
+                TemplateEvalException.class,
+                () -> function.invoke(args, pipe)
         );
         assertEquals("lower: 1 argument required", exception.getMessage());
     }

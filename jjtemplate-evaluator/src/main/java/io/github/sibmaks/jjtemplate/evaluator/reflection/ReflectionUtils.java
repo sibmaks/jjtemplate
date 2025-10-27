@@ -176,7 +176,7 @@ public final class ReflectionUtils {
         try {
             return desc.get(obj);
         } catch (Throwable e) {
-            throw new RuntimeException("Failed to access property '" + name + "' of " + type, e);
+            throw new IllegalArgumentException("Failed to access property '" + name + "' of " + type, e);
         }
     }
 }

@@ -63,7 +63,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
                 ? new FunctionCallExpression(expr.name, args)
                 : expr;
 
-        if (updated.args.stream().allMatch(a -> a instanceof LiteralExpression)) {
+        if (updated.args.stream().allMatch(LiteralExpression.class::isInstance)) {
             try {
                 var result = evaluator.evaluate(updated, Context.empty());
                 if (!result.isEmpty()) {
@@ -102,7 +102,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
 
         var allLiteral = updated.chain.stream()
                 .flatMap(f -> f.args.stream())
-                .allMatch(a -> a instanceof LiteralExpression)
+                .allMatch(LiteralExpression.class::isInstance)
                 && updated.left instanceof LiteralExpression;
 
         if (allLiteral) {
