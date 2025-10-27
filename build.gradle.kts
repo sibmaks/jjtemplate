@@ -20,16 +20,6 @@ allprojects {
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
 
-    sonarqube {
-        properties {
-            property("sonar.organization", "sibmaks")
-            property("sonar.projectKey", "jjtemplate")
-            property("sonar.host.url", "https://sonarcloud.io")
-            property("sonar.sourceEncoding", "UTF-8")
-            property("sonar.java.coveragePlugin", "jacoco")
-        }
-    }
-
     publishing {
         repositories {
             maven {
@@ -154,6 +144,29 @@ publishing {
                     }
                 }
             }
+        }
+    }
+}
+
+sonarqube {
+    properties {
+        property("sonar.organization", "sibmaks")
+        property("sonar.projectKey", "sibmaks_jjtemplate")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.sourceEncoding", "UTF-8")
+        property("sonar.java.coveragePlugin", "jacoco")
+        property("sonar.scm.provider", "git")
+
+        property("sonar.modules", subprojects.joinToString(",") { it.name })
+
+        subprojects.forEach { sub ->
+            val subPath = sub.projectDir.toString().substring(projectDir.toString().length + 1)
+            property("${sub.name}.sonar.projectBaseDir", subPath)
+            property("${sub.name}.sonar.sources", "src/main/java")
+            property("${sub.name}.sonar.tests", "src/test/java")
+            property("${sub.name}.sonar.java.binaries", "build/classes")
+            property("${sub.name}.sonar.junit.reportPaths", "build/test-results/test")
+            property("${sub.name}.sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
         }
     }
 }
