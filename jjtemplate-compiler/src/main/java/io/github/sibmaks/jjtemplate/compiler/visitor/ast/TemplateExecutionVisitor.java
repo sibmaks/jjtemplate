@@ -108,6 +108,8 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         for (var entry : node.getEntries()) {
             if (entry instanceof Nodes.CompiledObject.Spread) {
                 visitObjectSpreadField((Nodes.CompiledObject.Spread) entry, out);
+            } else if (entry instanceof Nodes.CompiledObject.StaticField) {
+                visitObjectStaticField((Nodes.CompiledObject.StaticField) entry, out);
             } else {
                 visitObjectSimpleField((Nodes.CompiledObject.Field) entry, out);
             }
@@ -115,7 +117,13 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         return Nodes.StaticNode.of(out);
     }
 
-    private void visitObjectSimpleField(Nodes.CompiledObject.Field entry, LinkedHashMap<String, Object> out) {
+    private void visitObjectStaticField(Nodes.CompiledObject.StaticField entry, Map<String, Object> out) {
+        var fieldKey = entry.getKey();
+        var fieldValue = entry.getValue();
+        out.put(fieldKey, fieldValue);
+    }
+
+    private void visitObjectSimpleField(Nodes.CompiledObject.Field entry, Map<String, Object> out) {
         var fieldKey = entry.getKey();
         var keyNode = fieldKey.accept(this);
         var key = String.valueOf(keyNode.getValue());
@@ -124,7 +132,7 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         out.put(key, val.getValue());
     }
 
-    private void visitObjectSpreadField(Nodes.CompiledObject.Spread spread, LinkedHashMap<String, Object> out) {
+    private void visitObjectSpreadField(Nodes.CompiledObject.Spread spread, Map<String, Object> out) {
         var spreadExpression = spread.getExpression();
         var evaluated = evaluator.evaluate(spreadExpression, new Context(context));
         if (evaluated.isEmpty()) {

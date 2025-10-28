@@ -75,11 +75,12 @@ final class AstVarRefCollector implements AstVisitor<Void> {
                 var field = (Nodes.CompiledObject.Field) e;
                 AstVisitorUtils.dispatch(field.getKey(), this);
                 AstVisitorUtils.dispatch(field.getValue(), this);
-            } else {
+            } else if (e instanceof Nodes.CompiledObject.Spread) {
                 var spread = (Nodes.CompiledObject.Spread) e;
                 var expression = spread.getExpression();
                 expression.accept(new ExpressionVarRefCollector(accumulator));
             }
+            // static field hasn't references
         }
         return null;
     }

@@ -267,7 +267,14 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 }
             }
 
-            entries.add(new Nodes.CompiledObject.Field(compiledKey, compiledVal));
+            if (compiledKey instanceof Nodes.StaticNode && compiledVal instanceof Nodes.StaticNode) {
+                var keyValue = ((Nodes.StaticNode) compiledKey).getValue();
+                var stringKey = String.valueOf(keyValue);
+                var valValue = ((Nodes.StaticNode) compiledVal).getValue();
+                entries.add(new Nodes.CompiledObject.StaticField(stringKey, valValue));
+            } else {
+                entries.add(new Nodes.CompiledObject.Field(compiledKey, compiledVal));
+            }
         }
 
         if (allStatic) {

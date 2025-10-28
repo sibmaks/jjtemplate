@@ -120,7 +120,7 @@ public final class Nodes {
         }
 
         /**
-         * Represents a standard object key-value entry.
+         * Represents a standard object key-value entry. Key or value must be dynamic.
          */
         @Getter
         @Builder
@@ -129,6 +129,18 @@ public final class Nodes {
         public static final class Field implements Entry {
             private final AstNode key;
             private final AstNode value;
+        }
+
+        /**
+         * Represents a standard object key-value entry with static key and value.
+         */
+        @Getter
+        @Builder
+        @ToString
+        @AllArgsConstructor
+        public static final class StaticField implements Entry {
+            private final String key;
+            private final Object value;
         }
 
         /**

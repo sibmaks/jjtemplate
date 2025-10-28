@@ -136,6 +136,13 @@ final class AstRewriter implements AstVisitor<AstNode> {
         var staticMap = new LinkedHashMap<String, Object>();
 
         for (var entry : node.getEntries()) {
+            if (entry instanceof Nodes.CompiledObject.StaticField) {
+                var staticField = (Nodes.CompiledObject.StaticField) entry;
+                entries.add(entry);
+                var keyVal = staticField.getKey();
+                var valVal = staticField.getValue();
+                staticMap.put(keyVal, valVal);
+            }
             if (entry instanceof Nodes.CompiledObject.Field) {
                 var field = (Nodes.CompiledObject.Field) entry;
                 var rawKey = field.getKey();
@@ -144,22 +151,29 @@ final class AstRewriter implements AstVisitor<AstNode> {
                 var valueNode = AstVisitorUtils.dispatch(rawValue, this);
                 changed |= (keyNode != rawKey) || (valueNode != rawValue);
 
-                if (allStatic && keyNode instanceof Nodes.StaticNode && valueNode instanceof Nodes.StaticNode) {
+                if (keyNode instanceof Nodes.StaticNode && valueNode instanceof Nodes.StaticNode) {
                     var keyStaticNode = (Nodes.StaticNode) keyNode;
-                    var keyVal = keyStaticNode.getValue();
+                    var keyVal = String.valueOf(keyStaticNode.getValue());
                     var valueStaticNode = (Nodes.StaticNode) valueNode;
                     var valVal = valueStaticNode.getValue();
-                    staticMap.put(String.valueOf(keyVal), valVal);
+                    staticMap.put(keyVal, valVal);
+
+                    entries.add(
+                            Nodes.CompiledObject.StaticField.builder()
+                                    .key(keyVal)
+                                    .value(valVal)
+                                    .build()
+                    );
                 } else {
                     allStatic = false;
+                    entries.add(
+                            Nodes.CompiledObject.Field.builder()
+                                    .key(keyNode)
+                                    .value(valueNode)
+                                    .build()
+                    );
                 }
 
-                entries.add(
-                        Nodes.CompiledObject.Field.builder()
-                                .key(keyNode)
-                                .value(valueNode)
-                                .build()
-                );
             } else if (entry instanceof Nodes.CompiledObject.Spread) {
                 allStatic = false;
                 var s = (Nodes.CompiledObject.Spread) entry;
@@ -213,7 +227,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
 
         if (switchExpression instanceof LiteralExpression) {
             var folded = foldSwitchExpression((LiteralExpression) switchExpression, branches, thenNode, elseNode);
-            if(folded.isPresent()) {
+            if (folded.isPresent()) {
                 return folded.get();
             }
         }
