@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
@@ -7,24 +8,26 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Concatenation based on 1st argument type
  *
  * @author sibmaks
+ * @since 0.0.1
  */
 public class ConcatTemplateFunction implements TemplateFunction {
-    private static ExpressionValue concatString(ArrayList<ExpressionValue> all) {
+    private static ExpressionValue concatString(List<Object> all) {
         var sb = new StringBuilder();
         for (var v : all) {
-            sb.append(v.getValue());
+            sb.append(v);
         }
         return ExpressionValue.of(sb.toString());
     }
 
     private static ExpressionValue concatCollection(
             Collection<?> collection,
-            List<ExpressionValue> all
+            List<Object> all
     ) {
         var out = new ArrayList<Object>(collection);
         collectSubArgs(all, out);
@@ -34,7 +37,7 @@ public class ConcatTemplateFunction implements TemplateFunction {
 
     private static ExpressionValue concatArray(
             Object array,
-            List<ExpressionValue> all
+            List<Object> all
     ) {
         var len = Array.getLength(array);
         var out = new ArrayList<>(len + all.size());
@@ -47,12 +50,11 @@ public class ConcatTemplateFunction implements TemplateFunction {
     }
 
     private static void collectSubArgs(
-            List<ExpressionValue> all,
+            List<Object> all,
             List<Object> out
     ) {
         for (var i = 1; i < all.size(); i++) {
-            var expressionValue = all.get(i);
-            var item = expressionValue.getValue();
+            var item = all.get(i);
             if (item instanceof Collection<?>) {
                 var subCollection = (Collection<?>) item;
                 out.addAll(subCollection);
@@ -69,16 +71,21 @@ public class ConcatTemplateFunction implements TemplateFunction {
 
     @Override
     public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var all = new ArrayList<>(args);
+        var all = args.stream()
+                .filter(it -> !it.isEmpty())
+                .map(ExpressionValue::getValue)
+                .collect(Collectors.toCollection(ArrayList::new));
         if (!pipeArg.isEmpty()) {
-            all.add(pipeArg);
+            all.add(pipeArg.getValue());
         }
-        var first = all.isEmpty() ? ExpressionValue.empty() : all.get(0);
-        var firstValue = first.getValue();
-        if (firstValue instanceof Collection) {
-            return concatCollection((Collection<?>) firstValue, all);
-        } else if (firstValue != null && firstValue.getClass().isArray()) {
-            return concatArray(firstValue, all);
+        if(all.isEmpty()) {
+            throw new TemplateEvalException("concat: at least 1 argument required");
+        }
+        var first = all.get(0);
+        if (first instanceof Collection) {
+            return concatCollection((Collection<?>) first, all);
+        } else if (first != null && first.getClass().isArray()) {
+            return concatArray(first, all);
         }
         return concatString(all);
     }
