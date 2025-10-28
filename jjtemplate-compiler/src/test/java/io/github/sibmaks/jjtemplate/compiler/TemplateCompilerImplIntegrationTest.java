@@ -115,7 +115,7 @@ class TemplateCompilerImplIntegrationTest {
         var compiled = compiler.compile(modifiedTemplateScript);
         var compiledAt = System.nanoTime();
         assertNotNull(compiled);
-        var rendered = compiled.render(context);
+        var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
         var renderedAt = System.nanoTime();
         assertEquals(excepted, rendered);
         System.out.printf(

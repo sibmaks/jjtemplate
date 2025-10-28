@@ -111,6 +111,48 @@ class CollapseTemplateFunctionTest {
     }
 
     @Test
+    void arrayOfSingleMapAsArgument() {
+        var map = Map.of("key", "value");
+        var array = new Object[]{map};
+        var args = List.of(ExpressionValue.of(array));
+        var pipe = ExpressionValue.empty();
+        var value = function.invoke(args, pipe);
+        assertFalse(value.isEmpty());
+        assertEquals(map, value.getValue());
+    }
+
+    @Test
+    void arrayOfSingleMapAsPipe() {
+        var map = Map.of("key", "value");
+        var array = new Object[]{map};
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(array);
+        var value = function.invoke(args, pipe);
+        assertFalse(value.isEmpty());
+        assertEquals(map, value.getValue());
+    }
+
+    @Test
+    void arrayOfSingleObjectAsPipe() {
+        var object = new Stub();
+        object.field = UUID.randomUUID().toString();
+        object.method = UUID.randomUUID().toString();
+        var array = new Object[]{object};
+        var args = List.<ExpressionValue>of();
+        var pipe = ExpressionValue.of(array);
+
+        var value = function.invoke(args, pipe);
+        assertFalse(value.isEmpty());
+        assertEquals(
+                Map.of(
+                        "field", object.field,
+                        "method", object.getMethod()
+                ),
+                value.getValue()
+        );
+    }
+
+    @Test
     void objectAsPipe() {
         var object = new Stub();
         object.field = UUID.randomUUID().toString();

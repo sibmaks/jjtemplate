@@ -43,6 +43,12 @@ public class CollapseTemplateFunction implements TemplateFunction {
                 result.putAll(getProperties(o));
             }
             return result;
+        } else if(value.getClass().isArray()) {
+            var array = (Object[]) value;
+            for (var o : array) {
+                result.putAll(getProperties(o));
+            }
+            return result;
         }
 
         var fields = ReflectionUtils.getAllProperties(value);

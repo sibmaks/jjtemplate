@@ -86,20 +86,31 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         if (source instanceof Iterable<?>) {
             int i = 0;
             for (var it : (Iterable<?>) source) {
-                var child = new LinkedHashMap<>(context);
-                child.put(node.getItem(), it);
-                child.put(node.getIndex(), i++);
-                var bodyNode = node.getBodyNode();
-                var executor = new TemplateExecutionVisitor(evaluator, child);
-                var selectedValue = bodyNode.accept(executor);
-                if (!selectedValue.isEmpty()) {
-                    out.add(selectedValue.getValue());
-                }
+                collectRangeItem(node, it, i, out);
+                i++;
+            }
+        } else if (source.getClass().isArray()) {
+            int i = 0;
+            for (var it : (Object[]) source) {
+                collectRangeItem(node, it, i, out);
+                i++;
             }
         } else {
             throw new IllegalArgumentException("range: expression must be iterable or array");
         }
         return Nodes.StaticNode.of(out);
+    }
+
+    private void collectRangeItem(Nodes.RangeDefinition node, Object it, int i, ArrayList<Object> out) {
+        var child = new LinkedHashMap<>(context);
+        child.put(node.getItem(), it);
+        child.put(node.getIndex(), i);
+        var bodyNode = node.getBodyNode();
+        var executor = new TemplateExecutionVisitor(evaluator, child);
+        var selectedValue = bodyNode.accept(executor);
+        if (!selectedValue.isEmpty()) {
+            out.add(selectedValue.getValue());
+        }
     }
 
     @Override
