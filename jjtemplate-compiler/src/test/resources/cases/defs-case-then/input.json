@@ -1,7 +1,7 @@
 {
   "definitions": [
     {
-      "varResult case true": {
+      "varResult switch true": {
         "then": "then case",
         "else": "else case"
       }

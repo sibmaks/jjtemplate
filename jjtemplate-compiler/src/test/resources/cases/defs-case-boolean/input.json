@@ -4,7 +4,7 @@
       "testBooleanVariable": true
     },
     {
-      "varResult case .testBooleanVariable": {
+      "varResult switch .testBooleanVariable": {
         "42": "is number",
         "true": "is boolean",
         "'text'": "is string",

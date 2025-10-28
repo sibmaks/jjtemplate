@@ -38,7 +38,7 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
     }
 
     @Override
-    public Nodes.StaticNode visitCase(Nodes.CaseDefinition node) {
+    public Nodes.StaticNode visitSwitch(Nodes.SwitchDefinition node) {
         var localContext = new Context(context);
         var evaluated = evaluator.evaluate(node.getSwitchExpr(), localContext);
         if (evaluated.isEmpty()) {

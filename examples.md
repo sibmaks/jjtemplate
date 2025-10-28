@@ -153,7 +153,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
 
 ---
 
-## Case definition
+## Switch definition
 
 **Template:**
 
@@ -161,7 +161,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
 {
   "definitions": [
     {
-      "message case .status": {
+      "message switch .status": {
         "'ok'": "All good",
         "'fail'": "Something went wrong",
         "else": "Unknown"
@@ -177,7 +177,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
 ```java
 import java.util.Map;
 
-Map.of("status","fail");
+var context = Map.of("status", "fail");
 ```
 
 **Output:**
@@ -186,6 +186,37 @@ Map.of("status","fail");
 {
   "message": "Something went wrong"
 }
+```
+
+## Inner switch
+
+**Template:**
+
+```json
+{
+  "definitions": [
+    {
+      "booleanVar": false,
+      "anotherBooleanVar": true
+    },
+    {
+      "defResult switch .booleanVar": {
+        "true": "fail-out",
+        "false switch .anotherBooleanVar": {
+          "true": "ok",
+          "false": "fail-in"
+        }
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}
+```
+
+**Output:**
+
+```json
+"ok"
 ```
 
 ---
@@ -227,12 +258,14 @@ This section demonstrates how to use `formatDate`, `parseDate`, and `parseDateTi
 
 Formats date or time objects into a string according to a provided pattern.  
 Supports:
+
 - `java.time.LocalDate`
 - `java.time.LocalDateTime`
 - `java.time.ZonedDateTime`
 - `java.util.Date`
 
 #### Template
+
 ```json
 {
   "definitions": [
@@ -258,7 +291,7 @@ Supports:
 
 ---
 
-###  `parseDate`
+### `parseDate`
 
 Parses a **string** into a `java.time.LocalDate` using the given format.
 Commonly used before formatting or as a definition variable.

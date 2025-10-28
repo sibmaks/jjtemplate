@@ -25,12 +25,12 @@ public interface AstVisitor<R> {
     R visitStatic(Nodes.StaticNode node);
 
     /**
-     * Visits a {@link Nodes.CaseDefinition}.
+     * Visits a {@link Nodes.SwitchDefinition}.
      *
-     * @param node the case definition node to visit
+     * @param node the switch definition node to visit
      * @return the result of visiting the node
      */
-    R visitCase(Nodes.CaseDefinition node);
+    R visitSwitch(Nodes.SwitchDefinition node);
 
     /**
      * Visits a {@link Nodes.RangeDefinition}.

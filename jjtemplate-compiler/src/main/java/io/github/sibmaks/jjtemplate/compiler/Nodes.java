@@ -210,16 +210,16 @@ public final class Nodes {
     }
 
     /**
-     * Represents a {@code case} construct in a template.
+     * Represents a {@code switch} construct in a template.
      * <p>
-     * Corresponds to syntax like {@code varName case <expr>}, including branches and optional {@code else}.
+     * Corresponds to syntax like {@code varName switch <expr>}, including branches and optional {@code else}.
      * </p>
      */
     @Getter
     @Builder
     @ToString
     @AllArgsConstructor
-    public static final class CaseDefinition implements AstNode {
+    public static final class SwitchDefinition implements AstNode {
         private final Expression switchExpr;
         private final Map<Expression, AstNode> branches;
         private final AstNode thenNode;
@@ -227,7 +227,7 @@ public final class Nodes {
 
         @Override
         public <R> R accept(AstVisitor<R> visitor) {
-            return visitor.visitCase(this);
+            return visitor.visitSwitch(this);
         }
 
     }

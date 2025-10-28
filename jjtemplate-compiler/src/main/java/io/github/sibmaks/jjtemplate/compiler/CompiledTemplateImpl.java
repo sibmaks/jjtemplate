@@ -41,14 +41,16 @@ public final class CompiledTemplateImpl implements CompiledTemplate {
     @Override
     public Object render(Map<String, Object> context) {
         var local = new LinkedHashMap<>(context);
-        evalDefinitions(local);
         var executor = new TemplateExecutionVisitor(evaluator, local);
+        evalDefinitions(executor, local);
         var selectedValue = compiledTemplate.accept(executor);
         return selectedValue.getValue();
     }
 
-    private void evalDefinitions(Map<String, Object> context) {
-        var executor = new TemplateExecutionVisitor(evaluator, context);
+    private void evalDefinitions(
+            TemplateExecutionVisitor executor,
+            Map<String, Object> context
+    ) {
         for (var def : compiledDefs) {
             for (var e : def.entrySet()) {
                 var value = e.getValue();

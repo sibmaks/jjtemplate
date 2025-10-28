@@ -60,7 +60,7 @@ Supports expressions, pipe calls, and ternary operators (`?`, `:`).
 
 ## Supported Features
 
-Variable definitions: static, conditional (`case`), and range-based (`range`)
+Variable definitions: static, conditional (`switch`), and range-based (`range`)
 
 Built-in functions: `str`, `int`, `float`, `boolean`, `len`, `empty`, `not`, `eq`, `neq`, `lt`, `le`, `gt`, `ge`, `and`,
 `or`, `xor`, `list`, `concat`, `default`, `collapse`, `format`, `formatDate`, `parseDate`, `parseDateTime`
