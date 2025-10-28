@@ -9,6 +9,7 @@ import java.util.List;
 /**
  *
  * @author sibmaks
+ * @since 0.0.1
  */
 public class ListTemplateFunction implements TemplateFunction {
 
