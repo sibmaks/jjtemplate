@@ -10,13 +10,24 @@
 It compiles templates into optimized abstract syntax trees (ASTs) for fast execution with predictable, valid JSON
 results.
 
-## Project Modules
+## Usage
 
-- **Lexer** — converts raw template strings into structured tokens.
-- **Parser** — builds abstract syntax trees (AST) from token sequences.
-- **Compiler** — transforms parsed templates into executable node trees.
-    - **Optimizer** — applies static optimizations to improve runtime performance.
-- **Evaluator** — executes expressions and renders final output.
+### Maven
+
+```xml
+<dependency>
+    <groupId>io.github.sibmaks.jjtemplate</groupId>
+    <artifactId>jjtemplate</artifactId>
+    <version>0.1.0</version>
+    <type>pom</type>
+</dependency>
+```
+
+### Gradle
+
+```kotlin
+implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.1.0")
+```
 
 ## Example Workflow
 
@@ -70,6 +81,16 @@ Composable expressions: via `|` (pipe operator)
 Ternary conditions: `condition ? value1 : value2`
 
 See more examples [here](examples.md).
+
+
+## Project Modules
+
+- **Lexer** — converts raw template strings into structured tokens.
+- **Parser** — builds abstract syntax trees (AST) from token sequences.
+- **Compiler** — transforms parsed templates into executable node trees.
+    - **Optimizer** — applies static optimizations to improve runtime performance.
+- **Evaluator** — executes expressions and renders final output.
+
 
 # Goals
 
