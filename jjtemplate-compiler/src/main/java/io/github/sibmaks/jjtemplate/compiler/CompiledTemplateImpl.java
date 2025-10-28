@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
-import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitorUtils;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.TemplateExecutionVisitor;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import lombok.AllArgsConstructor;
@@ -54,7 +53,7 @@ public final class CompiledTemplateImpl implements CompiledTemplate {
         for (var def : compiledDefs) {
             for (var e : def.entrySet()) {
                 var value = e.getValue();
-                var selectedValue = AstVisitorUtils.dispatch(value, executor);
+                var selectedValue = value.accept(executor);
                 if (!selectedValue.isEmpty()) {
                     context.put(e.getKey(), selectedValue.getValue());
                 }

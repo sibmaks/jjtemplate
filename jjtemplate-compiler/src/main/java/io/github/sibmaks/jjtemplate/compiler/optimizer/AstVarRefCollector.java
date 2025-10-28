@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.optimizer;
 import io.github.sibmaks.jjtemplate.compiler.Nodes;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitor;
-import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitorUtils;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
 
 import java.util.Collections;
@@ -72,8 +71,10 @@ final class AstVarRefCollector implements AstVisitor<Void> {
         for (var e : node.getEntries()) {
             if (e instanceof Nodes.CompiledObject.Field) {
                 var field = (Nodes.CompiledObject.Field) e;
-                AstVisitorUtils.dispatch(field.getKey(), this);
-                AstVisitorUtils.dispatch(field.getValue(), this);
+                var fieldKey = field.getKey();
+                fieldKey.accept(this);
+                var fieldValue = field.getValue();
+                fieldValue.accept(this);
             } else if (e instanceof Nodes.CompiledObject.Spread) {
                 var spread = (Nodes.CompiledObject.Spread) e;
                 var expression = spread.getExpression();
@@ -93,15 +94,15 @@ final class AstVarRefCollector implements AstVisitor<Void> {
             key.accept(new ExpressionVarRefCollector(accumulator));
         }
         for (var val : branches.values()) {
-            AstVisitorUtils.dispatch(val, this);
+            val.accept(this);
         }
         var thenNode = node.getThenNode();
         if (thenNode != null) {
-            AstVisitorUtils.dispatch(thenNode, this);
+            thenNode.accept(this);
         }
         var elseNode = node.getElseNode();
         if (elseNode != null) {
-            AstVisitorUtils.dispatch(elseNode, this);
+            elseNode.accept(this);
         }
         return null;
     }

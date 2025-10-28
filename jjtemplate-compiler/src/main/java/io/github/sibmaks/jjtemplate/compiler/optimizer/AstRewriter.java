@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.optimizer;
 import io.github.sibmaks.jjtemplate.compiler.Nodes;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitor;
-import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitorUtils;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.TemplateExecutionVisitor;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
@@ -54,7 +53,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
             return node;
         }
         var astRewriter = new AstRewriter(evaluator, constants);
-        return AstVisitorUtils.dispatch(node, astRewriter);
+        return node.accept(astRewriter);
     }
 
     private static Optional<AstNode> foldSwitchExpression(
@@ -147,9 +146,9 @@ final class AstRewriter implements AstVisitor<AstNode> {
             if (entry instanceof Nodes.CompiledObject.Field) {
                 var field = (Nodes.CompiledObject.Field) entry;
                 var rawKey = field.getKey();
-                var keyNode = AstVisitorUtils.dispatch(rawKey, this);
+                var keyNode = rawKey.accept(this);
                 var rawValue = field.getValue();
-                var valueNode = AstVisitorUtils.dispatch(rawValue, this);
+                var valueNode = rawValue.accept(this);
                 changed |= (keyNode != rawKey) || (valueNode != rawValue);
 
                 if (keyNode instanceof Nodes.StaticNode && valueNode instanceof Nodes.StaticNode) {
@@ -213,17 +212,17 @@ final class AstRewriter implements AstVisitor<AstNode> {
             var rawKey = e.getKey();
             var inlinedKey = inlineExpr(rawKey);
             var rawValue = e.getValue();
-            var inlinedValue = AstVisitorUtils.dispatch(rawValue, this);
+            var inlinedValue = rawValue.accept(this);
             branches.put(inlinedKey, inlinedValue);
             changed |= (inlinedKey != rawKey) || (inlinedValue != rawValue);
         }
 
         var rawThenNode = node.getThenNode();
-        var thenNode = rawThenNode == null ? null : AstVisitorUtils.dispatch(rawThenNode, this);
+        var thenNode = rawThenNode == null ? null : rawThenNode.accept(this);
         changed |= (thenNode != rawThenNode);
 
         var rawElseNode = node.getElseNode();
-        var elseNode = rawElseNode == null ? null : AstVisitorUtils.dispatch(rawElseNode, this);
+        var elseNode = rawElseNode == null ? null : rawElseNode.accept(this);
         changed |= (elseNode != rawElseNode);
 
         if (switchExpression instanceof LiteralExpression) {
@@ -247,8 +246,9 @@ final class AstRewriter implements AstVisitor<AstNode> {
     @Override
     public AstNode visitRange(Nodes.RangeDefinition node) {
         var src = inlineExpr(node.getSourceExpr());
-        var body = AstVisitorUtils.dispatch(node.getBodyNode(), this);
-        if (src == node.getSourceExpr() && body == node.getBodyNode()) {
+        var bodyNode = node.getBodyNode();
+        var body = bodyNode.accept(this);
+        if (src == node.getSourceExpr() && body == bodyNode) {
             return tryFoldRange(node, src, body)
                     .orElse(node);
         }
@@ -307,7 +307,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
         var allStatic = true;
         var out = new ArrayList<AstNode>(astNodes.size());
         for (var it : astNodes) {
-            var newItem = AstVisitorUtils.dispatch(it, this);
+            var newItem = it.accept(this);
             if (allStatic && !(newItem instanceof Nodes.StaticNode)) {
                 allStatic = false;
             }
@@ -317,7 +317,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
         if (!changed) {
             return node;
         }
-        if(allStatic) {
+        if (allStatic) {
             var staticList = out.stream()
                     .map(Nodes.StaticNode.class::cast)
                     .map(Nodes.StaticNode::getValue)
