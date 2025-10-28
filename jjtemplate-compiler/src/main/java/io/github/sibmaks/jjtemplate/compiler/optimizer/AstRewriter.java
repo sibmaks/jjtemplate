@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * AST rewriter that performs constant inlining and local folding on the compiled template AST.
@@ -300,16 +301,28 @@ final class AstRewriter implements AstVisitor<AstNode> {
     }
 
     @Override
-    public AstNode visitList(List<AstNode> node) {
+    public AstNode visitList(Nodes.ListNode node) {
+        var astNodes = node.getAstNodes();
         var changed = false;
-        var out = new ArrayList<AstNode>(node.size());
-        for (var it : node) {
+        var allStatic = true;
+        var out = new ArrayList<AstNode>(astNodes.size());
+        for (var it : astNodes) {
             var newItem = AstVisitorUtils.dispatch(it, this);
+            if (allStatic && !(newItem instanceof Nodes.StaticNode)) {
+                allStatic = false;
+            }
             out.add(newItem);
             changed |= (newItem != it);
         }
         if (!changed) {
-            return new Nodes.ListNode(node);
+            return node;
+        }
+        if(allStatic) {
+            var staticList = out.stream()
+                    .map(Nodes.StaticNode.class::cast)
+                    .map(Nodes.StaticNode::getValue)
+                    .collect(Collectors.toList());
+            return Nodes.StaticNode.of(staticList);
         }
         return new Nodes.ListNode(out);
     }

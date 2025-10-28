@@ -54,7 +54,7 @@ public final class Nodes {
 
         @Override
         public <R> R accept(AstVisitor<R> visitor) {
-            return visitor.visitList(astNodes);
+            return visitor.visitList(this);
         }
 
     }

@@ -206,9 +206,10 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
     }
 
     @Override
-    public Nodes.StaticNode visitList(List<AstNode> node) {
+    public Nodes.StaticNode visitList(Nodes.ListNode node) {
+        var astNodes = node.getAstNodes();
         var out = new ArrayList<>();
-        for (var el : node) {
+        for (var el : astNodes) {
             var res = el.accept(this);
             if (res.isCond()) {
                 if (res.getValue() != null) {

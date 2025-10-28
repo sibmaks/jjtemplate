@@ -111,6 +111,30 @@ public final class TemplateOptimizer {
         return reachable;
     }
 
+    private static List<Map<String, AstNode>> eliminateUnusedDefs(List<Map<String, AstNode>> currentDefs, Set<String> reachable) {
+        var cleaned = new ArrayList<Map<String, AstNode>>(currentDefs.size());
+        var changed = false;
+        for (var layer : currentDefs) {
+            var keep = new LinkedHashMap<String, AstNode>();
+            for (var e : layer.entrySet()) {
+                var name = e.getKey();
+                if (reachable.contains(name)) {
+                    keep.put(name, e.getValue());
+                } else {
+                    log.trace("Remove unused definition: {}", name);
+                    changed = true;
+                }
+            }
+            if (!keep.isEmpty()) {
+                cleaned.add(keep);
+            }
+        }
+        if (!changed) {
+            return currentDefs;
+        }
+        return cleaned;
+    }
+
     private Map<String, AstNode> inlineMap(
             Map<String, AstNode> map,
             Map<String, Object> constants
@@ -167,22 +191,8 @@ public final class TemplateOptimizer {
             }
 
             var reachable = computeReachable(currentTemplate, currentDefs);
-            var cleaned = new ArrayList<Map<String, AstNode>>(currentDefs.size());
-            for (var layer : currentDefs) {
-                var keep = new LinkedHashMap<String, AstNode>();
-                for (var e : layer.entrySet()) {
-                    var name = e.getKey();
-                    if (reachable.contains(name)) {
-                        keep.put(name, e.getValue());
-                    } else {
-                        log.trace("Remove unused definition: {}", name);
-                        changed = true;
-                    }
-                }
-                if (!keep.isEmpty()) {
-                    cleaned.add(keep);
-                }
-            }
+            var cleaned = eliminateUnusedDefs(currentDefs, reachable);
+            changed |= cleaned != currentDefs;
             currentDefs = cleaned;
 
         } while (changed);

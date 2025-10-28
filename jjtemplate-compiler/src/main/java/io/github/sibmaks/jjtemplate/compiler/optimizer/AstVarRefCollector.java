@@ -8,7 +8,6 @@ import io.github.sibmaks.jjtemplate.parser.api.Expression;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -111,13 +110,15 @@ final class AstVarRefCollector implements AstVisitor<Void> {
     public Void visitRange(Nodes.RangeDefinition node) {
         var sourceExpr = node.getSourceExpr();
         sourceExpr.accept(new ExpressionVarRefCollector(accumulator));
-        AstVisitorUtils.dispatch(node.getBodyNode(), this);
+        var bodyNode = node.getBodyNode();
+        bodyNode.accept(this);
         return null;
     }
 
     @Override
-    public Void visitList(List<AstNode> node) {
-        for (var it : node) {
+    public Void visitList(Nodes.ListNode node) {
+        var astNodes = node.getAstNodes();
+        for (var it : astNodes) {
             it.accept(this);
         }
         return null;

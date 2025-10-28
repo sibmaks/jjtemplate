@@ -2,8 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.visitor.ast;
 
 import io.github.sibmaks.jjtemplate.compiler.Nodes;
 
-import java.util.List;
-
 /**
  * Visitor interface for traversing and processing abstract syntax tree (AST) nodes.
  * <p>
@@ -73,12 +71,12 @@ public interface AstVisitor<R> {
     R visitExpression(Nodes.ExpressionNode node);
 
     /**
-     * Visits a list of AST nodes.
+     * Visits a {@link Nodes.ListNode}.
      *
-     * @param node the list of AST nodes
-     * @return the result of visiting the list
+     * @param node the list node to visit
+     * @return the result of visiting the node
      */
-    R visitList(List<AstNode> node);
+    R visitList(Nodes.ListNode node);
 
     /**
      * Default visitor method called when no specific handler matches the node type.
