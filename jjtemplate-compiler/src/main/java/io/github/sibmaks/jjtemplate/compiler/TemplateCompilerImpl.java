@@ -167,7 +167,13 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             var nestedSwitch = parseSwitchHeader(condKey);
             if (nestedSwitch != null) {
                 var nested = compileSwitch(value, nestedSwitch.expr);
-                branches.put(compileExpression("{{ " + nestedSwitch.varName + " }}"), nested);
+                if (Keyword.ELSE.eq(nestedSwitch.varName)) {
+                    definitionBuilder.elseNode(nested);
+                } else if (Keyword.THEN.eq(nestedSwitch.varName)) {
+                    definitionBuilder.thenNode(nested);
+                } else {
+                    branches.put(compileExpression("{{ " + nestedSwitch.varName + " }}"), nested);
+                }
                 continue;
             }
             var compiledNode = compileNode(value);
