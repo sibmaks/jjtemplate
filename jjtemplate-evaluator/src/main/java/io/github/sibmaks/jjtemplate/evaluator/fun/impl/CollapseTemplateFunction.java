@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -44,9 +45,10 @@ public class CollapseTemplateFunction implements TemplateFunction {
             }
             return result;
         } else if(value.getClass().isArray()) {
-            var array = (Object[]) value;
-            for (var o : array) {
-                result.putAll(getProperties(o));
+            var len = Array.getLength(value);
+            for (int i = 0; i < len; i++) {
+                var item = Array.get(value, i);
+                result.putAll(getProperties(item));
             }
             return result;
         }

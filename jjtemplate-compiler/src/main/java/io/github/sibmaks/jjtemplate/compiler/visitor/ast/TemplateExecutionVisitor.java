@@ -84,16 +84,16 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         }
         var out = new ArrayList<>();
         if (source instanceof Iterable<?>) {
-            int i = 0;
+            var i = 0;
             for (var it : (Iterable<?>) source) {
                 collectRangeItem(node, it, i, out);
                 i++;
             }
         } else if (source.getClass().isArray()) {
-            int i = 0;
-            for (var it : (Object[]) source) {
-                collectRangeItem(node, it, i, out);
-                i++;
+            var len = Array.getLength(source);
+            for (int j = 0; j < len; j++) {
+                var item = Array.get(source, j);
+                collectRangeItem(node, item, j, out);
             }
         } else {
             throw new IllegalArgumentException("range: expression must be iterable or array");

@@ -16,6 +16,7 @@ import io.github.sibmaks.jjtemplate.parser.TemplateParser;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
 import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -211,7 +212,13 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
 
         if (node.getClass().isArray()) {
-            return compileListNode(Arrays.asList((Object[]) node));
+            var len = Array.getLength(node);
+            var asList = new ArrayList<>();
+            for (int i = 0; i < len; i++) {
+                var item = Array.get(node, i);
+                asList.add(item);
+            }
+            return compileListNode(asList);
         }
 
         return Nodes.StaticNode.of(node);
