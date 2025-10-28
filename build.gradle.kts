@@ -178,6 +178,9 @@ jreleaser {
 }
 
 tasks.register("printVersion") {
+    group = "build"
+    description = "Prints the current project version."
+
     doLast {
         println(project.version)
     }
