@@ -101,7 +101,7 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
         return Nodes.StaticNode.of(out);
     }
 
-    private void collectRangeItem(Nodes.RangeDefinition node, Object it, int i, ArrayList<Object> out) {
+    private void collectRangeItem(Nodes.RangeDefinition node, Object it, int i, List<Object> out) {
         var child = new LinkedHashMap<>(context);
         child.put(node.getItem(), it);
         child.put(node.getIndex(), i);

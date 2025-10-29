@@ -21,7 +21,7 @@ import java.util.Map;
  * @since 0.0.1
  */
 @AllArgsConstructor
-public final class CompiledTemplateImpl implements CompiledTemplate {
+final class CompiledTemplateImpl implements CompiledTemplate {
     /**
      * Evaluator used to compute expressions and variable values during rendering.
      */

@@ -96,7 +96,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         return true;
     }
 
-    private static boolean compileListCondNodeLeaf(Nodes.CondNode condNode, ArrayList<AstNode> compiledList) {
+    private static boolean compileListCondNodeLeaf(Nodes.CondNode condNode, List<AstNode> compiledList) {
         var condNodeExpression = condNode.getExpression();
         if (!(condNodeExpression instanceof LiteralExpression)) {
             compiledList.add(new Nodes.CondNode(condNodeExpression));
@@ -151,7 +151,13 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         var compiledTemplate = compileNode(template);
         var optimizer = new TemplateOptimizer(templateEvaluator);
         var optimized = optimizer.optimize(compiledDefs, compiledTemplate);
-        return new CompiledTemplateImpl(templateEvaluator, optimized.getDefinitions(), optimized.getTemplate());
+        var optimizedTemplate = optimized.getTemplate();
+        if (optimizedTemplate instanceof Nodes.StaticNode) {
+            var staticNode = (Nodes.StaticNode) optimizedTemplate;
+            var value = staticNode.getValue();
+            return new StaticCompiledTemplateImpl(value);
+        }
+        return new CompiledTemplateImpl(templateEvaluator, optimized.getDefinitions(), optimizedTemplate);
     }
 
     private Nodes.SwitchDefinition compileSwitch(Object valueSpec, String switchExpression) {
@@ -269,7 +275,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 var stringKey = String.valueOf(keyValue);
                 var valValue = ((Nodes.StaticNode) compiledVal).getValue();
                 entries.add(new Nodes.CompiledObject.StaticField(stringKey, valValue));
-                if(allStatic) {
+                if (allStatic) {
                     staticMap.put(String.valueOf(keyValue), valValue);
                 }
             } else {
