@@ -144,11 +144,17 @@ Templates may contain `definitions` (optional) and the main `template` object.
 **Output:**
 
 ```json
-{
-  "key-0": 1,
-  "key-1": 2,
-  "key-2": 3
-}
+[
+  {
+    "key-0": 1
+  },
+  {
+    "key-1": 2
+  },
+  {
+    "key-2": 3
+  }
+]
 ```
 
 ---
