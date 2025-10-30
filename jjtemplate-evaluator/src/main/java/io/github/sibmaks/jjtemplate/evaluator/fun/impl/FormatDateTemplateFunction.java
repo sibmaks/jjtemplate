@@ -33,8 +33,7 @@ public class FormatDateTemplateFunction implements TemplateFunction<String> {
             throw new TemplateEvalException("formatDate: 1 argument required");
         }
         var format = (String) args.get(0);
-        var date = (String) pipeArg;
-        return formatDate(format, date);
+        return formatDate(format, pipeArg);
     }
 
     @Override
@@ -43,7 +42,7 @@ public class FormatDateTemplateFunction implements TemplateFunction<String> {
             throw new TemplateEvalException("formatDate: 2 arguments required");
         }
         var format = (String) args.get(0);
-        var date = (String) args.get(1);
+        var date = args.get(1);
         return formatDate(format, date);
     }
 

@@ -34,7 +34,7 @@ public class CollapseTemplateFunction implements TemplateFunction<Map<String, Ob
             return result;
         }
 
-        var fields = ReflectionUtils.getAllProperties(value);
+        var fields = new HashMap<>(ReflectionUtils.getAllProperties(value));
         for (var key : OBJECT_PROPERTIES.keySet()) {
             fields.remove(key);
         }

@@ -378,6 +378,24 @@ class TemplateEvaluatorTest {
     }
 
     @Test
+    void pipeExpressionWithArguments() {
+        var options = TemplateEvaluationOptions.builder()
+                .locale(Locale.US)
+                .build();
+        var evaluator = new TemplateEvaluator(options);
+
+        var leftExpression = new LiteralExpression("pipe");
+        var rightExpression = new FunctionCallExpression("concat", List.of(new LiteralExpression("arg-")));
+        var pipeExpression = new PipeExpression(
+                leftExpression,
+                List.of(rightExpression)
+        );
+        var evaluated = evaluator.evaluate(pipeExpression, mock());
+        assertNotNull(evaluated);
+        assertEquals("arg-pipe", evaluated);
+    }
+
+    @Test
     void notExistedFunctionExpression() {
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -651,6 +669,22 @@ class TemplateEvaluatorTest {
                 () -> evaluator.evaluate(expression, context)
         );
         assertEquals("Unknown expr type: " + NotSupportedExpression.class, exception.getMessage());
+    }
+
+    @Test
+    void wrapPrimitiveTypes() throws Exception {
+        var wrapMethod = TemplateEvaluator.class.getDeclaredMethod("wrap", Class.class);
+        wrapMethod.setAccessible(true);
+
+        assertEquals(Integer.class, wrapMethod.invoke(null, int.class));
+        assertEquals(Boolean.class, wrapMethod.invoke(null, boolean.class));
+        assertEquals(Long.class, wrapMethod.invoke(null, long.class));
+        assertEquals(Double.class, wrapMethod.invoke(null, double.class));
+        assertEquals(Float.class, wrapMethod.invoke(null, float.class));
+        assertEquals(Character.class, wrapMethod.invoke(null, char.class));
+        assertEquals(Short.class, wrapMethod.invoke(null, short.class));
+        assertEquals(Byte.class, wrapMethod.invoke(null, byte.class));
+        assertEquals(String.class, wrapMethod.invoke(null, String.class)); // non-primitive
     }
 
     static class NotSupportedExpression implements Expression {

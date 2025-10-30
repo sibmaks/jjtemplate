@@ -4,16 +4,14 @@ import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author sibmaks
  * @since 0.1.2
  */
 public class ContainsTemplateFunction implements TemplateFunction<Boolean> {
-    private static boolean containsString(String line, List<Object> all) {
+    private static boolean containsString(String line, Set<Object> all) {
         for (var item : all) {
             if (!line.contains(item.toString())) {
                 return false;
@@ -24,44 +22,38 @@ public class ContainsTemplateFunction implements TemplateFunction<Boolean> {
 
     private static boolean containsCollection(
             Collection<?> collection,
-            List<Object> all
+            Set<Object> all
     ) {
         for (var item : collection) {
-            if (!all.contains(item)) {
-                return false;
-            }
+            all.remove(item);
         }
-        return true;
+        return all.isEmpty();
     }
 
     private static boolean containsMap(
             Map<?, ?> collection,
-            List<Object> all
+            Set<Object> all
     ) {
         for (var item : collection.keySet()) {
-            if (!all.contains(item)) {
-                return false;
-            }
+            all.remove(item);
         }
-        return true;
+        return all.isEmpty();
     }
 
 
     private static boolean containsArray(
             Object array,
-            List<Object> all
+            Set<Object> all
     ) {
         var len = Array.getLength(array);
         for (var i = 0; i < len; i++) {
             var item = Array.get(array, i);
-            if (!all.contains(item)) {
-                return false;
-            }
+            all.remove(item);
         }
-        return true;
+        return all.isEmpty();
     }
 
-    private static boolean contains(Object value, List<Object> args) {
+    private static boolean contains(Object value, Set<Object> args) {
         if (value instanceof Collection) {
             return containsCollection((Collection<?>) value, args);
         }
@@ -83,7 +75,7 @@ public class ContainsTemplateFunction implements TemplateFunction<Boolean> {
         if (args.isEmpty()) {
             throw new TemplateEvalException("contains: at least 1 argument required");
         }
-        return contains(pipeArg, args);
+        return contains(pipeArg, new HashSet<>(args));
     }
 
     @Override
@@ -93,7 +85,7 @@ public class ContainsTemplateFunction implements TemplateFunction<Boolean> {
         }
         var container = args.get(0);
         var toCheck = args.subList(1, args.size());
-        return contains(container, toCheck);
+        return contains(container, new HashSet<>(toCheck));
     }
 
     @Override

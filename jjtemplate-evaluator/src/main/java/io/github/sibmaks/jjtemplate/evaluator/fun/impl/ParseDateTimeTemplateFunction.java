@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -15,7 +16,11 @@ public class ParseDateTimeTemplateFunction implements TemplateFunction<LocalDate
 
     private static LocalDateTime parseDate(String format, String date) {
         var formatter = DateTimeFormatter.ofPattern(format);
-        return LocalDateTime.parse(date, formatter);
+        try {
+            return LocalDateTime.parse(date, formatter);
+        } catch (DateTimeParseException e) {
+            throw new TemplateEvalException("Invalid date string: " + date, e);
+        }
     }
 
     @Override
