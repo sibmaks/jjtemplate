@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "strVar": "key"
+    },
+    {
+      "mapVar": {
+        "key": "value"
+      }
+    }
+  ],
+  "template": "{{ contains .mapVar, 'key', .strVar }}"
+}

@@ -33,7 +33,7 @@ import java.util.*;
  * <ul>
  *   <li><b>Type conversion:</b> {@code int}, {@code float}, {@code boolean}, {@code str}</li>
  *   <li><b>String operations:</b> {@code upper}, {@code lower}, {@code concat}, {@code format}</li>
- *   <li><b>Collection utilities:</b> {@code list}, {@code len}, {@code empty}, {@code collapse}</li>
+ *   <li><b>Collection utilities:</b> {@code list}, {@code len}, {@code empty}, {@code collapse}, {@code contains}</li>
  *   <li><b>Math / logic:</b> {@code eq}, {@code neq}, {@code lt}, {@code le}, {@code gt}, {@code ge},
  *       {@code and}, {@code or}, {@code xor}, {@code not}, {@code neg}</li>
  *   <li><b>Date operations:</b> {@code formatDate}, {@code parseDate}, {@code parseDateTime}</li>
@@ -109,6 +109,7 @@ final class FunctionRegistry {
                 new StringUpperTemplateFunction(locale),
                 new FormatStringTemplateFunction(locale),
                 // Collections & String & Objects
+                new ContainsTemplateFunction(),
                 new EmptyTemplateFunction(),
                 new LengthTemplateFunction(),
                 new ListTemplateFunction(),
