@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.api;
 
 import io.github.sibmaks.jjtemplate.compiler.TemplateCompilerImpl;
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluationOptions;
 
 import java.util.Locale;
 
@@ -41,6 +42,22 @@ public interface TemplateCompiler {
      * @return a compiler instance for the given locale
      */
     static TemplateCompiler getInstance(Locale locale) {
-        return new TemplateCompilerImpl(locale);
+        var evaluationOptions = TemplateEvaluationOptions.builder()
+                .locale(locale)
+                .build();
+        var options = TemplateCompileOptions.builder()
+                .evaluationOptions(evaluationOptions)
+                .build();
+        return getInstance(options);
+    }
+
+    /**
+     * Returns a {@link TemplateCompiler} instance configured with the specified {@link TemplateCompileOptions}.
+     *
+     * @param options the options to use for compiler configuration
+     * @return a compiler instance for the given options
+     */
+    static TemplateCompiler getInstance(TemplateCompileOptions options) {
+        return new TemplateCompilerImpl(options);
     }
 }

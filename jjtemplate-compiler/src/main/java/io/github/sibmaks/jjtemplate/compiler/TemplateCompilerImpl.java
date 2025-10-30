@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.optimizer.TemplateOptimizer;
@@ -44,6 +45,11 @@ import java.util.stream.Collectors;
 public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private static final Pattern VARIABLE_NAME = Pattern.compile("[A-Za-z][A-Za-z0-9]*");
+
+    /**
+     * Hold compiler options used during compilation.
+     */
+    private final TemplateCompileOptions options;
     /**
      * Evaluates expressions and performs constant folding during compilation.
      */
@@ -54,8 +60,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
      */
     private final AstTreeConvertVisitor astTreeConvert;
 
-    public TemplateCompilerImpl(Locale locale) {
-        this.templateEvaluator = new TemplateEvaluator(locale);
+    public TemplateCompilerImpl(TemplateCompileOptions options) {
+        this.options = options;
+        this.templateEvaluator = new TemplateEvaluator(options.getEvaluationOptions());
         this.astTreeConvert = new AstTreeConvertVisitor(templateEvaluator);
     }
 
@@ -149,15 +156,26 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
 
         var compiledTemplate = compileNode(template);
-        var optimizer = new TemplateOptimizer(templateEvaluator);
-        var optimized = optimizer.optimize(compiledDefs, compiledTemplate);
-        var optimizedTemplate = optimized.getTemplate();
-        if (optimizedTemplate instanceof Nodes.StaticNode) {
-            var staticNode = (Nodes.StaticNode) optimizedTemplate;
+        if (options.isOptimize()) {
+            var optimizer = new TemplateOptimizer(templateEvaluator);
+            var optimized = optimizer.optimize(compiledDefs, compiledTemplate);
+            var optimizedTemplate = optimized.getTemplate();
+            var optimizedDefinitions = optimized.getDefinitions();
+            return buildCompiledTemplate(optimizedTemplate, optimizedDefinitions);
+        }
+        return buildCompiledTemplate(compiledTemplate, compiledDefs);
+    }
+
+    private CompiledTemplate buildCompiledTemplate(
+            AstNode compiledTemplate,
+            List<Map<String, AstNode>> compiledDefs
+    ) {
+        if (compiledTemplate instanceof Nodes.StaticNode) {
+            var staticNode = (Nodes.StaticNode) compiledTemplate;
             var value = staticNode.getValue();
             return new StaticCompiledTemplateImpl(value);
         }
-        return new CompiledTemplateImpl(templateEvaluator, optimized.getDefinitions(), optimizedTemplate);
+        return new CompiledTemplateImpl(templateEvaluator, compiledDefs, compiledTemplate);
     }
 
     private Nodes.SwitchDefinition compileSwitch(Object valueSpec, String switchExpression) {

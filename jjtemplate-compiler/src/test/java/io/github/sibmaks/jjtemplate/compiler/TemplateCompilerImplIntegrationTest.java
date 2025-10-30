@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.sibmaks.jjtemplate.compiler.api.Definition;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class TemplateCompilerImplIntegrationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-    private final TemplateCompilerImpl compiler = new TemplateCompilerImpl(Locale.ROOT);
 
     private static Arguments buildArguments(Path it) {
         try {
@@ -76,6 +77,34 @@ class TemplateCompilerImplIntegrationTest {
             Map<String, Object> context,
             Object excepted
     ) {
+        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
+        assertNotNull(compiled);
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        assertEquals(excepted, rendered);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithoutOptimization(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .optimize(false)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
         var begin = System.nanoTime();
         var compiled = compiler.compile(templateScript);
         var compiledAt = System.nanoTime();
@@ -99,6 +128,46 @@ class TemplateCompilerImplIntegrationTest {
             Map<String, Object> context,
             Object excepted
     ) {
+        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var modifiedDefinitions = new ArrayList<Definition>();
+        for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
+            var modifiedDefinition = new Definition();
+            for (var entry : definition.entrySet()) {
+                modifiedDefinition.put(entry.getKey(), listsToArrays(entry.getValue()));
+            }
+            modifiedDefinitions.add(modifiedDefinition);
+        }
+        var modifiedTemplateScript = TemplateScript.builder()
+                .template(listsToArrays(templateScript.getTemplate()))
+                .definitions(modifiedDefinitions)
+                .build();
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(modifiedTemplateScript);
+        var compiledAt = System.nanoTime();
+        assertNotNull(compiled);
+        var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
+        var renderedAt = System.nanoTime();
+        assertEquals(excepted, rendered);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithArraysAndWithoutOptimization(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .optimize(false)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
         var modifiedDefinitions = new ArrayList<Definition>();
         for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
             var modifiedDefinition = new Definition();
@@ -129,7 +198,51 @@ class TemplateCompilerImplIntegrationTest {
     @EnabledIf("isLoadEnabled")
     @ParameterizedTest
     @MethodSource("cases")
-    void testScenarioWithLoad(String caseName, TemplateScript templateScript, Map<String, Object> context, Object excepted) {
+    void testScenarioWithLoad(String caseName,
+                              TemplateScript templateScript,
+                              Map<String, Object> context,
+                              Object excepted) {
+        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var measurementsAmount = 10_000;
+        var measurementsCompiled = new double[measurementsAmount];
+        var measurementsRendered = new double[measurementsAmount];
+        for (int i = 0; i < measurementsAmount; i++) {
+            var begin = System.nanoTime();
+            var compiled = compiler.compile(templateScript);
+            var compiledAt = System.nanoTime();
+            assertNotNull(compiled);
+            var rendered = compiled.render(context);
+            var renderedAt = System.nanoTime();
+            assertEquals(excepted, rendered);
+            measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
+            measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
+        }
+        var compileStats = Arrays.stream(measurementsCompiled).summaryStatistics();
+        var renderStats = Arrays.stream(measurementsRendered).summaryStatistics();
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms (%.4f - %.4f), rendered: %.4f ms (%.4f - %.4f), took: %.4f ms%n",
+                caseName,
+                compileStats.getAverage(),
+                compileStats.getMin(),
+                compileStats.getMax(),
+                renderStats.getAverage(),
+                renderStats.getMin(),
+                renderStats.getMax(),
+                compileStats.getSum() + renderStats.getSum()
+        );
+    }
+
+    @EnabledIf("isLoadEnabled")
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithLoadWithoutOptimization(String caseName,
+                                                 TemplateScript templateScript,
+                                                 Map<String, Object> context,
+                                                 Object excepted) {
+        var options = TemplateCompileOptions.builder()
+                .optimize(false)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
         var measurementsAmount = 10_000;
         var measurementsCompiled = new double[measurementsAmount];
         var measurementsRendered = new double[measurementsAmount];

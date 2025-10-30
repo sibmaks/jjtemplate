@@ -1,66 +1,26 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
-import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interpreter for TemplateParser AST.
  * <p>
  * Pipe semantics: left expression result is passed as a *separate* last parameter (Object pipeInput)
  * to all function invocations, instead of being appended to the args list.
+ *
+ * @author sibmaks
+ * @since 0.0.1
  */
 public final class TemplateEvaluator {
-    private final Map<String, TemplateFunction> functions;
+    private final FunctionRegistry functionRegistry;
 
-    public TemplateEvaluator(Locale locale) {
-        this(locale, Map.of());
-    }
-
-    public TemplateEvaluator(Locale locale, Map<String, TemplateFunction> functions) {
-        var allFunctions = new HashMap<>(functions);
-        var builtInFunctions = List.of(
-                new BooleanTemplateFunction(),
-                new FloatTemplateFunction(),
-                new IntTemplateFunction(),
-                new StrTemplateFunction(),
-                new ConcatTemplateFunction(),
-                new StringLowerTemplateFunction(locale),
-                new StringUpperTemplateFunction(locale),
-                new EmptyTemplateFunction(),
-                new LengthTemplateFunction(),
-                new ListTemplateFunction(),
-                new EqualsTemplateFunction(),
-                new NotEqualsTemplateFunction(),
-                new NotTemplateFunction(),
-                new DefaultTemplateFunction(),
-                new LTCompareTemplateFunction(),
-                new LECompareTemplateFunction(),
-                new GTCompareTemplateFunction(),
-                new GECompareTemplateFunction(),
-                new AndTemplateFunction(),
-                new OrTemplateFunction(),
-                new XorTemplateFunction(),
-                new FormatDateTemplateFunction(),
-                new FormatStringTemplateFunction(locale),
-                new NegTemplateFunction(),
-                new CollapseTemplateFunction(),
-                new ParseDateTemplateFunction(),
-                new ParseDateTimeTemplateFunction()
-        );
-        for (var builtInFunction : builtInFunctions) {
-            allFunctions.put(builtInFunction.getName(), builtInFunction);
-        }
-        this.functions = allFunctions;
+    public TemplateEvaluator(TemplateEvaluationOptions evaluationOptions) {
+        this.functionRegistry = new FunctionRegistry(evaluationOptions);
     }
 
     private static Class<?> wrap(Class<?> cls) {
@@ -219,10 +179,7 @@ public final class TemplateEvaluator {
         for (var a : c.args) {
             args.add(eval(a, context));
         }
-        var templateFunction = functions.get(c.name);
-        if (templateFunction == null) {
-            throw new TemplateEvalException(String.format("Function '%s' not found", c.name));
-        }
+        var templateFunction = functionRegistry.getFunction(c.name);
         return templateFunction.invoke(args, pipeInput);
     }
 
