@@ -1,0 +1,31 @@
+{
+  "definitions": [
+    {
+      "products": [
+        {
+          "category": "MILK",
+          "tags": [
+            "ECO",
+            "HEALTHY"
+          ]
+        },
+        {
+          "category": "WATER",
+          "tags": [
+            "ECO",
+            "HEALTHY",
+            "PURE"
+          ]
+        }
+      ]
+    }
+  ],
+  "template": {
+    "goods range product,index of .products": {
+      "category": "{{ .product.category }}",
+      "tags range tag,tagIndex of .product.tags": {
+        "name": "{{ .tag }}"
+      }
+    }
+  }
+}

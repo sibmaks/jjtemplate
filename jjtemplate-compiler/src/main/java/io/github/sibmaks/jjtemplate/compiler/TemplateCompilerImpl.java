@@ -285,8 +285,23 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 continue;
             }
 
+            var value = e.getValue();
+            var switchHeader = parseSwitchHeader(rawKey);
+            if (switchHeader != null) {
+                var defn = compileSwitch(value, switchHeader.expr);
+                entries.add(new Nodes.CompiledObject.Field(Nodes.StaticNode.of(switchHeader.varName), defn));
+                allStatic = false;
+                continue;
+            }
+            var rh = parseRangeHeader(rawKey);
+            if (rh != null) {
+                var defn = new Nodes.RangeDefinition(rh.item, rh.index, compileExpression(rh.expr), compileNode(value));
+                entries.add(new Nodes.CompiledObject.Field(Nodes.StaticNode.of(rh.varName), defn));
+                allStatic = false;
+                continue;
+            }
             var compiledKey = compileString(rawKey);
-            var compiledVal = compileNode(e.getValue());
+            var compiledVal = compileNode(value);
 
             if (compiledKey instanceof Nodes.StaticNode && compiledVal instanceof Nodes.StaticNode) {
                 var keyValue = ((Nodes.StaticNode) compiledKey).getValue();

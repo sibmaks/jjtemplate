@@ -49,8 +49,8 @@ final class AstRewriter implements AstVisitor<AstNode> {
             AstNode node,
             Map<String, Object> constants
     ) {
-        if (node == null || constants.isEmpty()) {
-            return node;
+        if (node == null) {
+            return null;
         }
         var astRewriter = new AstRewriter(evaluator, constants);
         return node.accept(astRewriter);
