@@ -1,0 +1,21 @@
+{
+  "definitions": [
+    {
+      "trueVar": true,
+      "falseVar": false
+    }
+  ],
+  "template": {
+    "trueAndTrueKey": "{{ eq .trueVar, .trueVar }}",
+    "trueAndTruePipeKey": "{{ .trueVar | eq .trueVar }}",
+
+    "trueAndFalseKey": "{{ eq .trueVar, .falseVar }}",
+    "trueAndFalsePipeKey": "{{ .trueVar | eq .falseVar }}",
+
+    "falseAndFalseKey": "{{ eq .falseVar, .falseVar }}",
+    "falseAndFalsePipeKey": "{{ .falseVar | eq .falseVar }}",
+
+    "falseAndTrueKey": "{{ eq .falseVar, .trueVar }}",
+    "falseAndTruePipeKey": "{{ .falseVar | eq .trueVar }}"
+  }
+}

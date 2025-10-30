@@ -1,39 +1,42 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.List;
 
 /**
- *
  * @author sibmaks
  * @since 0.0.1
  */
-public class OrTemplateFunction implements TemplateFunction {
-    private static ExpressionValue second(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        return args.size() > 1 ? args.get(1) : pipeArg;
+public class OrTemplateFunction implements TemplateFunction<Boolean> {
+
+    private static boolean or(Object left, Object right) {
+        if (!(left instanceof Boolean)) {
+            throw new TemplateEvalException("or: All arguments must be a boolean");
+        }
+        if (!(right instanceof Boolean)) {
+            throw new TemplateEvalException("or: All arguments must be a boolean");
+        }
+        var x = (boolean) left;
+        var y = (boolean) right;
+        return x || y;
     }
 
     @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        if (args.size() + (pipeArg.isEmpty() ? 0 : 1) != 2) {
+    public Boolean invoke(List<Object> args, Object pipeArg) {
+        if (args.size() != 1) {
+            throw new TemplateEvalException("or: 1 argument required");
+        }
+        return or(args.get(0), pipeArg);
+    }
+
+    @Override
+    public Boolean invoke(List<Object> args) {
+        if (args.size() != 2) {
             throw new TemplateEvalException("or: 2 arguments required");
         }
-        var firstArg = first(args, pipeArg);
-        var firstValue = firstArg.getValue();
-        if (!(firstValue instanceof Boolean)) {
-            throw new TemplateEvalException("or: All arguments must be a boolean");
-        }
-        var secondArg = second(args, pipeArg);
-        var secondValue = secondArg.getValue();
-        if (!(secondValue instanceof Boolean)) {
-            throw new TemplateEvalException("or: All arguments must be a boolean");
-        }
-        var x = (boolean) firstValue;
-        var y = (boolean) secondValue;
-        return ExpressionValue.of(x || y);
+        return or(args.get(0), args.get(1));
     }
 
     @Override

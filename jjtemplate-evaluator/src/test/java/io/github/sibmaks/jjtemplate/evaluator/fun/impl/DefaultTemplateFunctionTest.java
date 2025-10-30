@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -31,50 +31,38 @@ class DefaultTemplateFunctionTest {
     }
 
     @Test
-    void checkWhenNoArgs() {
-        var pipe = ExpressionValue.of(42);
-        var actual = function.invoke(List.of(), pipe);
-        assertEquals(pipe, actual);
+    void noArgsOnInvoke() {
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("default: 2 arguments required", exception.getMessage());
     }
 
     @Test
-    void checkWhenTooManyArgs() {
-        var args = List.of(ExpressionValue.of(42), ExpressionValue.of(43));
-        var pipe = ExpressionValue.of(44);
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args, pipe)
-        );
-        assertEquals("default: 2 arguments required", exception.getMessage());
+    void noArgsOnPipeInvoke() {
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
+        assertEquals("default: 1 argument required", exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("checkCases")
     void checkWhenOneArg(Object arg, Object pipe, Object expected) {
-        var actual = function.invoke(
-                List.of(
-                        ExpressionValue.of(arg)
-                ),
-                ExpressionValue.of(pipe)
-        );
+        var args = new ArrayList<>();
+        args.add(arg);
+        var actual = function.invoke(args, pipe);
         assertNotNull(actual);
-        assertFalse(actual.isEmpty());
-        assertEquals(expected, actual.getValue());
+        assertEquals(expected, actual);
     }
 
     @ParameterizedTest
     @MethodSource("checkCases")
     void checkWhenTwoArgs(Object arg, Object pipe, Object expected) {
-        var actual = function.invoke(
-                List.of(
-                        ExpressionValue.of(pipe),
-                        ExpressionValue.of(arg)
-                ),
-                ExpressionValue.empty()
-        );
+        var args = new ArrayList<>();
+        args.add(pipe);
+        args.add(arg);
+        var actual = function.invoke(args);
         assertNotNull(actual);
-        assertFalse(actual.isEmpty());
-        assertEquals(expected, actual.getValue());
+        assertEquals(expected, actual);
     }
 
     public static Stream<Arguments> checkCases() {
@@ -84,4 +72,5 @@ class DefaultTemplateFunctionTest {
                 Arguments.of(null, "ok", "ok")
         );
     }
+
 }

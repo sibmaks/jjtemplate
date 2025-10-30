@@ -66,9 +66,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
         if (updated.args.stream().allMatch(LiteralExpression.class::isInstance)) {
             try {
                 var result = evaluator.evaluate(updated, Context.empty());
-                if (!result.isEmpty()) {
-                    return new LiteralExpression(result.getValue());
-                }
+                return new LiteralExpression(result);
             } catch (Exception ignored) {
                 // ignore inlining exceptions
             }
@@ -108,9 +106,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
         if (allLiteral) {
             try {
                 var result = evaluator.evaluate(updated, Context.empty());
-                if (!result.isEmpty()) {
-                    return new LiteralExpression(result.getValue());
-                }
+                return new LiteralExpression(result);
             } catch (Exception ignored) {
                 // ignore inlining exceptions
             }

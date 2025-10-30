@@ -1,15 +1,16 @@
-package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
+package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,63 +18,76 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author sibmaks
  */
-class StringUpperTemplateFunctionTest {
-    private final TemplateFunction<String> function = new StringUpperTemplateFunction(Locale.US);
+@ExtendWith(MockitoExtension.class)
+class StrTemplateFunctionTest {
+    @InjectMocks
+    private StrTemplateFunction function;
 
-    public static Stream<Arguments> upperCases() {
+    public static Stream<Arguments> justToStringCases() {
         return Stream.of(
                 Arguments.of(null, null),
                 Arguments.of(42, "42"),
-                Arguments.of(3.1415, "3.1415"),
-                Arguments.of(true, "TRUE"),
-                Arguments.of(false, "FALSE"),
-                Arguments.of("hello", "HELLO"),
-                Arguments.of("WORLD", "WORLD")
+                Arguments.of(42.31, "42.31"),
+                Arguments.of(true, "true"),
+                Arguments.of(false, "false"),
+                Arguments.of("text", "text")
         );
     }
 
     @Test
     void checkFunctionName() {
         var actual = function.getName();
-        assertEquals("upper", actual);
+        assertEquals("str", actual);
+    }
+
+    @Test
+    void nullPipeInvoke() {
+        var actual = function.invoke(List.of(), null);
+        assertNull(actual);
     }
 
     @Test
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("upper: too much arguments passed", exception.getMessage());
+        assertEquals("str: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(42, true);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("upper: too much arguments passed", exception.getMessage());
+        assertEquals("str: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("upper: 1 argument required", exception.getMessage());
+        assertEquals("str: 1 argument required", exception.getMessage());
+    }
+
+    @Test
+    void nullArgInvoke() {
+        var args = new ArrayList<>();
+        args.add(null);
+        var actual = function.invoke(args);
+        assertNull(actual);
     }
 
     @ParameterizedTest
-    @MethodSource("upperCases")
-    void upper(Object input, String expected) {
+    @MethodSource("justToStringCases")
+    void justToStringArg(Object input, String excepted) {
         var args = new ArrayList<>();
         args.add(input);
         var actual = function.invoke(args);
-        assertEquals(expected, actual);
+        assertEquals(excepted, actual);
     }
 
     @ParameterizedTest
-    @MethodSource("upperCases")
-    void upperAsPipe(Object input, String expected) {
+    @MethodSource("justToStringCases")
+    void justToStringPipe(Object input, String excepted) {
         var actual = function.invoke(List.of(), input);
-        assertEquals(expected, actual);
+        assertEquals(excepted, actual);
     }
-
-
 }

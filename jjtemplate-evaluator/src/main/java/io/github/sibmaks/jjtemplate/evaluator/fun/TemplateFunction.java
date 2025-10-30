@@ -6,13 +6,11 @@ import java.util.List;
  *
  * @author sibmaks
  */
-public interface TemplateFunction {
+public interface TemplateFunction<T> {
 
-    ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg);
+    T invoke(List<Object> args, Object pipeArg);
+
+    T invoke(List<Object> args);
 
     String getName();
-
-    default ExpressionValue first(List<ExpressionValue> args, ExpressionValue pipe) {
-        return !args.isEmpty() ? args.get(0) : pipe;
-    }
 }

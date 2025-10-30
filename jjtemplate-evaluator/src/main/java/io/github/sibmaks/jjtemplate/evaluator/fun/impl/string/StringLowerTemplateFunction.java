@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import lombok.AllArgsConstructor;
 
@@ -9,22 +8,38 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
 @AllArgsConstructor
-public class StringLowerTemplateFunction implements TemplateFunction {
+public class StringLowerTemplateFunction implements TemplateFunction<String> {
     private final Locale locale;
 
+    private String lower(Object value) {
+        if (value == null) {
+            return null;
+        }
+        var string = String.valueOf(value);
+        return string.toLowerCase(locale);
+    }
+
     @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var argument = first(args, pipeArg);
-        if (argument.isEmpty()) {
+    public String invoke(List<Object> args, Object pipeArg) {
+        if (!args.isEmpty()) {
+            throw new TemplateEvalException("lower: too much arguments passed");
+        }
+        return lower(pipeArg);
+    }
+
+    @Override
+    public String invoke(List<Object> args) {
+        if (args.isEmpty()) {
             throw new TemplateEvalException("lower: 1 argument required");
         }
-        var value = argument.getValue();
-        var stringValue = String.valueOf(value);
-        return ExpressionValue.of(stringValue.toLowerCase(locale));
+        if (args.size() != 1) {
+            throw new TemplateEvalException("lower: too much arguments passed");
+        }
+        return lower(args.get(0));
     }
 
     @Override

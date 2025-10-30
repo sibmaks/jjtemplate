@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,8 +39,7 @@ class TemplateEvaluatorTest {
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(value, evaluated.getValue());
+        assertEquals(value, evaluated);
     }
 
     @ParameterizedTest
@@ -61,8 +59,7 @@ class TemplateEvaluatorTest {
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(value, evaluated.getValue());
+        assertEquals(value, evaluated);
     }
 
     @Test
@@ -71,7 +68,7 @@ class TemplateEvaluatorTest {
         var context = mock(Context.class);
         var varValue = UUID.randomUUID().toString();
         when(context.getRoot(varName))
-                .thenReturn(ExpressionValue.of(varValue));
+                .thenReturn(varValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -85,8 +82,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue, evaluated.getValue());
+        assertEquals(varValue, evaluated);
     }
 
     @Test
@@ -98,8 +94,7 @@ class TemplateEvaluatorTest {
 
         var expression = new VariableExpression(List.of());
         var evaluated = evaluator.evaluate(expression, mock());
-        assertNotNull(evaluated);
-        assertTrue(evaluated.isEmpty());
+        assertNull(evaluated);
     }
 
     @Test
@@ -107,7 +102,7 @@ class TemplateEvaluatorTest {
         var varName = UUID.randomUUID().toString();
         var context = mock(Context.class);
         when(context.getRoot(varName))
-                .thenReturn(ExpressionValue.empty());
+                .thenReturn(null);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -120,9 +115,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var evaluated = evaluator.evaluate(expression, context);
-        assertNotNull(evaluated);
-        assertTrue(evaluated.isEmpty());
-        assertNull(evaluated.getValue());
+        assertNull(evaluated);
     }
 
     @Test
@@ -131,7 +124,7 @@ class TemplateEvaluatorTest {
         var varName = UUID.randomUUID().toString();
         var context = mock(Context.class);
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.empty());
+                .thenReturn(null);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -145,9 +138,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var evaluated = evaluator.evaluate(expression, context);
-        assertNotNull(evaluated);
-        assertTrue(evaluated.isEmpty());
-        assertNull(evaluated.getValue());
+        assertNull(evaluated);
     }
 
     @Test
@@ -158,7 +149,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var mapVarValue = Map.of(varName, varValue);
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(mapVarValue));
+                .thenReturn(mapVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -173,8 +164,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue, evaluated.getValue());
+        assertEquals(varValue, evaluated);
     }
 
     @Test
@@ -185,7 +175,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var listVarValue = List.of(varValue);
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(listVarValue));
+                .thenReturn(listVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -200,8 +190,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue, evaluated.getValue());
+        assertEquals(varValue, evaluated);
     }
 
     @Test
@@ -212,7 +201,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var listVarValue = List.of(varValue);
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(listVarValue));
+                .thenReturn(listVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -237,7 +226,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var listVarValue = List.of(varValue);
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(listVarValue));
+                .thenReturn(listVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -262,7 +251,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var arrayVarValue = new String[]{varValue};
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(arrayVarValue));
+                .thenReturn(arrayVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -277,8 +266,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue, evaluated.getValue());
+        assertEquals(varValue, evaluated);
     }
 
     @Test
@@ -289,7 +277,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var arrayVarValue = new String[]{varValue};
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(arrayVarValue));
+                .thenReturn(arrayVarValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -313,7 +301,7 @@ class TemplateEvaluatorTest {
         var context = mock(Context.class);
         var varValue = UUID.randomUUID().toString();
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(varValue));
+                .thenReturn(varValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -328,8 +316,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(Character.toString(varValue.charAt(0)), evaluated.getValue());
+        assertEquals(Character.toString(varValue.charAt(0)), evaluated);
     }
 
     @Test
@@ -339,7 +326,7 @@ class TemplateEvaluatorTest {
         var varValue = UUID.randomUUID().toString();
         var varName = Integer.toString(varValue.length());
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(varValue));
+                .thenReturn(varValue);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -369,21 +356,7 @@ class TemplateEvaluatorTest {
         ));
         var evaluated = evaluator.evaluate(expression, mock());
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(excepted, evaluated.getValue());
-    }
-
-    @Test
-    void callToStringFunctionWhenNoArgs() {
-        var options = TemplateEvaluationOptions.builder()
-                .locale(Locale.US)
-                .build();
-        var evaluator = new TemplateEvaluator(options);
-
-        var expression = new FunctionCallExpression("str", List.of());
-        var evaluated = evaluator.evaluate(expression, mock());
-        assertNotNull(evaluated);
-        assertTrue(evaluated.isEmpty());
+        assertEquals(excepted, evaluated);
     }
 
     @Test
@@ -401,8 +374,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(pipeExpression, mock());
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(true, evaluated.getValue());
+        assertEquals(true, evaluated);
     }
 
     @Test
@@ -427,7 +399,7 @@ class TemplateEvaluatorTest {
         var object = new Stub();
         object.field = varValue;
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -442,8 +414,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue, evaluated.getValue());
+        assertEquals(varValue, evaluated);
     }
 
     @Test
@@ -455,7 +426,7 @@ class TemplateEvaluatorTest {
         var object = new Stub();
         object.property = varValue;
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -470,8 +441,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(varValue + "-", evaluated.getValue());
+        assertEquals(varValue + "-", evaluated);
     }
 
     @Test
@@ -482,7 +452,7 @@ class TemplateEvaluatorTest {
         var context = mock(Context.class);
         var object = new Stub();
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -499,8 +469,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals("-" + argValue, evaluated.getValue());
+        assertEquals("-" + argValue, evaluated);
     }
 
     @Test
@@ -512,7 +481,7 @@ class TemplateEvaluatorTest {
         var object = new Stub();
         object.property = varValue;
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -527,8 +496,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(Boolean.TRUE, evaluated.getValue());
+        assertEquals(Boolean.TRUE, evaluated);
     }
 
     @Test
@@ -540,7 +508,7 @@ class TemplateEvaluatorTest {
         var object = new Stub();
         object.property = varValue;
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -555,8 +523,7 @@ class TemplateEvaluatorTest {
         );
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals(Boolean.TRUE, evaluated.getValue());
+        assertEquals(Boolean.TRUE, evaluated);
     }
 
     @Test
@@ -566,7 +533,7 @@ class TemplateEvaluatorTest {
         var context = mock(Context.class);
         var object = new Stub();
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -590,7 +557,7 @@ class TemplateEvaluatorTest {
         var context = mock(Context.class);
         var object = new Stub();
         when(context.getRoot(parentVarName))
-                .thenReturn(ExpressionValue.of(object));
+                .thenReturn(object);
 
         var options = TemplateEvaluationOptions.builder()
                 .locale(Locale.US)
@@ -626,8 +593,7 @@ class TemplateEvaluatorTest {
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals("ok", evaluated.getValue());
+        assertEquals("ok", evaluated);
     }
 
     @Test
@@ -646,8 +612,7 @@ class TemplateEvaluatorTest {
 
         var evaluated = evaluator.evaluate(expression, context);
         assertNotNull(evaluated);
-        assertFalse(evaluated.isEmpty());
-        assertEquals("ok", evaluated.getValue());
+        assertEquals("ok", evaluated);
     }
 
     @Test

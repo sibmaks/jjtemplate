@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.lang.reflect.Array;
@@ -16,26 +15,25 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.0.1
  */
-public class ConcatTemplateFunction implements TemplateFunction {
-    private static ExpressionValue concatString(List<Object> all) {
-        var sb = new StringBuilder();
+public class ConcatTemplateFunction implements TemplateFunction<Object> {
+    private static String concatString(Object first, List<Object> all) {
+        var sb = new StringBuilder(String.valueOf(first));
         for (var v : all) {
             sb.append(v);
         }
-        return ExpressionValue.of(sb.toString());
+        return sb.toString();
     }
 
-    private static ExpressionValue concatCollection(
+    private static List<Object> concatCollection(
             Collection<?> collection,
             List<Object> all
     ) {
         var out = new ArrayList<Object>(collection);
         collectSubArgs(all, out);
-        return ExpressionValue.of(out);
+        return out;
     }
 
-
-    private static ExpressionValue concatArray(
+    private static List<Object> concatArray(
             Object array,
             List<Object> all
     ) {
@@ -46,15 +44,14 @@ public class ConcatTemplateFunction implements TemplateFunction {
             out.add(item);
         }
         collectSubArgs(all, out);
-        return ExpressionValue.of(out);
+        return out;
     }
 
     private static void collectSubArgs(
             List<Object> all,
             List<Object> out
     ) {
-        for (var i = 1; i < all.size(); i++) {
-            var item = all.get(i);
+        for (var item : all) {
             if (item instanceof Collection<?>) {
                 var subCollection = (Collection<?>) item;
                 out.addAll(subCollection);
@@ -69,25 +66,36 @@ public class ConcatTemplateFunction implements TemplateFunction {
         }
     }
 
-    @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var all = args.stream()
-                .filter(it -> !it.isEmpty())
-                .map(ExpressionValue::getValue)
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (!pipeArg.isEmpty()) {
-            all.add(pipeArg.getValue());
+    private static Object concat(Object first, List<Object> args) {
+        if (first instanceof Collection) {
+            return concatCollection((Collection<?>) first, args);
+        } else if (first != null && first.getClass().isArray()) {
+            return concatArray(first, args);
         }
-        if(all.isEmpty()) {
+        return concatString(first, args);
+    }
+
+    @Override
+    public Object invoke(List<Object> args, Object pipeArg) {
+        if (args.isEmpty()) {
             throw new TemplateEvalException("concat: at least 1 argument required");
         }
-        var first = all.get(0);
-        if (first instanceof Collection) {
-            return concatCollection((Collection<?>) first, all);
-        } else if (first != null && first.getClass().isArray()) {
-            return concatArray(first, all);
+        var all = args.stream()
+                .skip(1)
+                .collect(Collectors.toCollection(ArrayList::new));
+        all.add(pipeArg);
+        return concat(args.get(0), all);
+    }
+
+    @Override
+    public Object invoke(List<Object> args) {
+        if (args.isEmpty()) {
+            throw new TemplateEvalException("concat: at least 1 argument required");
         }
-        return concatString(all);
+        var all = args.stream()
+                .skip(1)
+                .collect(Collectors.toCollection(ArrayList::new));
+        return concat(args.get(0), all);
     }
 
     @Override

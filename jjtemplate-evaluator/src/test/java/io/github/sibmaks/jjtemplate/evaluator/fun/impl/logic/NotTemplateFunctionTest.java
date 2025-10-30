@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,9 +13,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
  * @author sibmaks
- * @since 0.0.1
  */
 @ExtendWith(MockitoExtension.class)
 class NotTemplateFunctionTest {
@@ -31,40 +28,44 @@ class NotTemplateFunctionTest {
 
     @Test
     void withoutArgument() {
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.empty();
+        var args = List.of();
         var exception = assertThrows(
                 TemplateEvalException.class,
-                () -> function.invoke(args, pipe)
+                () -> function.invoke(args)
         );
-        assertEquals("not: invalid args", exception.getMessage());
+        assertEquals("not: 1 argument required", exception.getMessage());
+    }
+
+    @Test
+    void tooMuchArgsOnPipeInvoke() {
+        var args = List.<Object>of(42);
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
+        assertEquals("not: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void notBooleanArgument() {
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(42);
+        var args = List.of();
+        var pipe = 42;
         var exception = assertThrows(
                 TemplateEvalException.class,
                 () -> function.invoke(args, pipe)
         );
-        assertEquals("not: arg not boolean", exception.getMessage());
+        assertEquals("not: argument must be a boolean", exception.getMessage());
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void passAsArgument(boolean value) {
-        var actual = function.invoke(List.of(ExpressionValue.of(value)), ExpressionValue.empty());
-        assertFalse(actual.isEmpty());
-        assertEquals(!value, actual.getValue());
+        var actual = function.invoke(List.of(value));
+        assertEquals(!value, actual);
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void passAsPipe(boolean value) {
-        var actual = function.invoke(List.of(), ExpressionValue.of(value));
-        assertFalse(actual.isEmpty());
-        assertEquals(!value, actual.getValue());
+        var actual = function.invoke(List.of(), value);
+        assertEquals(!value, actual);
     }
 
 }

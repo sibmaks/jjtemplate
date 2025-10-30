@@ -2,6 +2,10 @@ package io.github.sibmaks.jjtemplate.evaluator;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.BooleanTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.FloatTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.IntTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.StrTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
@@ -57,7 +61,7 @@ import java.util.*;
  * @since 0.1.2
  */
 final class FunctionRegistry {
-    private final Map<String, TemplateFunction> functions;
+    private final Map<String, TemplateFunction<?>> functions;
 
     /**
      * Constructs a function registry using the provided evaluation options.
@@ -96,7 +100,7 @@ final class FunctionRegistry {
      * @param locale the locale used for locale-sensitive string operations
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
-    private static List<TemplateFunction> getBuiltInFunctions(Locale locale) {
+    private static List<TemplateFunction<?>> getBuiltInFunctions(Locale locale) {
         return List.of(
                 // Type conversion
                 new BooleanTemplateFunction(),
@@ -142,7 +146,7 @@ final class FunctionRegistry {
      * @return the {@link TemplateFunction} associated with the given name
      * @throws TemplateEvalException if no function with the specified name exists
      */
-    public TemplateFunction getFunction(String functionName) {
+    public TemplateFunction<?> getFunction(String functionName) {
         return Optional.ofNullable(functions.get(functionName))
                 .orElseThrow(() -> new TemplateEvalException(String.format("Function '%s' not found", functionName)));
     }

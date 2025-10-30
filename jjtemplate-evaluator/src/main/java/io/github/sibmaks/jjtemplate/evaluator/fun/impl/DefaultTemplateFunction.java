@@ -1,29 +1,36 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.List;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
-public class DefaultTemplateFunction implements TemplateFunction {
+public class DefaultTemplateFunction implements TemplateFunction<Object> {
     @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
+    public Object invoke(List<Object> args, Object pipeArg) {
         if (args.isEmpty()) {
-            return pipeArg;
+            throw new TemplateEvalException("default: 1 argument required");
         }
-        if (args.size() + (pipeArg.isEmpty() ? 0 : 1) != 2) {
+        if (pipeArg == null) {
+            return args.get(0);
+        }
+        return pipeArg;
+    }
+
+    @Override
+    public Object invoke(List<Object> args) {
+        if (args.size() != 2) {
             throw new TemplateEvalException("default: 2 arguments required");
         }
-        var conditionValue = args.get(0);
-        if (args.size() == 1) {
-            return pipeArg.getValue() != null ? pipeArg : conditionValue;
+        var value =  args.get(0);
+        if(value == null) {
+            return args.get(1);
         }
-        return conditionValue.getValue() != null ? conditionValue : args.get(1);
+        return value;
     }
 
     @Override

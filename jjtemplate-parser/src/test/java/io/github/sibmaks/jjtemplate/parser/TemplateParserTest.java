@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ class TemplateParserTest {
         var expression = parser.parseExpression();
         assertNotNull(expression);
         var literalExpression = assertInstanceOf(LiteralExpression.class, expression);
-        assertEquals(value, literalExpression.value);
+        assertEquals(BigInteger.valueOf(value), literalExpression.value);
     }
 
     @Test

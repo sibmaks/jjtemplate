@@ -54,11 +54,7 @@ public final class AstTreeConvertVisitor implements ExpressionVisitor<AstNode> {
 
     private AstNode foldExpression(Expression expr) {
         try {
-            var evaluated = evaluator.evaluate(expr, Context.empty());
-            if (evaluated.isEmpty()) {
-                return Nodes.StaticNode.empty();
-            }
-            var value = evaluated.getValue();
+            var value = evaluator.evaluate(expr, Context.empty());
             return Nodes.StaticNode.of(value);
         } catch (Exception ignored) {
             // ignore folding exceptions

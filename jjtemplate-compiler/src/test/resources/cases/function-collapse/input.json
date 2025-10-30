@@ -1,8 +1,8 @@
 {
   "template": {
-    "collapsedKey": "{{ collapse .varList }}",
-    "collapsedPipeKey": "{{  .varList | collapse }}",
-    "collapsedWithObjectKey": "{{  collapse .varList, .varObject }}",
-    "collapsedWithObjectPipeKey": "{{  .varObject | collapse .varList }}"
+    "collapsedKey": "{{  collapse .varObject, .varList }}",
+    "collapsedPipeKey": "{{  .varObject | collapse .varList }}",
+    "collapsedKeyList1st": "{{  collapse .varList, .varObject }}",
+    "collapsedPipeKeyList1st": "{{  .varList | collapse .varObject }}"
   }
 }

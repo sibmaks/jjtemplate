@@ -1,7 +1,5 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
-
 import java.util.Map;
 
 /**
@@ -20,11 +18,8 @@ public final class Context {
         this.vars = vars == null ? Map.of() : vars;
     }
 
-    public ExpressionValue getRoot(String name) {
-        if (!vars.containsKey(name)) {
-            return ExpressionValue.empty();
-        }
-        return ExpressionValue.of(vars.get(name));
+    public Object getRoot(String name) {
+        return vars.get(name);
     }
 
     public static Context empty() {

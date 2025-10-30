@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 
@@ -9,31 +8,13 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
-public class CollapseTemplateFunction implements TemplateFunction {
+public class CollapseTemplateFunction implements TemplateFunction<Map<String, Object>> {
     private static final Map<String, Object> OBJECT_PROPERTIES = ReflectionUtils.getAllProperties(new Object());
 
-    @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        if (args.isEmpty() && pipeArg.isEmpty()) {
-            throw new TemplateEvalException("collapse: at least 1 argument required");
-        }
-        var result = new LinkedHashMap<String, Object>(args.size() + (pipeArg.isEmpty() ? 0 : 1));
-
-        for (var arg : args) {
-            result.putAll(getProperties(arg.getValue()));
-        }
-
-        if(!pipeArg.isEmpty()) {
-            result.putAll(getProperties(pipeArg.getValue()));
-        }
-
-        return ExpressionValue.of(result);
-    }
-
-    private Map<String, Object> getProperties(Object value) {
+    private static Map<String, Object> getProperties(Object value) {
         if (value == null) {
             return Collections.emptyMap();
         }
@@ -44,7 +25,7 @@ public class CollapseTemplateFunction implements TemplateFunction {
                 result.putAll(getProperties(o));
             }
             return result;
-        } else if(value.getClass().isArray()) {
+        } else if (value.getClass().isArray()) {
             var len = Array.getLength(value);
             for (int i = 0; i < len; i++) {
                 var item = Array.get(value, i);
@@ -58,6 +39,36 @@ public class CollapseTemplateFunction implements TemplateFunction {
             fields.remove(key);
         }
         return fields;
+    }
+
+    @Override
+    public Map<String, Object> invoke(List<Object> args, Object pipeArg) {
+        if (args.isEmpty()) {
+            throw new TemplateEvalException("collapse: at least 1 argument required");
+        }
+        var result = new LinkedHashMap<String, Object>(args.size());
+
+        result.putAll(getProperties(pipeArg));
+
+        for (var arg : args) {
+            result.putAll(getProperties(arg));
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> invoke(List<Object> args) {
+        if (args.size() < 2) {
+            throw new TemplateEvalException("collapse: at least 2 arguments required");
+        }
+        var result = new LinkedHashMap<String, Object>(args.size());
+
+        for (var arg : args) {
+            result.putAll(getProperties(arg));
+        }
+
+        return result;
     }
 
     @Override
