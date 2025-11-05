@@ -20,6 +20,10 @@ allprojects {
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
 
+    repositories {
+        mavenCentral()
+    }
+
     publishing {
         repositories {
             maven {
@@ -38,10 +42,6 @@ subprojects {
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
-
-    repositories {
-        mavenCentral()
-    }
 
     configurations {
         create("deployerJars")
@@ -184,4 +184,10 @@ tasks.register("printVersion") {
     doLast {
         println(project.version)
     }
+}
+
+tasks.named<Wrapper>("wrapper") {
+    val host = System.getenv("GRADLE_HOST") ?: "https://services.gradle.org"
+    val currentVersion = gradle.gradleVersion
+    distributionUrl = "$host/distributions/gradle-$currentVersion-bin.zip"
 }
