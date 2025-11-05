@@ -27,28 +27,27 @@ import java.util.List;
  * </ul>
  *
  * <h2>Example</h2>
- * <pre>{@code
- * public class AddTemplateFunction implements TemplateFunction<Object> {
- *     @Override
- *     public Object invoke(List<Object> args, Object pipeArg) {
+ * <pre><code>
+ * public class AddTemplateFunction implements TemplateFunction&lt;Object&gt; {
+ *     &#64;Override
+ *     public Object invoke(List&lt;Object&gt; args, Object pipeArg) {
  *         double a = ((Number) args.get(0)).doubleValue();
  *         double b = ((Number) pipeArg).doubleValue();
  *         return a + b;
  *     }
  *
- *     @Override
- *     public Object invoke(List<Object> args) {
+ *     &#64;Override
+ *     public Object invoke(List&lt;Object&gt; args) {
  *         double a = ((Number) args.get(0)).doubleValue();
  *         double b = ((Number) args.get(1)).doubleValue();
- *         return a + b;
  *     }
  *
- *     @Override
+ *     &#64;Override
  *     public String getName() {
  *         return "add";
  *     }
  * }
- * }</pre>
+ * </code></pre>
  *
  * <p>All implementations must be thread-safe and side-effect free.</p>
  *
