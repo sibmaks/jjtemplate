@@ -182,9 +182,3 @@ tasks.register("printVersion") {
         println(project.version)
     }
 }
-
-tasks.named<Wrapper>("wrapper") {
-    val host = System.getenv("GRADLE_HOST") ?: "https://services.gradle.org"
-    val currentVersion = gradle.gradleVersion
-    distributionUrl = "$host/distributions/gradle-$currentVersion-bin.zip"
-}
