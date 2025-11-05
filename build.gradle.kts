@@ -13,16 +13,13 @@ plugins {
 allprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
+    apply(from = rootProject.file("gradle/common/repositories.gradle.kts"))
 
     val versionFromProperty = "${project.property("version")}"
     val versionFromEnv: String? = System.getenv("VERSION")
 
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
-
-    repositories {
-        mavenCentral()
-    }
 
     publishing {
         repositories {
