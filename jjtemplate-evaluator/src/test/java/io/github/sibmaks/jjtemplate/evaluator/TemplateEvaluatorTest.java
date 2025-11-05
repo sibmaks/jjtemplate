@@ -214,7 +214,7 @@ class TemplateEvaluatorTest {
                         new VariableExpression.Segment(varName)
                 )
         );
-        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Unknown property '%s' of %s", varName, listVarValue.getClass()), exception.getMessage());
     }
 
@@ -239,7 +239,7 @@ class TemplateEvaluatorTest {
                         new VariableExpression.Segment(varName)
                 )
         );
-        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("List index out of range: %s", varName), exception.getMessage());
     }
 
@@ -290,7 +290,7 @@ class TemplateEvaluatorTest {
                         new VariableExpression.Segment(varName)
                 )
         );
-        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Array index out of range: %s", 1), exception.getMessage());
     }
 
@@ -339,7 +339,7 @@ class TemplateEvaluatorTest {
                         new VariableExpression.Segment(varName)
                 )
         );
-        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("String index out of range: %s", varName), exception.getMessage());
     }
 
@@ -564,7 +564,7 @@ class TemplateEvaluatorTest {
                         new VariableExpression.Segment(varName)
                 )
         );
-        var exception = assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(expression, context));
+        var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
         assertEquals(String.format("Unknown property '%s' of %s", varName, object.getClass()), exception.getMessage());
     }
 
@@ -669,22 +669,6 @@ class TemplateEvaluatorTest {
                 () -> evaluator.evaluate(expression, context)
         );
         assertEquals("Unknown expr type: " + NotSupportedExpression.class, exception.getMessage());
-    }
-
-    @Test
-    void wrapPrimitiveTypes() throws Exception {
-        var wrapMethod = TemplateEvaluator.class.getDeclaredMethod("wrap", Class.class);
-        wrapMethod.setAccessible(true);
-
-        assertEquals(Integer.class, wrapMethod.invoke(null, int.class));
-        assertEquals(Boolean.class, wrapMethod.invoke(null, boolean.class));
-        assertEquals(Long.class, wrapMethod.invoke(null, long.class));
-        assertEquals(Double.class, wrapMethod.invoke(null, double.class));
-        assertEquals(Float.class, wrapMethod.invoke(null, float.class));
-        assertEquals(Character.class, wrapMethod.invoke(null, char.class));
-        assertEquals(Short.class, wrapMethod.invoke(null, short.class));
-        assertEquals(Byte.class, wrapMethod.invoke(null, byte.class));
-        assertEquals(String.class, wrapMethod.invoke(null, String.class)); // non-primitive
     }
 
     static class NotSupportedExpression implements Expression {

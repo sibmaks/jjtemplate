@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Interpreter for TemplateParser AST.
@@ -20,32 +19,6 @@ public final class TemplateEvaluator {
 
     public TemplateEvaluator(TemplateEvaluationOptions evaluationOptions) {
         this.functionRegistry = new FunctionRegistry(evaluationOptions);
-    }
-
-    private static Class<?> wrap(Class<?> cls) {
-        if (!cls.isPrimitive()) {
-            return cls;
-        }
-        switch (cls.getName()) {
-            case "int":
-                return Integer.class;
-            case "boolean":
-                return Boolean.class;
-            case "long":
-                return Long.class;
-            case "double":
-                return Double.class;
-            case "float":
-                return Float.class;
-            case "char":
-                return Character.class;
-            case "short":
-                return Short.class;
-            case "byte":
-                return Byte.class;
-            default:
-                return cls;
-        }
     }
 
     public Object evaluate(Expression expression, Context context) {
@@ -114,47 +87,10 @@ public final class TemplateEvaluator {
             for (var argExpr : seg.args) {
                 args.add(eval(argExpr, context));
             }
-            current = invokeMethodReflective(current, seg.name, args);
+            current = ReflectionUtils.invokeMethodReflective(current, seg.name, args);
         }
 
         return current;
-    }
-
-    private Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
-        var type = target.getClass();
-        var methods = type.getMethods();
-
-        outer:
-        for (var m : methods) {
-            if (!m.getName().equals(methodName)) {
-                continue;
-            }
-            var params = m.getParameterTypes();
-            if (params.length != args.size()) {
-                continue;
-            }
-
-            var converted = new Object[args.size()];
-            for (int i = 0; i < args.size(); i++) {
-                var arg = args.get(i);
-                if (arg == null) {
-                    converted[i] = null;
-                    continue;
-                }
-                if (!wrap(params[i]).isAssignableFrom(arg.getClass())) {
-                    continue outer;
-                }
-                converted[i] = arg;
-            }
-
-            try {
-                return m.invoke(target, converted);
-            } catch (Exception e) {
-                throw new TemplateEvalException("Error calling method " + methodName, e);
-            }
-        }
-
-        throw new IllegalArgumentException("No method " + methodName + " with args " + args.size());
     }
 
     private Object evalPipe(PipeExpression p, Context ctx) {
