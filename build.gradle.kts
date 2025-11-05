@@ -48,14 +48,8 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        // ensure that the encoding is set to UTF-8, no matter what the system default is
-        // this fixes some edge cases with special characters not displaying correctly
-        // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-        // If Javadoc is generated, this must be specified in that task too.
         options.encoding = "UTF-8"
-        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible) {
-            options.release = targetJavaVersion
-        }
+        options.release = targetJavaVersion
     }
 
     java {
@@ -150,9 +144,9 @@ publishing {
 
 sonarqube {
     properties {
-        property("sonar.organization", "sibmaks")
-        property("sonar.projectKey", "sibmaks_jjtemplate")
-        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.organization", project.properties["sonar.organization"] ?: "sibmaks")
+        property("sonar.projectKey", project.properties["sonar.projectKey"] ?: "sibmaks_jjtemplate")
+        property("sonar.host.url", project.properties["sonar.host.url"] ?: "https://sonarcloud.io")
         property("sonar.sourceEncoding", "UTF-8")
         property("sonar.java.coveragePlugin", "jacoco")
         property("sonar.scm.disabled", "true")
@@ -167,7 +161,10 @@ sonarqube {
             property("${sub.name}.sonar.tests", "src/test/java")
             property("${sub.name}.sonar.java.binaries", "build/classes")
             property("${sub.name}.sonar.junit.reportPaths", "build/test-results/test")
-            property("${sub.name}.sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+            property(
+                "${sub.name}.sonar.coverage.jacoco.xmlReportPaths",
+                "build/reports/jacoco/test/jacocoTestReport.xml"
+            )
         }
         println("Sonar properties: $properties")
     }
