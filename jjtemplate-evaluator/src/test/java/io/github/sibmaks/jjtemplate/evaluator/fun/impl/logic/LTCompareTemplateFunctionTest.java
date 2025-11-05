@@ -62,10 +62,7 @@ class LTCompareTemplateFunctionTest {
         args.add(null);
         args.add(null);
         args.add(null);
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args)
-        );
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("lt: 2 arguments required", exception.getMessage());
     }
 
@@ -74,10 +71,7 @@ class LTCompareTemplateFunctionTest {
         var args = new ArrayList<>();
         args.add(null);
         args.add(null);
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args, null)
-        );
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
         assertEquals("lt: 1 argument required", exception.getMessage());
     }
 

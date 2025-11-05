@@ -89,7 +89,8 @@ class CollapseTemplateFunctionTest {
     @Test
     void notEnoughArgsOnPipeInvoke() {
         var args = List.of();
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Dummy()));
+        var dummy = new Dummy();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, dummy));
         assertEquals("collapse: at least 1 argument required", exception.getMessage());
     }
 

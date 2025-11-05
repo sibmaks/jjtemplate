@@ -77,7 +77,8 @@ class FloatTemplateFunctionTest {
 
     @Test
     void invalidStringToFloatPipe() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), "oops"));
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "oops"));
         assertEquals("float: cannot convert: oops", exception.getMessage());
     }
 
@@ -92,7 +93,9 @@ class FloatTemplateFunctionTest {
 
     @Test
     void unsupportedTypePipe() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), new Object()));
+        var args = List.of();
+        var pipe = new Object();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
         var message = exception.getMessage();
         assertNotNull(message);
         assertTrue(message.startsWith("float: cannot convert: java.lang.Object@"));

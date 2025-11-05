@@ -90,8 +90,8 @@ class ReflectionUtilsTest {
     void getPropertyUnknownFieldThrows() {
         class Dummy {
         }
-        var ex = assertThrows(TemplateEvalException.class, () ->
-                ReflectionUtils.getProperty(new Dummy(), "unknown"));
+        var dummy = new Dummy();
+        var ex = assertThrows(TemplateEvalException.class, () -> ReflectionUtils.getProperty(dummy, "unknown"));
         assertEquals("Unknown property 'unknown' of " + Dummy.class, ex.getMessage());
     }
 
@@ -169,23 +169,28 @@ class ReflectionUtilsTest {
     @Test
     void invokeMethodNoSuchMethodThrows() {
         var p = new Person();
+        var args = List.of();
         var ex = assertThrows(TemplateEvalException.class, () ->
-                ReflectionUtils.invokeMethodReflective(p, "doesNotExist", List.of()));
+                ReflectionUtils.invokeMethodReflective(p, "doesNotExist", args));
         assertTrue(ex.getMessage().contains("No matching method"));
     }
 
     @Test
     void invokeOnNullTargetThrows() {
+        var args = List.of();
         var ex = assertThrows(TemplateEvalException.class, () ->
-                ReflectionUtils.invokeMethodReflective(null, "x", List.of()));
+                ReflectionUtils.invokeMethodReflective(null, "x", args));
         assertTrue(ex.getMessage().contains("Cannot call method on null target"));
     }
 
     @Test
     void invokeMethodIncompatibleArgsThrows() {
         var p = new Person();
-        var ex = assertThrows(TemplateEvalException.class, () ->
-                ReflectionUtils.invokeMethodReflective(p, "greet", List.of(123)));
+        var args = List.<Object>of(123);
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.invokeMethodReflective(p, "greet", args)
+        );
         assertTrue(ex.getMessage().contains("No matching method"));
     }
 

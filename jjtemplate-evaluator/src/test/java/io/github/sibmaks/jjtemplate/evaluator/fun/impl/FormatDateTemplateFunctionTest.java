@@ -97,7 +97,8 @@ class FormatDateTemplateFunctionTest {
     @Test
     void wrongArgsCountInInvokePipe() {
         var args = List.of();
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Date()));
+        var date = new Date();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, date));
         assertEquals("formatDate: 1 argument required", exception.getMessage());
     }
 }

@@ -166,6 +166,27 @@ public final class ReflectionUtils {
         }
     }
 
+    private static Object[] convertVarARgs(
+            List<Object> args,
+            Method bestMatch,
+            Object[] bestConverted
+    ) {
+        var paramTypes = bestMatch.getParameterTypes();
+        var normalCount = paramTypes.length - 1;
+        var newArgs = new Object[paramTypes.length];
+        System.arraycopy(bestConverted, 0, newArgs, 0, normalCount);
+
+        var varargType = paramTypes[normalCount].getComponentType();
+        var varargArray = Array.newInstance(varargType, args.size() - normalCount);
+
+        for (var i = normalCount; i < args.size(); i++) {
+            Array.set(varargArray, i - normalCount, args.get(i));
+        }
+        newArgs[normalCount] = varargArray;
+        bestConverted = newArgs;
+        return bestConverted;
+    }
+
     @AllArgsConstructor
     private static class AccessDescriptor {
         private String name;
@@ -317,19 +338,7 @@ public final class ReflectionUtils {
         }
 
         if (bestMatch.isVarArgs()) {
-            var paramTypes = bestMatch.getParameterTypes();
-            int normalCount = paramTypes.length - 1;
-            Object[] newArgs = new Object[paramTypes.length];
-            System.arraycopy(bestConverted, 0, newArgs, 0, normalCount);
-
-            var varargType = paramTypes[normalCount].getComponentType();
-            Object varargArray = Array.newInstance(varargType, args.size() - normalCount);
-
-            for (int i = normalCount; i < args.size(); i++) {
-                Array.set(varargArray, i - normalCount, args.get(i));
-            }
-            newArgs[normalCount] = varargArray;
-            bestConverted = newArgs;
+            bestConverted = convertVarARgs(args, bestMatch, bestConverted);
         }
 
         try {

@@ -60,5 +60,5 @@ public final class TemplateEvaluationOptions {
      */
     @NonNull
     @Builder.Default
-    private final List<TemplateFunction> functions = List.of();
+    private final List<TemplateFunction<?>> functions = List.of();
 }

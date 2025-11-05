@@ -29,10 +29,7 @@ class NotTemplateFunctionTest {
     @Test
     void withoutArgument() {
         var args = List.of();
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args)
-        );
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("not: 1 argument required", exception.getMessage());
     }
 
@@ -47,10 +44,7 @@ class NotTemplateFunctionTest {
     void notBooleanArgument() {
         var args = List.of();
         var pipe = 42;
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args, pipe)
-        );
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
         assertEquals("not: argument must be a boolean", exception.getMessage());
     }
 

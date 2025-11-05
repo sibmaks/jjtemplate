@@ -12,7 +12,10 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTempla
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Central registry for all available template functions.
@@ -146,9 +149,13 @@ final class FunctionRegistry {
      * @return the {@link TemplateFunction} associated with the given name
      * @throws TemplateEvalException if no function with the specified name exists
      */
-    public TemplateFunction<?> getFunction(String functionName) {
-        return Optional.ofNullable(functions.get(functionName))
-                .orElseThrow(() -> new TemplateEvalException(String.format("Function '%s' not found", functionName)));
+    @SuppressWarnings("unchecked")
+    public <T> TemplateFunction<T> getFunction(String functionName) {
+        var templateFunction = functions.get(functionName);
+        if (templateFunction == null) {
+            throw new TemplateEvalException("Function '" + functionName + "' not found");
+        }
+        return (TemplateFunction<T>) templateFunction;
     }
 
 }

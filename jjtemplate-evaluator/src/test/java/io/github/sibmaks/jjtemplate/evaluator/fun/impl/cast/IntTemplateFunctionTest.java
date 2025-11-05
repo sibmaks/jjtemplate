@@ -78,7 +78,9 @@ class IntTemplateFunctionTest {
 
     @Test
     void invalidStringToIntPipe() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), "abc"));
+        var args = List.of();
+        var pipe = "abc";
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
         assertTrue(exception.getMessage().startsWith("int: cannot convert: abc"));
     }
 
@@ -91,7 +93,9 @@ class IntTemplateFunctionTest {
 
     @Test
     void unsupportedTypePipe() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), new Object()));
+        var args = List.of();
+        var pipe = new Object();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
         assertTrue(exception.getMessage().startsWith("int: cannot convert: java.lang.Object"));
     }
 
