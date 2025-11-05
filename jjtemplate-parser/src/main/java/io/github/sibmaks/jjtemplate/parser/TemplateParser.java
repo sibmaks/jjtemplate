@@ -6,6 +6,7 @@ import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,7 +144,7 @@ public final class TemplateParser {
                 if (isDecimal) {
                     return new LiteralExpression(new BigDecimal(num));
                 }
-                return new LiteralExpression(Integer.parseInt(num));
+                return new LiteralExpression(new BigInteger(num));
             case BOOLEAN:
                 advance();
                 return new LiteralExpression(Boolean.valueOf(t.lexeme));

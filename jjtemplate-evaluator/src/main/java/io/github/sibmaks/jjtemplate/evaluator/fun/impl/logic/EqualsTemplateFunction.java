@@ -1,36 +1,31 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
-public class EqualsTemplateFunction implements TemplateFunction {
+public class EqualsTemplateFunction implements TemplateFunction<Boolean> {
+
     @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        if (args.size() == 1 && !pipeArg.isEmpty()) {
-            return ExpressionValue.of(
-                    Objects.equals(
-                            args.get(0).getValue(),
-                            pipeArg.getValue()
-                    )
-            );
+    public Boolean invoke(List<Object> args, Object pipeArg) {
+        if (args.size() != 1) {
+            throw new TemplateEvalException("eq: 1 argument required");
         }
-        if (args.size() == 2 && pipeArg.isEmpty()) {
-            return ExpressionValue.of(
-                    Objects.equals(
-                            args.get(0).getValue(),
-                            args.get(1).getValue()
-                    )
-            );
+        return Objects.equals(args.get(0), pipeArg);
+    }
+
+    @Override
+    public Boolean invoke(List<Object> args) {
+        if (args.size() != 2) {
+            throw new TemplateEvalException("eq: 2 arguments required");
         }
-        throw new TemplateEvalException("eq: 2 arguments required");
+        return Objects.equals(args.get(0), args.get(1));
     }
 
     @Override

@@ -2,6 +2,10 @@ package io.github.sibmaks.jjtemplate.evaluator;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.BooleanTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.FloatTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.IntTemplateFunction;
+import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.StrTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
 import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
@@ -33,7 +37,7 @@ import java.util.*;
  * <ul>
  *   <li><b>Type conversion:</b> {@code int}, {@code float}, {@code boolean}, {@code str}</li>
  *   <li><b>String operations:</b> {@code upper}, {@code lower}, {@code concat}, {@code format}</li>
- *   <li><b>Collection utilities:</b> {@code list}, {@code len}, {@code empty}, {@code collapse}</li>
+ *   <li><b>Collection utilities:</b> {@code list}, {@code len}, {@code empty}, {@code collapse}, {@code contains}</li>
  *   <li><b>Math / logic:</b> {@code eq}, {@code neq}, {@code lt}, {@code le}, {@code gt}, {@code ge},
  *       {@code and}, {@code or}, {@code xor}, {@code not}, {@code neg}</li>
  *   <li><b>Date operations:</b> {@code formatDate}, {@code parseDate}, {@code parseDateTime}</li>
@@ -57,7 +61,7 @@ import java.util.*;
  * @since 0.1.2
  */
 final class FunctionRegistry {
-    private final Map<String, TemplateFunction> functions;
+    private final Map<String, TemplateFunction<?>> functions;
 
     /**
      * Constructs a function registry using the provided evaluation options.
@@ -96,7 +100,7 @@ final class FunctionRegistry {
      * @param locale the locale used for locale-sensitive string operations
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
-    private static List<TemplateFunction> getBuiltInFunctions(Locale locale) {
+    private static List<TemplateFunction<?>> getBuiltInFunctions(Locale locale) {
         return List.of(
                 // Type conversion
                 new BooleanTemplateFunction(),
@@ -109,6 +113,7 @@ final class FunctionRegistry {
                 new StringUpperTemplateFunction(locale),
                 new FormatStringTemplateFunction(locale),
                 // Collections & String & Objects
+                new ContainsTemplateFunction(),
                 new EmptyTemplateFunction(),
                 new LengthTemplateFunction(),
                 new ListTemplateFunction(),
@@ -141,7 +146,7 @@ final class FunctionRegistry {
      * @return the {@link TemplateFunction} associated with the given name
      * @throws TemplateEvalException if no function with the specified name exists
      */
-    public TemplateFunction getFunction(String functionName) {
+    public TemplateFunction<?> getFunction(String functionName) {
         return Optional.ofNullable(functions.get(functionName))
                 .orElseThrow(() -> new TemplateEvalException(String.format("Function '%s' not found", functionName)));
     }

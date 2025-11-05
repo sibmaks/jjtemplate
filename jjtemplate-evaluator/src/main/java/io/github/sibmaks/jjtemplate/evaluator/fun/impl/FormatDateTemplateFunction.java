@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.text.SimpleDateFormat;
@@ -11,25 +10,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
-public class FormatDateTemplateFunction implements TemplateFunction {
-    private static Object getDate(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        if (args.size() == 1) {
-            return pipeArg.getValue();
-        }
-        return args.get(1).getValue();
-    }
-
-    @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var format = (String) args.get(0).getValue();
-        var date = getDate(args, pipeArg);
-        return ExpressionValue.of(formatDate(format, date));
-    }
-
-    private String formatDate(String format, Object date) {
+public class FormatDateTemplateFunction implements TemplateFunction<String> {
+    private static String formatDate(String format, Object date) {
         if (date instanceof TemporalAccessor) {
             var formatter = DateTimeFormatter.ofPattern(format);
             var temporalAccessor = (TemporalAccessor) date;
@@ -40,6 +25,25 @@ public class FormatDateTemplateFunction implements TemplateFunction {
             return formatter.format((Date) date);
         }
         throw new TemplateEvalException("Cannot convert " + date + " to TemporalAccessor");
+    }
+
+    @Override
+    public String invoke(List<Object> args, Object pipeArg) {
+        if (args.size() != 1) {
+            throw new TemplateEvalException("formatDate: 1 argument required");
+        }
+        var format = (String) args.get(0);
+        return formatDate(format, pipeArg);
+    }
+
+    @Override
+    public String invoke(List<Object> args) {
+        if (args.size() != 2) {
+            throw new TemplateEvalException("formatDate: 2 arguments required");
+        }
+        var format = (String) args.get(0);
+        var date = args.get(1);
+        return formatDate(format, date);
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+  "template": {
+    "condition switch true": {
+      "then": "ok",
+      "else": "fail"
+    },
+    "mustBeNull": "{{ .condition }}"
+  }
+}

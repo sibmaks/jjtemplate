@@ -30,7 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class TemplateCompilerImplIntegrationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            .enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
 
     private static Arguments buildArguments(Path it) {
         try {
@@ -84,7 +85,8 @@ class TemplateCompilerImplIntegrationTest {
         assertNotNull(compiled);
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
-        assertEquals(excepted, rendered);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -111,7 +113,8 @@ class TemplateCompilerImplIntegrationTest {
         assertNotNull(compiled);
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
-        assertEquals(excepted, rendered);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -147,7 +150,8 @@ class TemplateCompilerImplIntegrationTest {
         assertNotNull(compiled);
         var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
         var renderedAt = System.nanoTime();
-        assertEquals(excepted, rendered);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -186,7 +190,8 @@ class TemplateCompilerImplIntegrationTest {
         assertNotNull(compiled);
         var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
         var renderedAt = System.nanoTime();
-        assertEquals(excepted, rendered);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -213,7 +218,8 @@ class TemplateCompilerImplIntegrationTest {
             assertNotNull(compiled);
             var rendered = compiled.render(context);
             var renderedAt = System.nanoTime();
-            assertEquals(excepted, rendered);
+            var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+            assertEquals(excepted, renderedJson);
             measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
             measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
         }
@@ -253,7 +259,8 @@ class TemplateCompilerImplIntegrationTest {
             assertNotNull(compiled);
             var rendered = compiled.render(context);
             var renderedAt = System.nanoTime();
-            assertEquals(excepted, rendered);
+            var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+            assertEquals(excepted, renderedJson);
             measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
             measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
         }

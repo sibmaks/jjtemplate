@@ -1,20 +1,22 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
+import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mockStatic;
 
 /**
- *
  * @author sibmaks
  */
 @ExtendWith(MockitoExtension.class)
@@ -29,181 +31,91 @@ class CollapseTemplateFunctionTest {
     }
 
     @Test
-    void withoutArguments() {
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.empty();
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args, pipe)
-        );
+    void nullValueInGetProperties() {
+        var args = new ArrayList<>();
+        args.add(new Dummy());
+        args.add(null);
+        var actual = function.invoke(args);
+        assertNotNull(actual);
+    }
+
+    @Test
+    void getPropertiesFromCollection() {
+        var dummy = new Dummy();
+        dummy.name = UUID.randomUUID().toString();
+        dummy.age = UUID.randomUUID().hashCode();
+
+        var list = List.of(dummy, dummy);
+        var args = List.of(list, dummy);
+
+        var actual = function.invoke(args);
+        assertTrue(actual.containsKey("name"));
+        assertTrue(actual.containsKey("age"));
+    }
+
+
+    @Test
+    void getPropertiesFromArray() {
+        try (var mocked = mockStatic(ReflectionUtils.class)) {
+            var dummyFields = new LinkedHashMap<String, Object>();
+            dummyFields.put("x", 1);
+            dummyFields.put("y", 2);
+            mocked.when(() -> ReflectionUtils.getAllProperties(any()))
+                    .thenReturn(dummyFields);
+
+            var array = new Dummy[]{new Dummy(), new Dummy()};
+            var args = List.of(array, new Dummy());
+            var actual = function.invoke(args);
+            assertTrue(actual.containsKey("x"));
+            assertTrue(actual.containsKey("y"));
+        }
+    }
+
+    @Test
+    void mergePropertiesFromPipeAndArgs() {
+        var dummy1 = new LinkedHashMap<String, Object>();
+        dummy1.put("a", 1);
+        var dummy2 = new LinkedHashMap<String, Object>();
+        dummy2.put("b", 2);
+
+        var args = List.<Object>of(dummy1);
+
+        var result = function.invoke(args, dummy2);
+
+        assertTrue(result.containsKey("a"));
+        assertTrue(result.containsKey("b"));
+    }
+
+    @Test
+    void notEnoughArgsOnPipeInvoke() {
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Dummy()));
         assertEquals("collapse: at least 1 argument required", exception.getMessage());
     }
 
     @Test
-    void singleMapAsArgument() {
-        var map = Map.of("key", "value");
-        var args = List.of(ExpressionValue.of(map));
-        var pipe = ExpressionValue.empty();
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
+    void notEnoughArgsOnInvoke() {
+        var args = List.<Object>of(new Dummy());
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("collapse: at least 2 arguments required", exception.getMessage());
     }
 
     @Test
-    void withNullArguments() {
-        var args = List.of(ExpressionValue.of(null));
-        var pipe = ExpressionValue.of(null);
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(Map.of(), value.getValue());
+    void mergeMultipleObjects() {
+        var dummy1 = new Dummy();
+        dummy1.name = UUID.randomUUID().toString();
+
+        var dummy2 = new Dummy();
+        dummy2.age = UUID.randomUUID().hashCode();
+
+        var args = List.<Object>of(dummy1, dummy2);
+        var actual = function.invoke(args);
+        assertEquals(dummy2.name, actual.get("name"));
+        assertEquals(dummy2.age, actual.get("age"));
     }
 
-    @Test
-    void singleMapAsPipe() {
-        var args = List.<ExpressionValue>of();
-        var map = Map.of("key", "value");
-        var pipe = ExpressionValue.of(map);
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
+    static class Dummy {
+        public String name;
+        public int age;
     }
-
-    @Test
-    void listOfSingleMapAsArgument() {
-        var map = Map.of("key", "value");
-        var list = List.of(map);
-        var args = List.of(ExpressionValue.of(list));
-        var pipe = ExpressionValue.empty();
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
-    }
-
-    @Test
-    void listOfSingleMapAsPipe() {
-        var map = Map.of("key", "value");
-        var list = List.of(map);
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(list);
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
-    }
-
-    @Test
-    void listOfSingleObjectAsPipe() {
-        var object = new Stub();
-        object.field = UUID.randomUUID().toString();
-        object.method = UUID.randomUUID().toString();
-        var list = List.of(object);
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(list);
-
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(
-                Map.of(
-                        "field", object.field,
-                        "method", object.getMethod()
-                ),
-                value.getValue()
-        );
-    }
-
-    @Test
-    void arrayOfSingleMapAsArgument() {
-        var map = Map.of("key", "value");
-        var array = new Object[]{map};
-        var args = List.of(ExpressionValue.of(array));
-        var pipe = ExpressionValue.empty();
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
-    }
-
-    @Test
-    void arrayOfSingleMapAsPipe() {
-        var map = Map.of("key", "value");
-        var array = new Object[]{map};
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(array);
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(map, value.getValue());
-    }
-
-    @Test
-    void arrayOfSingleObjectAsPipe() {
-        var object = new Stub();
-        object.field = UUID.randomUUID().toString();
-        object.method = UUID.randomUUID().toString();
-        var array = new Object[]{object};
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(array);
-
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(
-                Map.of(
-                        "field", object.field,
-                        "method", object.getMethod()
-                ),
-                value.getValue()
-        );
-    }
-
-    @Test
-    void objectAsPipe() {
-        var object = new Stub();
-        object.field = UUID.randomUUID().toString();
-        object.method = UUID.randomUUID().toString();
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(object);
-
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(
-                Map.of(
-                        "field", object.field,
-                        "method", object.getMethod()
-                ),
-                value.getValue()
-        );
-    }
-
-    @Test
-    void childObjectAsPipe() {
-        var object = new Child();
-        object.field = UUID.randomUUID().toString();
-        object.method = UUID.randomUUID().toString();
-        object.child = UUID.randomUUID().toString();
-        var list = List.of(object);
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(list);
-
-        var value = function.invoke(args, pipe);
-        assertFalse(value.isEmpty());
-        assertEquals(
-                Map.of(
-                        "field", object.field,
-                        "method", object.getMethod(),
-                        "child", object.child
-                ),
-                value.getValue()
-        );
-    }
-
-    static class Stub {
-        public String field;
-        protected String method;
-
-        public String getMethod() {
-            return method + "-";
-        }
-    }
-
-    static class Child extends Stub {
-        public String child;
-    }
-
 }

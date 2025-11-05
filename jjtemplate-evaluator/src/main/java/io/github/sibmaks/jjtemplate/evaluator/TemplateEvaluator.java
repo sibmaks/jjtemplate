@@ -1,11 +1,9 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Interpreter for TemplateParser AST.
@@ -23,43 +21,17 @@ public final class TemplateEvaluator {
         this.functionRegistry = new FunctionRegistry(evaluationOptions);
     }
 
-    private static Class<?> wrap(Class<?> cls) {
-        if (!cls.isPrimitive()) {
-            return cls;
-        }
-        switch (cls.getName()) {
-            case "int":
-                return Integer.class;
-            case "boolean":
-                return Boolean.class;
-            case "long":
-                return Long.class;
-            case "double":
-                return Double.class;
-            case "float":
-                return Float.class;
-            case "char":
-                return Character.class;
-            case "short":
-                return Short.class;
-            case "byte":
-                return Byte.class;
-            default:
-                return cls;
-        }
-    }
-
-    public ExpressionValue evaluate(Expression expression, Context context) {
+    public Object evaluate(Expression expression, Context context) {
         return eval(expression, context);
     }
 
-    private ExpressionValue eval(
+    private Object eval(
             Expression expression,
             Context context
     ) {
         if (expression instanceof LiteralExpression) {
             var literalExpression = (LiteralExpression) expression;
-            return ExpressionValue.of(literalExpression.value);
+            return literalExpression.value;
         }
         if (expression instanceof VariableExpression) {
             var variableExpression = (VariableExpression) expression;
@@ -67,7 +39,7 @@ public final class TemplateEvaluator {
         }
         if (expression instanceof FunctionCallExpression) {
             var callExpression = (FunctionCallExpression) expression;
-            return evalCall(callExpression, context, ExpressionValue.empty());
+            return evalCall(callExpression, context);
         }
         if (expression instanceof PipeExpression) {
             var pipeExpression = (PipeExpression) expression;
@@ -75,7 +47,7 @@ public final class TemplateEvaluator {
         }
         if (expression instanceof TernaryExpression) {
             var ternary = (TernaryExpression) expression;
-            var cond = eval(ternary.condition, context).getValue();
+            var cond = eval(ternary.condition, context);
             if (!(cond instanceof Boolean)) {
                 throw new TemplateEvalException("cond must be a boolean: " + cond);
             }
@@ -89,25 +61,21 @@ public final class TemplateEvaluator {
         throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
     }
 
-    private ExpressionValue evalVariable(
+    private Object evalVariable(
             VariableExpression variableExpression,
             Context context
     ) {
         if (variableExpression.segments.isEmpty()) {
-            return ExpressionValue.empty();
+            return null;
         }
 
         var first = variableExpression.segments.get(0);
-        var curr = context.getRoot(first.name);
-        if (curr.isEmpty()) {
-            return ExpressionValue.empty();
-        }
-        var current = curr.getValue();
+        var current = context.getRoot(first.name);
 
         for (var i = 1; i < variableExpression.segments.size(); i++) {
             var seg = variableExpression.segments.get(i);
             if (current == null) {
-                return ExpressionValue.empty();
+                return null;
             }
 
             if (!seg.isMethod()) {
@@ -117,52 +85,15 @@ public final class TemplateEvaluator {
 
             var args = new ArrayList<>();
             for (var argExpr : seg.args) {
-                args.add(eval(argExpr, context).getValue());
+                args.add(eval(argExpr, context));
             }
-            current = invokeMethodReflective(current, seg.name, args);
+            current = ReflectionUtils.invokeMethodReflective(current, seg.name, args);
         }
 
-        return ExpressionValue.of(current);
+        return current;
     }
 
-    private Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
-        var type = target.getClass();
-        var methods = type.getMethods();
-
-        outer:
-        for (var m : methods) {
-            if (!m.getName().equals(methodName)) {
-                continue;
-            }
-            var params = m.getParameterTypes();
-            if (params.length != args.size()) {
-                continue;
-            }
-
-            var converted = new Object[args.size()];
-            for (int i = 0; i < args.size(); i++) {
-                var arg = args.get(i);
-                if (arg == null) {
-                    converted[i] = null;
-                    continue;
-                }
-                if (!wrap(params[i]).isAssignableFrom(arg.getClass())) {
-                    continue outer;
-                }
-                converted[i] = arg;
-            }
-
-            try {
-                return m.invoke(target, converted);
-            } catch (Exception e) {
-                throw new TemplateEvalException("Error calling method " + methodName, e);
-            }
-        }
-
-        throw new IllegalArgumentException("No method " + methodName + " with args " + args.size());
-    }
-
-    private ExpressionValue evalPipe(PipeExpression p, Context ctx) {
+    private Object evalPipe(PipeExpression p, Context ctx) {
         var cur = eval(p.left, ctx);
         for (var call : p.chain) {
             cur = evalCall(call, ctx, cur);
@@ -170,17 +101,29 @@ public final class TemplateEvaluator {
         return cur;
     }
 
-    private ExpressionValue evalCall(
+    private Object evalCall(
             FunctionCallExpression c,
             Context context,
-            ExpressionValue pipeInput
+            Object pipeInput
     ) {
-        var args = new ArrayList<ExpressionValue>();
+        var args = new ArrayList<>();
         for (var a : c.args) {
             args.add(eval(a, context));
         }
         var templateFunction = functionRegistry.getFunction(c.name);
         return templateFunction.invoke(args, pipeInput);
+    }
+
+    private Object evalCall(
+            FunctionCallExpression c,
+            Context context
+    ) {
+        var args = new ArrayList<>();
+        for (var a : c.args) {
+            args.add(eval(a, context));
+        }
+        var templateFunction = functionRegistry.getFunction(c.name);
+        return templateFunction.invoke(args);
     }
 
 }

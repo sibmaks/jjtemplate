@@ -1,22 +1,16 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,116 +30,74 @@ class FormatDateTemplateFunctionTest {
     }
 
     @Test
-    void formatLocalDateFromArguments() {
-        var format = "dd.MM.yyyy";
-        var localDate = LocalDate.now();
-        var args = List.of(
-                ExpressionValue.of(format),
-                ExpressionValue.of(localDate)
-        );
-        var actual = function.invoke(args, ExpressionValue.empty());
-        assertFalse(actual.isEmpty());
+    void validInvokeArgsWithTemporalAccessor() {
+        var format = "yyyy-MM-dd HH:mm";
+        var date = LocalDateTime.of(2025, 11, 5, 8, 45);
+        var expected = DateTimeFormatter.ofPattern(format).format(date);
 
-        var formatter = DateTimeFormatter.ofPattern(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
+        var args = List.<Object>of(format, date);
+        var actual = function.invoke(args);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void formatLocalDateFromPipe() {
-        var format = "dd.MM.yyyy";
-        var localDate = LocalDate.now();
-        var args = List.of(
-                ExpressionValue.of(format)
-        );
-        var actual = function.invoke(args, ExpressionValue.of(localDate));
-        assertFalse(actual.isEmpty());
+    void validInvokePipeWithTemporalAccessor() {
+        var format = "dd/MM/yyyy";
+        var date = LocalDateTime.of(2025, 11, 5, 0, 0);
+        var expected = DateTimeFormatter.ofPattern(format).format(date);
 
-        var formatter = DateTimeFormatter.ofPattern(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
+        var args = List.<Object>of(format);
+        var actual = function.invoke(args, date);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void formatLocalDateTimeFromArguments() {
-        var format = "dd.MM.yyyy'T'HH:mm:ss";
-        var localDate = LocalDateTime.now();
-        var args = List.of(
-                ExpressionValue.of(format),
-                ExpressionValue.of(localDate)
-        );
-        var actual = function.invoke(args, ExpressionValue.empty());
-        assertFalse(actual.isEmpty());
+    void validInvokeArgsWithDate() {
+        var format = "yyyy-MM-dd";
+        var date = new Date(1730784000000L); // 2024-11-05 UTC
+        var expected = new SimpleDateFormat(format).format(date);
 
-        var formatter = DateTimeFormatter.ofPattern(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
+        var args = List.<Object>of(format, date);
+        var actual = function.invoke(args);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void formatLocalDateTimeFromPipe() {
-        var format = "dd.MM.yyyy'T'HH:mm:ss";
-        var localDate = LocalDateTime.now();
-        var args = List.of(
-                ExpressionValue.of(format)
-        );
-        var actual = function.invoke(args, ExpressionValue.of(localDate));
-        assertFalse(actual.isEmpty());
+    void validInvokePipeWithDate() {
+        var format = "dd-MM-yyyy";
+        var date = new Date(1730784000000L);
+        var expected = new SimpleDateFormat(format).format(date);
 
-        var formatter = DateTimeFormatter.ofPattern(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
-    }
-
-    @ParameterizedTest
-    @MethodSource("formatDateCases")
-    void formatDateFromArguments(String format, Object localDate) {
-        var args = List.of(
-                ExpressionValue.of(format),
-                ExpressionValue.of(localDate)
-        );
-        var actual = function.invoke(args, ExpressionValue.empty());
-        assertFalse(actual.isEmpty());
-
-        var formatter = new SimpleDateFormat(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
-    }
-
-    @ParameterizedTest
-    @MethodSource("formatDateCases")
-    void formatDateFromPipe(String format, Object localDate) {
-        var args = List.of(
-                ExpressionValue.of(format)
-        );
-        var actual = function.invoke(args, ExpressionValue.of(localDate));
-        assertFalse(actual.isEmpty());
-
-        var formatter = new SimpleDateFormat(format);
-        var excepted = formatter.format(localDate);
-        assertEquals(excepted, actual.getValue());
-    }
-
-    public static Stream<Arguments> formatDateCases() {
-        return Stream.of(
-                Arguments.of("dd.MM.yyyy'T'HH:mm:ss", new Date()),
-                Arguments.of("dd.MM.yyyy", new Date()),
-                Arguments.of("yyyy-MM-dd HH:mm", new Date()),
-                Arguments.of("yyyy-MM-dd", new Date())
-        );
+        var args = List.<Object>of(format);
+        var actual = function.invoke(args, date);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void onInvalidDateType() {
-        var format = "dd.MM.yyyy";
-        var args = List.of(
-                ExpressionValue.of(format)
-        );
-        var pipe = ExpressionValue.of(String.class);
-        var exception = assertThrows(
-                TemplateEvalException.class,
-                () -> function.invoke(args, pipe)
-        );
-        assertEquals("Cannot convert " + String.class + " to TemporalAccessor", exception.getMessage());
+    void invalidTypeInInvokeArgs() {
+        var args = List.<Object>of("yyyy-MM-dd", 42);
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertTrue(exception.getMessage().startsWith("Cannot convert 42"));
+    }
+
+    @Test
+    void invalidTypeInInvokePipe() {
+        var args = List.<Object>of("yyyy-MM-dd");
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, 42));
+        assertTrue(exception.getMessage().startsWith("Cannot convert 42"));
+    }
+
+    @Test
+    void wrongArgsCountInInvoke() {
+        var args = List.<Object>of("yyyy-MM-dd");
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("formatDate: 2 arguments required", exception.getMessage());
+    }
+
+    @Test
+    void wrongArgsCountInInvokePipe() {
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Date()));
+        assertEquals("formatDate: 1 argument required", exception.getMessage());
     }
 }

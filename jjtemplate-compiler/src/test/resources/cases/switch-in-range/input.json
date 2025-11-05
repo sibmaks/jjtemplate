@@ -1,0 +1,24 @@
+{
+  "definitions": [
+    {
+      "products": [
+        {
+          "category": "MILK",
+          "price": 100
+        },
+        {
+          "category": "WATER",
+          "price": 0
+        }
+      ],
+      "objects range product,index of .products": {
+        "category": "{{ .product.category }}",
+        "caption switch .product.price | le 0": {
+          "then": "Free",
+          "false": "Price: {{ .product.price }}"
+        }
+      }
+    }
+  ],
+  "template": "{{ .objects }}"
+}

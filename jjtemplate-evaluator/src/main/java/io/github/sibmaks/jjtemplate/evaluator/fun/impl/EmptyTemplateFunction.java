@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.lang.reflect.Array;
@@ -10,34 +9,47 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author sibmaks
  * @since 0.0.1
  */
-public class EmptyTemplateFunction implements TemplateFunction {
-    @Override
-    public ExpressionValue invoke(List<ExpressionValue> args, ExpressionValue pipeArg) {
-        var argument = first(args, pipeArg);
-        if (argument.isEmpty()) {
-            return ExpressionValue.of(true);
-        }
-        var value = argument.getValue();
-        if(value == null) {
-            return ExpressionValue.of(true);
+public class EmptyTemplateFunction implements TemplateFunction<Boolean> {
+
+    private static boolean isEmpty(Object value) {
+        if (value == null) {
+            return true;
         }
         if (value instanceof CharSequence) {
-            return ExpressionValue.of(((CharSequence) value).length() == 0);
+            return ((CharSequence) value).length() == 0;
         }
         if (value instanceof Collection) {
-            return ExpressionValue.of(((Collection<?>) value).isEmpty());
+            return ((Collection<?>) value).isEmpty();
         }
         if (value instanceof Map) {
-            return ExpressionValue.of(((Map<?, ?>) value).isEmpty());
+            return ((Map<?, ?>) value).isEmpty();
         }
         if (value.getClass().isArray()) {
-            return ExpressionValue.of(Array.getLength(value) == 0);
+            return Array.getLength(value) == 0;
         }
         throw new TemplateEvalException("empty: unsupported type: " + value.getClass());
+    }
+
+    @Override
+    public Boolean invoke(List<Object> args, Object pipeArg) {
+        if (!args.isEmpty()) {
+            throw new TemplateEvalException("empty: too much arguments passed");
+        }
+        return isEmpty(pipeArg);
+    }
+
+    @Override
+    public Boolean invoke(List<Object> args) {
+        if (args.isEmpty()) {
+            throw new TemplateEvalException("empty: 1 argument required");
+        }
+        if (args.size() != 1) {
+            throw new TemplateEvalException("empty: too much arguments passed");
+        }
+        return isEmpty(args.get(0));
     }
 
     @Override

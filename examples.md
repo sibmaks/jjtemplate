@@ -352,10 +352,44 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
 
 ---
 
-### 💡 Notes
+### Notes
 
 * `formatDate` accepts both Java `Date` and `TemporalAccessor` types (`LocalDate`, `LocalDateTime`, etc.).
 * `parseDate` and `parseDateTime` always return **Java time objects**, not strings.
 * Combine them with `| str` to safely render as plain JSON text.
+
+---
+
+## Collapse function
+
+**Template:**
+
+```json
+{
+  "definitions": [
+    {
+      "listVar": [
+        1,
+        2,
+        3
+      ],
+      "objects range item,index of .listVar": {
+        "key-{{ .index }}": "{{ .item }}"
+      }
+    }
+  ],
+  "template": "{{ .objects | collapse }}"
+}
+```
+
+**Output:**
+
+```json
+{
+  "key-0": 1,
+  "key-1": 2,
+  "key-2": 3
+}
+```
 
 ---

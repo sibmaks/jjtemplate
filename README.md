@@ -5,16 +5,16 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 
-**JJTemplate** is a lightweight templating engine focused on **minimal render time** and
-**JSON-compatible input/output**.  
-It compiles templates into optimized abstract syntax trees (ASTs) for fast execution with predictable, valid JSON
-results.
+**JJTemplate** is a lightweight templating engine designed for **minimal render time** and **JSON-compatible
+input/output**. It compiles templates into optimized abstract syntax trees (ASTs) for fast execution while guaranteeing
+valid JSON results.
 
 ## Usage
 
 ### Maven
 
 ```xml
+
 <dependency>
     <groupId>io.github.sibmaks.jjtemplate</groupId>
     <artifactId>jjtemplate</artifactId>
@@ -59,22 +59,65 @@ Templates are written in pure JSON with embedded expressions using double curly 
 }
 ```
 
+### Expression Types
+
 - `.varName` — access variable values
 
-- `{{ expr }}` — direct expression substitution
+- `{{ expression }}` — direct expression substitution
 
-- `{{? expr }}` — conditional insertion (skips if null)
+- `{{? expression }}` — conditional insertion (skips if null)
 
-- `{{. expr }}` — spread values into arrays or objects
+- `{{. expression }}` — spread values into arrays or objects
 
 Supports expressions, pipe calls, and ternary operators (`?`, `:`).
 
-## Supported Features
+## Core Concepts
+
+### Variables and Access
+
+- `.varName` - Access variable values from context
+- Supports nested object access (e.g., `.user.profile.name`)
 
 Variable definitions: static, conditional (`switch`), and range-based (`range`)
 
-Built-in functions: `str`, `int`, `float`, `boolean`, `len`, `empty`, `not`, `eq`, `neq`, `lt`, `le`, `gt`, `ge`, `and`,
-`or`, `xor`, `list`, `concat`, `default`, `collapse`, `format`, `formatDate`, `parseDate`, `parseDateTime`
+## Built-in Functions
+
+### Type Converters
+
+- `str(value)` - Convert any value to string
+- `int(value)` - Convert to integer
+- `float(value)` - Convert to float
+- `boolean(value)` - Convert to boolean
+
+### Logical Operations
+
+- `not(value)` - Boolean inversion
+- `eq(a, b)`, `neq(a, b)` - Equality checks
+- `lt(a, b)`, `le(a, b)`, `gt(a, b)`, `ge(a, b)` - Comparisons
+- `and(a, b)`, `or(a, b)`, `xor(a, b)` - Logical operations
+
+### Collection Operations
+
+- `list(...items)` - Create lists
+- `len(collection)` - Get length/size
+- `empty(value)` - Check if empty
+- `concat(...values)` - Concatenate values
+- `contains(container, ...values)` - Membership checking
+- `collapse(array)` - Merge array of objects
+
+### Utilities
+
+- `default(value, fallback)` - Provide default values
+- `format(pattern, ...args)` - String formatting
+- `formatDate(date, pattern)` - Date formatting
+- `parseDate(string, pattern)` - Date parsing
+
+### String Operations
+
+- `concat(object, ...values)` - Concat objects to string
+- `len(string)` - Get string length
+- `empty(string)` - Check if empty
+- `contains(string, ...values)` - String contains checking
 
 Composable expressions: via `|` (pipe operator)
 
@@ -82,19 +125,19 @@ Ternary conditions: `condition ? value1 : value2`
 
 See more examples [here](examples.md).
 
+## Architecture
 
-## Project Modules
+JJTemplate is built with a modular architecture:
 
-- **Lexer** — converts raw template strings into structured tokens.
-- **Parser** — builds abstract syntax trees (AST) from token sequences.
-- **Compiler** — transforms parsed templates into executable node trees.
-    - **Optimizer** — applies static optimizations to improve runtime performance.
-- **Evaluator** — executes expressions and renders final output.
+- **Lexer** - Tokenizes template strings
+- **Parser** - Constructs AST from tokens
+- **Compiler** - Generates executable node trees
+    - **Optimizer** - Applies performance optimizations
+- **Evaluator** - Executes templates and produces output
 
+## Goals
 
-# Goals
-
-* Minimize template render time
-* Maintain clean separation between parsing, compilation, and execution
-* Provide predictable, optimized output generation
-* Guarantee valid JSON for both template input and generated output.
+- **Minimal render time** through AST optimization
+- **Clean separation** of parsing, compilation, and execution
+- **Predictable output** with JSON compatibility guarantees
+- **Optimized performance** at every processing stage

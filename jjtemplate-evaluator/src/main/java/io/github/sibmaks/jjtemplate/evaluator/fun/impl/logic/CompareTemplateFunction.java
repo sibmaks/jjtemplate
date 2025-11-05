@@ -1,32 +1,20 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.math.BigInteger;
 
 /**
- *
  * @author sibmaks
+ * @since 0.0.1
  */
-public abstract class CompareTemplateFunction implements TemplateFunction {
+public abstract class CompareTemplateFunction implements TemplateFunction<Boolean> {
 
-    protected boolean fnCmp(List<ExpressionValue> args, ExpressionValue pipe, int dir, boolean eq) {
-        ExpressionValue x;
-        ExpressionValue y;
-        if (args.size() == 1 && !pipe.isEmpty()) {
-            x = pipe;
-            y = args.get(0);
-        } else if (args.size() == 2 && pipe.isEmpty()) {
-            x = args.get(0);
-            y = args.get(1);
-        } else {
-            throw new TemplateEvalException("cmp: invalid args");
-        }
-        var nx = asNum(x.getValue());
-        var ny = asNum(y.getValue());
+    protected boolean fnCmp(Object x, Object y, int dir, boolean eq) {
+        var nx = asNum(x);
+        var ny = asNum(y);
         var c = nx.compareTo(ny);
         if (dir < 0) {
             return eq ? c <= 0 : c < 0;
@@ -38,8 +26,17 @@ public abstract class CompareTemplateFunction implements TemplateFunction {
         if (value instanceof BigDecimal) {
             return (BigDecimal) value;
         }
+        if (value instanceof BigInteger) {
+            var bigInteger = (BigInteger) value;
+            return new BigDecimal(bigInteger);
+        }
+        if (value instanceof Long) {
+            var longValue = ((Number) value).longValue();
+            return BigDecimal.valueOf(longValue);
+        }
         if (value instanceof Number) {
-            return BigDecimal.valueOf(((Number) value).doubleValue());
+            var doubleValue = ((Number) value).doubleValue();
+            return BigDecimal.valueOf(doubleValue);
         }
         if (value instanceof String) {
             try {

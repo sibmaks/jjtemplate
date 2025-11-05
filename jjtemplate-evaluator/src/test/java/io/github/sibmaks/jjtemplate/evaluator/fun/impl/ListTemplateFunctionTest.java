@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.ExpressionValue;
+import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,7 +12,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
  * @author sibmaks
  */
 @ExtendWith(MockitoExtension.class)
@@ -21,58 +20,28 @@ class ListTemplateFunctionTest {
     private ListTemplateFunction function;
 
     @Test
-    void checkFunctionName() {
-        var actual = function.getName();
-        assertEquals("list", actual);
+    void noArgsOnInvoke() {
+        var args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("list: at least 1 argument required", exception.getMessage());
     }
 
     @Test
-    void withoutArguments() {
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.empty();
-        var actual = function.invoke(args, pipe);
-        assertFalse(actual.isEmpty());
-        var list = assertInstanceOf(List.class, actual.getValue());
-        assertTrue(list.isEmpty());
-    }
-
-    @Test
-    void withSingleArgument() {
+    void simpleInvoke() {
         var item = UUID.randomUUID().toString();
-        var args = List.of(ExpressionValue.of(item));
-        var pipe = ExpressionValue.empty();
-        var actual = function.invoke(args, pipe);
-        assertFalse(actual.isEmpty());
-        var list = assertInstanceOf(List.class, actual.getValue());
-        assertFalse(list.isEmpty());
-        assertEquals(item, list.get(0));
+        var args = List.<Object>of(item);
+        var actual = function.invoke(args);
+        assertEquals(args, actual);
     }
 
     @Test
-    void withSinglePipe() {
+    void pipeInvoke() {
         var item = UUID.randomUUID().toString();
-        var args = List.<ExpressionValue>of();
-        var pipe = ExpressionValue.of(item);
+        var pipe = UUID.randomUUID().toString();
+        var args = List.<Object>of(item);
         var actual = function.invoke(args, pipe);
-        assertFalse(actual.isEmpty());
-        var list = assertInstanceOf(List.class, actual.getValue());
-        assertFalse(list.isEmpty());
-        assertEquals(item, list.get(0));
-    }
-
-    @Test
-    void withArgAndPipe() {
-        var argItem = UUID.randomUUID().toString();
-        var pipeItem = UUID.randomUUID().toString();
-        var args = List.of(ExpressionValue.of(argItem));
-        var pipe = ExpressionValue.of(pipeItem);
-        var actual = function.invoke(args, pipe);
-        assertFalse(actual.isEmpty());
-        var list = assertInstanceOf(List.class, actual.getValue());
-        assertFalse(list.isEmpty());
-        assertEquals(2, list.size());
-        assertEquals(argItem, list.get(0));
-        assertEquals(pipeItem, list.get(1));
+        var excepted = List.<Object>of(item, pipe);
+        assertEquals(excepted, actual);
     }
 
 }
