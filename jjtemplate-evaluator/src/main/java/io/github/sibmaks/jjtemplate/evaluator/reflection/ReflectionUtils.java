@@ -115,9 +115,6 @@ public final class ReflectionUtils {
             } else if (isNumeric(paramType) && isNumeric(argType)) {
                 converted[i] = convertNumber((Number) arg, paramType);
                 score += 2;
-            } else if (paramType.isPrimitive() && Number.class.isAssignableFrom(argType)) {
-                converted[i] = convertNumber((Number) arg, paramType);
-                score += 3;
             } else {
                 return null;
             }

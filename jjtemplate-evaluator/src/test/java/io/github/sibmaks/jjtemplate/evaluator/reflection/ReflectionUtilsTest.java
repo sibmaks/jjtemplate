@@ -3,9 +3,8 @@ package io.github.sibmaks.jjtemplate.evaluator.reflection;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -116,6 +115,13 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void invokePrimitiveNumericConversion() {
+        var p = new Person();
+        var result = ReflectionUtils.invokeMethodReflective(p, "addNumbers", List.of(5, 2.0));
+        assertEquals(7.0, result);
+    }
+
+    @Test
     void invokeVarargsMethod() {
         var p = new Person();
         var actual = ReflectionUtils.invokeMethodReflective(p, "collectVarargs", List.of("sum", 1, 2, 3));
@@ -127,6 +133,23 @@ class ReflectionUtilsTest {
         var p = new Person();
         ReflectionUtils.invokeMethodReflective(p, "setMode", List.of("ON"));
         assertEquals(Mode.ON, p.mode);
+    }
+
+    @Test
+    void invokeEnumMethodWithNull() {
+        var p = new Person();
+        var args = new ArrayList<>();
+        args.add(null);
+        ReflectionUtils.invokeMethodReflective(p, "setMode", args);
+        assertNull(p.mode);
+    }
+
+    @Test
+    void invokeMethodWithAssignable() {
+        var p = new Person();
+        var value = UUID.randomUUID().toString();
+        var actual = ReflectionUtils.invokeMethodReflective(p, "callSupplier", List.of(new StubSupplier(value)));
+        assertEquals(value, actual);
     }
 
     @Test
@@ -193,6 +216,10 @@ class ReflectionUtilsTest {
             return a + b;
         }
 
+        public String callSupplier(Supplier<String> supplier) {
+            return supplier.get();
+        }
+
         public int collectVarargs(String label, Integer... nums) {
             if ("sum".equals(label)) {
                 var sum = 0;
@@ -209,4 +236,17 @@ class ReflectionUtilsTest {
         }
     }
 
+
+    static class StubSupplier implements Supplier<String> {
+        private final String value;
+
+        public StubSupplier(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String get() {
+            return value;
+        }
+    }
 }
