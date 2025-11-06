@@ -40,7 +40,7 @@ jobs:
           ./gradlew clean publish
       - name: Publish to SonarQube
         run: |
-          ./gradlew sonar \
+          ./gradlew --init-script release.gradle.kts  sonar \
             -Dsonar.branch.name=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}} \
             -Dsonar.projectVersion=${VERSION#v}
         env:
