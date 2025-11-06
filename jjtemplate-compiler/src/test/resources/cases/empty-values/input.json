@@ -1,0 +1,12 @@
+{
+  "definitions": [
+    {
+      "defVar": ""
+    }
+  ],
+  "template": {
+    "key": "",
+    "defVarKey": "{{ .defVar }}",
+    "": ""
+  }
+}

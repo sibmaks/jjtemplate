@@ -345,6 +345,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
         var lexer = new TemplateLexer(raw);
         var tokens = lexer.tokens();
+        if(tokens.isEmpty()) {
+            return Nodes.StaticNode.of(raw);
+        }
         var parser = new TemplateParser(tokens);
         try {
             var expression = parser.parseTemplate();
