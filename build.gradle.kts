@@ -5,7 +5,6 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
-    id("org.jreleaser") version "1.20.0"
     id("org.sonarqube") version "7.0.1.6134"
 }
 
@@ -22,15 +21,6 @@ allprojects {
 
     version = versionFromEnv ?: versionFromProperty
     group = "${project.property("group")}"
-
-    publishing {
-        repositories {
-            maven {
-                name = "Staging"
-                url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
-            }
-        }
-    }
 }
 
 subprojects {
@@ -164,10 +154,6 @@ sonarqube {
         }
         println("Sonar properties: $properties")
     }
-}
-
-jreleaser {
-    configFile = rootProject.layout.projectDirectory.file("jreleaser.yml")
 }
 
 tasks.register("printVersion") {
