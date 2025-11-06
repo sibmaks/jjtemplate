@@ -30,9 +30,11 @@ allprojects {
         }
         extensions.configure<PublishingExtension>("publishing") {
             repositories {
-                maven {
-                    name = "Staging"
-                    url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
+                if (none { it.name == "Staging" }) {
+                    maven {
+                        name = "Staging"
+                        url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
+                    }
                 }
             }
         }
