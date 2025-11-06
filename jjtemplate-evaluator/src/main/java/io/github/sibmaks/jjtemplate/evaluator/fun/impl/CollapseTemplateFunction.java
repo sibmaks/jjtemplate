@@ -43,9 +43,6 @@ public class CollapseTemplateFunction implements TemplateFunction<Map<String, Ob
 
     @Override
     public Map<String, Object> invoke(List<Object> args, Object pipeArg) {
-        if (args.isEmpty()) {
-            throw new TemplateEvalException("collapse: at least 1 argument required");
-        }
         var result = new LinkedHashMap<String, Object>(args.size());
 
         result.putAll(getProperties(pipeArg));
@@ -59,8 +56,8 @@ public class CollapseTemplateFunction implements TemplateFunction<Map<String, Ob
 
     @Override
     public Map<String, Object> invoke(List<Object> args) {
-        if (args.size() < 2) {
-            throw new TemplateEvalException("collapse: at least 2 arguments required");
+        if (args.isEmpty()) {
+            throw new TemplateEvalException("collapse: at least 1 argument required");
         }
         var result = new LinkedHashMap<String, Object>(args.size());
 
