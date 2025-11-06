@@ -37,10 +37,10 @@ jobs:
         run: chmod +x gradlew
       - name: Build Stage
         run: |
-          ./gradlew clean publish
+          ./gradlew --init-script release.gradle.kts clean publish
       - name: Publish to SonarQube
         run: |
-          ./gradlew --init-script release.gradle.kts  sonar \
+          ./gradlew sonar \
             -Dsonar.branch.name=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}} \
             -Dsonar.projectVersion=${VERSION#v}
         env:
