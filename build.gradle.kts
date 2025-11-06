@@ -5,7 +5,6 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
-    id("signing")
     id("org.jreleaser") version "1.20.0"
     id("org.sonarqube") version "7.0.1.6134"
 }
@@ -13,7 +12,10 @@ plugins {
 allprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
-    apply(from = rootProject.file("gradle/common/repositories.gradle.kts"))
+
+    repositories {
+        mavenCentral()
+    }
 
     val versionFromProperty = "${project.property("version")}"
     val versionFromEnv: String? = System.getenv("VERSION")
@@ -32,10 +34,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "java")
     apply(plugin = "jacoco")
-    apply(plugin = "maven-publish")
-    apply(plugin = "org.sonarqube")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
