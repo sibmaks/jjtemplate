@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (with "v" prefix, e.g. v1.2.3)'
+        description: 'Release version (without "v" prefix, e.g. 1.2.3)'
         required: true
       create_tag:
         description: 'Create git tag automatically if not exists'
@@ -26,11 +26,9 @@ jobs:
           fetch-depth: 0
 
       - name: Set up version
-        id: version
         run: |
-          RAW_VERSION="${{ github.event.inputs.version }}"
-          CLEAN_VERSION="${RAW_VERSION#v}"
-          echo "VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
+          VERSION="v${{ github.event.inputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Preparing manual release for version $VERSION"
 
       - name: Create tag if missing
