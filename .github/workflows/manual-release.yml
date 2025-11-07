@@ -27,7 +27,7 @@ jobs:
 
       - name: Set up version
         run: |
-          VERSION="v${{ github.event.inputs.version }}"
+          VERSION="${{ github.event.inputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Preparing manual release for version $VERSION"
 
