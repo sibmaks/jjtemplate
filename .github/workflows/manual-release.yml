@@ -1,0 +1,83 @@
+name: Manual GitHub Release (JReleaser)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (without "v" prefix, e.g. 1.2.3)'
+        required: true
+      create_tag:
+        description: 'Create git tag automatically if not exists'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  manual_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Preparing manual release for version $VERSION"
+
+      - name: Create tag if missing
+        if: ${{ github.event.inputs.create_tag == 'true' }}
+        run: |
+          TAG="v${{ github.event.inputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+          else
+            echo "Creating tag $TAG..."
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run JReleaser (skip deploy)
+        run: |
+          ./gradlew jreleaserRelease \
+            -Pjreleaser.overwrite=true \
+            -Pjreleaser.skipDeploy=true \
+            --init-script release.gradle.kts
+        env:
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.SONATYPE_TOKEN }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-manual-logs
+          path: |
+            build/jreleaser/trace.log
+            build/jreleaser/output.properties
