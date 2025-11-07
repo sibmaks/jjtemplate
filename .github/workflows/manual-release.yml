@@ -59,6 +59,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Build Stage
+        run: |
+          ./gradlew clean publish \
+            --init-script release.gradle.kts
+
       - name: Run JReleaser (skip deploy)
         run: |
           ./gradlew jreleaserRelease \
