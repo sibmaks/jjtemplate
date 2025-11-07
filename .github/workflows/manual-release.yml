@@ -67,8 +67,7 @@ jobs:
       - name: Run JReleaser (skip deploy)
         run: |
           ./gradlew jreleaserRelease \
-            -Pjreleaser.overwrite=true \
-            -Pjreleaser.skipDeploy=true \
+            --exclude-deployer=maven \
             --init-script release.gradle.kts
         env:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
