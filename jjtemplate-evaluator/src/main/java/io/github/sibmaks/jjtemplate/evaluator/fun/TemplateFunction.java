@@ -1,5 +1,8 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun;
 
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateFunctionEvalException;
+
 import java.util.List;
 
 /**
@@ -79,6 +82,13 @@ public interface TemplateFunction<T> {
     T invoke(List<Object> args);
 
     /**
+     * Returns the namespace of the function, or an empty string if none.
+     *
+     * @return namespace string
+     */
+    String getNamespace();
+
+    /**
      * Returns the unique name used to reference this function in templates.
      * <p>
      * Function names must be lowercase and unique within a single evaluation context.
@@ -87,4 +97,25 @@ public interface TemplateFunction<T> {
      * @return the function name
      */
     String getName();
+
+    /**
+     * Creates an exception for signaling a function evaluation error.
+     *
+     * @param message error description
+     * @return exception instance
+     */
+    default TemplateEvalException fail(String message) {
+        return new TemplateFunctionEvalException(this, message);
+    }
+
+    /**
+     * Creates an exception for signaling a function evaluation error.
+     *
+     * @param message error description
+     * @param cause   underlying cause
+     * @return exception instance
+     */
+    default TemplateEvalException fail(String message, Exception cause) {
+        return new TemplateFunctionEvalException(this, message, cause);
+    }
 }

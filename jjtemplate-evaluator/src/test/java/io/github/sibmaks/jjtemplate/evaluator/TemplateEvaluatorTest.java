@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,10 +18,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- *
  * @author sibmaks
  */
 class TemplateEvaluatorTest {
+
+    public static Stream<Arguments> callToStringFunctionCases() {
+        return Stream.of(
+                Arguments.of(-42, "-42"),
+                Arguments.of(0, "0"),
+                Arguments.of(42, "42"),
+
+                Arguments.of(-3.1415, "-3.1415"),
+                Arguments.of(0.0, "0.0"),
+                Arguments.of(3.1415, "3.1415"),
+
+                Arguments.of(true, "true"),
+                Arguments.of(false, "false")
+        );
+    }
 
     @ParameterizedTest
     @ValueSource(booleans = {
@@ -196,7 +211,16 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Unknown property '%s' of %s", varName, listVarValue.getClass()), exception.getMessage());
+        assertEquals(
+                String.format(
+                        "Exception on expression \".%s.%s\" evaluation: Unknown property '%s' of %s",
+                        parentVarName,
+                        varName,
+                        varName,
+                        listVarValue.getClass()
+                ),
+                exception.getMessage()
+        );
     }
 
     @Test
@@ -219,7 +243,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("List index out of range: %s", varName), exception.getMessage());
+        assertEquals(String.format("Exception on expression \".%s.%s\" evaluation: List index out of range: 1", parentVarName, varName), exception.getMessage());
     }
 
     @Test
@@ -266,7 +290,7 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Array index out of range: %s", 1), exception.getMessage());
+        assertEquals(String.format("Exception on expression \".%s.%s\" evaluation: Array index out of range: 1", parentVarName, varName), exception.getMessage());
     }
 
     @Test
@@ -311,7 +335,15 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("String index out of range: %s", varName), exception.getMessage());
+        assertEquals(
+                String.format(
+                        "Exception on expression \".%s.%s\" evaluation: String index out of range: %s",
+                        parentVarName,
+                        varName,
+                        varName
+                ),
+                exception.getMessage()
+        );
     }
 
     @ParameterizedTest
@@ -320,7 +352,7 @@ class TemplateEvaluatorTest {
         var options = TemplateEvaluationOptions.getDefault();
         var evaluator = new TemplateEvaluator(options);
 
-        var expression = new FunctionCallExpression("str", List.of(
+        var expression = new FunctionCallExpression("cast", "str", List.of(
                 new LiteralExpression(value)
         ));
         var evaluated = evaluator.evaluate(expression, mock());
@@ -334,11 +366,12 @@ class TemplateEvaluatorTest {
         var evaluator = new TemplateEvaluator(options);
 
         var leftExpression = new LiteralExpression("true");
-        var rightExpression = new FunctionCallExpression("boolean", List.of());
+        var rightExpression = new FunctionCallExpression("cast", "boolean", List.of());
         var pipeExpression = new PipeExpression(
                 leftExpression,
                 List.of(rightExpression)
         );
+
         var evaluated = evaluator.evaluate(pipeExpression, mock());
         assertNotNull(evaluated);
         assertEquals(true, evaluated);
@@ -350,7 +383,7 @@ class TemplateEvaluatorTest {
         var evaluator = new TemplateEvaluator(options);
 
         var leftExpression = new LiteralExpression("pipe");
-        var rightExpression = new FunctionCallExpression("concat", List.of(new LiteralExpression("arg-")));
+        var rightExpression = new FunctionCallExpression("string", "concat", List.of(new LiteralExpression("arg-")));
         var pipeExpression = new PipeExpression(
                 leftExpression,
                 List.of(rightExpression)
@@ -365,10 +398,15 @@ class TemplateEvaluatorTest {
         var options = TemplateEvaluationOptions.getDefault();
         var evaluator = new TemplateEvaluator(options);
 
-        var expression = new FunctionCallExpression("var", List.of());
+        var namespace = UUID.randomUUID().toString();
+        var varName = UUID.randomUUID().toString();
+        var expression = new FunctionCallExpression(namespace, varName, List.of());
         var context = mock(Context.class);
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals("Function 'var' not found", exception.getMessage());
+        assertEquals(
+                String.format("Exception on expression \"%s:%s\" evaluation: No such namespace: '%s'", namespace, varName, namespace),
+                exception.getMessage()
+        );
     }
 
     @Test
@@ -516,7 +554,16 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(TemplateEvalException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Unknown property '%s' of %s", varName, object.getClass()), exception.getMessage());
+        assertEquals(
+                String.format(
+                        "Exception on expression \".%s.%s\" evaluation: Unknown property '%s' of %s",
+                        parentVarName,
+                        varName,
+                        varName,
+                        object.getClass()
+                ),
+                exception.getMessage()
+        );
     }
 
     @Test
@@ -538,10 +585,22 @@ class TemplateEvaluatorTest {
                 )
         );
         var exception = assertThrows(RuntimeException.class, () -> evaluator.evaluate(expression, context));
-        assertEquals(String.format("Failed to access property '%s' of %s", varName, object.getClass()), exception.getMessage());
+        assertEquals(
+                String.format(
+                        "Exception on expression \".%s.%s\" evaluation: Failed to access property '%s' of %s",
+                        parentVarName,
+                        varName,
+                        varName,
+                        object.getClass()
+                ),
+                exception.getMessage()
+        );
         var cause = exception.getCause();
         assertNotNull(cause);
-        assertEquals("internal", cause.getMessage());
+        assertEquals(String.format("Failed to access property '%s' of %s", varName, object.getClass()), cause.getMessage());
+        var realCause = cause.getCause();
+        assertNotNull(realCause);
+        assertEquals("internal", realCause.getMessage());
     }
 
     @Test
@@ -594,7 +653,7 @@ class TemplateEvaluatorTest {
                 TemplateEvalException.class,
                 () -> evaluator.evaluate(expression, context)
         );
-        assertEquals("cond must be a boolean: " + 42, exception.getMessage());
+        assertEquals("Exception on expression \"(42 ? 'fail' : 'fail')\" evaluation: cond must be a boolean: 42", exception.getMessage());
     }
 
     @Test
@@ -609,7 +668,7 @@ class TemplateEvaluatorTest {
                 TemplateEvalException.class,
                 () -> evaluator.evaluate(expression, context)
         );
-        assertEquals("Unknown expr type: " + NotSupportedExpression.class, exception.getMessage());
+        assertEquals("Exception on expression \"null\" evaluation: Unknown expr type: " + NotSupportedExpression.class, exception.getMessage());
     }
 
     static class NotSupportedExpression implements Expression {
@@ -642,20 +701,5 @@ class TemplateEvaluatorTest {
         public String callMethodWithArg(String arg) {
             return "-" + arg;
         }
-    }
-
-    public static Stream<Arguments> callToStringFunctionCases() {
-        return Stream.of(
-                Arguments.of(-42, "-42"),
-                Arguments.of(0, "0"),
-                Arguments.of(42, "42"),
-
-                Arguments.of(-3.1415, "-3.1415"),
-                Arguments.of(0.0, "0.0"),
-                Arguments.of(3.1415, "3.1415"),
-
-                Arguments.of(true, "true"),
-                Arguments.of(false, "false")
-        );
     }
 }

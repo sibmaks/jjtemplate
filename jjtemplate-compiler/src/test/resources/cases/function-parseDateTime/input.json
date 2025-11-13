@@ -1,3 +1,0 @@
-{
-  "template": "{{ '28.10.2024 14:00' | parseDateTime 'dd.MM.yyyy HH:mm' | str }}"
-}

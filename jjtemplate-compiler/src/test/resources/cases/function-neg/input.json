@@ -1,9 +1,0 @@
-{
-  "template": {
-    "positiveKey": "{{ neg 42 }}",
-    "positivePipeKey": "{{ 42 | neg }}",
-
-    "negativeKey": "{{ neg -42 }}",
-    "negativePipeKey": "{{ -42 | neg }}"
-  }
-}

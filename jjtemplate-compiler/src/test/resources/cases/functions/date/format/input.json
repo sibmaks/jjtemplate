@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "baseDate": "{{ '28.10.2024' | date:parse 'dd.MM.yyyy' }}",
+      "usLocale": "{{ locale:new 'en', 'US' }}",
+      "ruLocale": "{{ locale:new 'ru', 'RU' }}"
+    }
+  ],
+  "template": {
+    "usKey": "{{ date:format .usLocale, 'dd MMMM yyyy', .baseDate }}",
+    "usPipeKey": "{{ .baseDate | date:format .usLocale, 'dd MMMM yyyy' }}",
+    "ruKey": "{{ date:format .ruLocale, 'dd MMMM yyyy', .baseDate }}",
+    "ruPipeKey": "{{ .baseDate | date:format .ruLocale, 'dd MMMM yyyy' }}"
+  }
+}

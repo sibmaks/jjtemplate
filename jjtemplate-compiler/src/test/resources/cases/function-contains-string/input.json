@@ -1,9 +1,0 @@
-{
-  "definitions": [
-    {
-      "charVar": "val",
-      "strVar": "value"
-    }
-  ],
-  "template": "{{ contains .strVar, 'v', '', 'value', .strVar, .charVar }}"
-}

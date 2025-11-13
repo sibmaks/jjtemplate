@@ -60,7 +60,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
         }
 
         var updated = changed
-                ? new FunctionCallExpression(expr.name, args)
+                ? new FunctionCallExpression(expr.namespace, expr.name, args)
                 : expr;
 
         if (updated.args.stream().allMatch(LiteralExpression.class::isInstance)) {
@@ -89,7 +89,7 @@ final class ExpressionInliner implements ExpressionVisitor<Expression> {
                 rheChanged |= (inlinedArg != arg);
             }
             if (rheChanged) {
-                rhe.add(new FunctionCallExpression(c.name, args2));
+                rhe.add(new FunctionCallExpression(c.namespace, c.name, args2));
             } else {
                 rhe.add(c);
             }

@@ -1,0 +1,9 @@
+{
+  "template": {
+    "positiveKey": "{{ math:neg 42 }}",
+    "positivePipeKey": "{{ 42 | math:neg }}",
+
+    "negativeKey": "{{ math:neg -42 }}",
+    "negativePipeKey": "{{ -42 | math:neg }}"
+  }
+}

@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +26,12 @@ class FloatTemplateFunctionTest {
     private FloatTemplateFunction function;
 
     @Test
+    void checkFunctionNamespace() {
+        var actual = function.getNamespace();
+        assertEquals("cast", actual);
+    }
+
+    @Test
     void checkFunctionName() {
         var actual = function.getName();
         assertEquals("float", actual);
@@ -35,21 +41,21 @@ class FloatTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(1);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("float: too much arguments passed", exception.getMessage());
+        assertEquals("cast:float: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("float: 1 argument required", exception.getMessage());
+        assertEquals("cast:float: 1 argument required", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(1, 2);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("float: too much arguments passed", exception.getMessage());
+        assertEquals("cast:float: too much arguments passed", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -72,14 +78,14 @@ class FloatTemplateFunctionTest {
     void invalidStringToFloatArg() {
         var args = List.<Object>of("not_a_number");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("float: cannot convert: not_a_number", exception.getMessage());
+        assertEquals("cast:float: cannot convert: not_a_number", exception.getMessage());
     }
 
     @Test
     void invalidStringToFloatPipe() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "oops"));
-        assertEquals("float: cannot convert: oops", exception.getMessage());
+        assertEquals("cast:float: cannot convert: oops", exception.getMessage());
     }
 
     @Test
@@ -88,7 +94,7 @@ class FloatTemplateFunctionTest {
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         var message = exception.getMessage();
         assertNotNull(message);
-        assertTrue(message.startsWith("float: cannot convert: java.lang.Object@"));
+        assertTrue(message.startsWith("cast:float: cannot convert: java.lang.Object@"));
     }
 
     @Test
@@ -98,7 +104,7 @@ class FloatTemplateFunctionTest {
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
         var message = exception.getMessage();
         assertNotNull(message);
-        assertTrue(message.startsWith("float: cannot convert: java.lang.Object@"));
+        assertTrue(message.startsWith("cast:float: cannot convert: java.lang.Object@"));
     }
 
     public static Stream<Arguments> justToFloatCases() {

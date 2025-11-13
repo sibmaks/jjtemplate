@@ -1,12 +1,16 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
+ * Base class for numeric comparison template functions.
+ *
+ * <p>Provides common logic for converting values to {@link BigDecimal}
+ * and performing directional comparisons with optional equality.</p>
+ *
  * @author sibmaks
  * @since 0.0.1
  */
@@ -42,9 +46,9 @@ public abstract class CompareTemplateFunction implements TemplateFunction<Boolea
             try {
                 return new BigDecimal((String) value);
             } catch (Exception e) {
-                throw new TemplateEvalException("Expected number: " + value, e);
+                throw fail("expected number, actual: " + value, e);
             }
         }
-        throw new TemplateEvalException("Expected number: " + value);
+        throw fail("expected number, actual: " + value);
     }
 }

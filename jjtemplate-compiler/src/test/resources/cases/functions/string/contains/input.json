@@ -1,0 +1,14 @@
+{
+  "definitions": [
+    {
+      "charVar": "val",
+      "strVar": "value"
+    }
+  ],
+  "template": {
+    "true": "{{ string:contains .strVar, 'v', '', 'value', .strVar, .charVar }}",
+    "truePipe": "{{ .strVar | string:contains .charVar, 'v', '', 'value', .strVar }}",
+    "false": "{{ string:contains .strVar, 'v', '', 'value', .strVar, .charVar, 42 }}",
+    "falsePipe": "{{ .strVar | string:contains .charVar, 'v', '', 'value', .strVar, 42 }}"
+  }
+}

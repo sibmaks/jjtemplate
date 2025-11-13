@@ -1,5 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 
@@ -29,36 +30,48 @@ public final class TemplateEvaluator {
             Expression expression,
             Context context
     ) {
-        if (expression instanceof LiteralExpression) {
-            var literalExpression = (LiteralExpression) expression;
-            return literalExpression.value;
-        }
-        if (expression instanceof VariableExpression) {
-            var variableExpression = (VariableExpression) expression;
-            return evalVariable(variableExpression, context);
-        }
-        if (expression instanceof FunctionCallExpression) {
-            var callExpression = (FunctionCallExpression) expression;
-            return evalCall(callExpression, context);
-        }
-        if (expression instanceof PipeExpression) {
-            var pipeExpression = (PipeExpression) expression;
-            return evalPipe(pipeExpression, context);
-        }
-        if (expression instanceof TernaryExpression) {
-            var ternary = (TernaryExpression) expression;
-            var cond = eval(ternary.condition, context);
-            if (!(cond instanceof Boolean)) {
-                throw new TemplateEvalException("cond must be a boolean: " + cond);
+        try {
+            if (expression instanceof LiteralExpression) {
+                var literalExpression = (LiteralExpression) expression;
+                return literalExpression.value;
             }
-            var test = (boolean) cond;
-            if (test) {
-                return eval(ternary.ifTrue, context);
-            } else {
-                return eval(ternary.ifFalse, context);
+            if (expression instanceof VariableExpression) {
+                var variableExpression = (VariableExpression) expression;
+                return evalVariable(variableExpression, context);
             }
+            if (expression instanceof FunctionCallExpression) {
+                var callExpression = (FunctionCallExpression) expression;
+                return evalCall(callExpression, context);
+            }
+            if (expression instanceof PipeExpression) {
+                var pipeExpression = (PipeExpression) expression;
+                return evalPipe(pipeExpression, context);
+            }
+            if (expression instanceof TernaryExpression) {
+                var ternary = (TernaryExpression) expression;
+                var cond = eval(ternary.condition, context);
+                if (!(cond instanceof Boolean)) {
+                    throw new TemplateEvalException("cond must be a boolean: " + cond);
+                }
+                var test = (boolean) cond;
+                if (test) {
+                    return eval(ternary.ifTrue, context);
+                } else {
+                    return eval(ternary.ifFalse, context);
+                }
+            }
+            throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
+        } catch (Exception e) {
+            var printVisitor = new PrettyPrintVisitor();
+            throw new TemplateEvalException(
+                    String.format(
+                            "Exception on expression \"%s\" evaluation: %s",
+                            expression.accept(printVisitor),
+                            e.getMessage()
+                    ),
+                    e
+            );
         }
-        throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
     }
 
     private Object evalVariable(
@@ -110,7 +123,7 @@ public final class TemplateEvaluator {
         for (var a : c.args) {
             args.add(eval(a, context));
         }
-        var templateFunction = functionRegistry.getFunction(c.name);
+        var templateFunction = functionRegistry.getFunction(c.namespace, c.name);
         return templateFunction.invoke(args, pipeInput);
     }
 
@@ -122,7 +135,7 @@ public final class TemplateEvaluator {
         for (var a : c.args) {
             args.add(eval(a, context));
         }
-        var templateFunction = functionRegistry.getFunction(c.name);
+        var templateFunction = functionRegistry.getFunction(c.namespace, c.name);
         return templateFunction.invoke(args);
     }
 

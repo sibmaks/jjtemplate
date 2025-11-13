@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +34,12 @@ class BooleanTemplateFunctionTest {
     }
 
     @Test
+    void checkFunctionNamespace() {
+        var actual = function.getNamespace();
+        assertEquals("cast", actual);
+    }
+
+    @Test
     void checkFunctionName() {
         var actual = function.getName();
         assertEquals("boolean", actual);
@@ -49,35 +55,35 @@ class BooleanTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("boolean: too much arguments passed", exception.getMessage());
+        assertEquals("cast:boolean: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(42, true);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("boolean: too much arguments passed", exception.getMessage());
+        assertEquals("cast:boolean: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("boolean: 1 argument required", exception.getMessage());
+        assertEquals("cast:boolean: 1 argument required", exception.getMessage());
     }
 
     @Test
     void notBooleanString() {
         var args = List.<Object>of("text");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("boolean: cannot convert: text", exception.getMessage());
+        assertEquals("cast:boolean: cannot convert: text", exception.getMessage());
     }
 
     @Test
     void unknownType() {
         var args = List.<Object>of(42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("boolean: cannot convert: 42", exception.getMessage());
+        assertEquals("cast:boolean: cannot convert: 42", exception.getMessage());
     }
 
     @Test

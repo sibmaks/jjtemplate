@@ -1,0 +1,21 @@
+{
+  "template": {
+    "booleanTrueKey": "{{ cast:str .booleanTrue }}",
+    "booleanTruePipeKey": "{{ .booleanTrue | cast:str }}",
+
+    "booleanFalseKey": "{{ cast:str .booleanFalse }}",
+    "booleanFalsePipeKey": "{{ .booleanFalse | cast:str }}",
+
+    "stringKey": "{{ cast:str .string }}",
+    "stringPipeKey": "{{ .string | cast:str }}",
+
+    "integerKey": "{{ cast:str .integer }}",
+    "integerPipeKey": "{{ .integer | cast:str }}",
+
+    "floatKey": "{{ cast:str .float }}",
+    "floatPipeKey": "{{ .float | cast:str }}",
+
+    "nullVarKey": "{{ cast:str .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | cast:str }}"
+  }
+}

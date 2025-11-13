@@ -15,6 +15,6 @@
       "{{ null }}"
     ],
     "key-{{ 'end' }}": "value",
-    "fun": "{{ -42 | str | concat ('true' | boolean)}}"
+    "fun": "{{ -42 | cast:str | string:concat ('true' | cast:boolean)}}"
   }
 }
