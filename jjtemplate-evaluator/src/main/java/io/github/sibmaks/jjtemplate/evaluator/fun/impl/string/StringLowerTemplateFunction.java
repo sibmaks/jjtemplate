@@ -13,9 +13,8 @@ import java.util.Locale;
  */
 @AllArgsConstructor
 public class StringLowerTemplateFunction implements TemplateFunction<String> {
-    private final Locale locale;
 
-    private String lower(Object value) {
+    private String lower(Locale locale, Object value) {
         if (value == null) {
             return null;
         }
@@ -25,21 +24,30 @@ public class StringLowerTemplateFunction implements TemplateFunction<String> {
 
     @Override
     public String invoke(List<Object> args, Object pipeArg) {
-        if (!args.isEmpty()) {
+        var locale = Locale.getDefault();
+        if (args.size() == 1) {
+            locale = (Locale) args.get(0);
+        } else if (args.size() > 1) {
             throw new TemplateEvalException("lower: too much arguments passed");
         }
-        return lower(pipeArg);
+        return lower(locale, pipeArg);
     }
 
     @Override
     public String invoke(List<Object> args) {
         if (args.isEmpty()) {
-            throw new TemplateEvalException("lower: 1 argument required");
+            throw new TemplateEvalException("lower: at least 1 argument required");
         }
-        if (args.size() != 1) {
+        var locale = Locale.getDefault();
+        var value = args.get(0);
+        if (args.size() == 2) {
+            locale = (Locale) args.get(0);
+            value = args.get(1);
+        }
+        if (args.size() > 2) {
             throw new TemplateEvalException("lower: too much arguments passed");
         }
-        return lower(args.get(0));
+        return lower(locale, value);
     }
 
     @Override

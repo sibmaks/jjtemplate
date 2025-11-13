@@ -393,3 +393,95 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
 ```
 
 ---
+
+## Locale Function
+
+The `locale` function creates or transforms Java `Locale` objects.
+It can be used to define locale settings dynamically and combine with functions like `formatDate` or `format`.
+
+---
+
+### Syntax
+
+```text
+locale(language)
+locale(language, country)
+locale(language, country, variant)
+```
+
+or with **pipe syntax**:
+
+```text
+'EN' | locale 'US'
+'EN' | locale 'US', 'WIN'
+```
+
+---
+
+### Examples
+
+#### Template
+
+```json
+{
+  "definitions": [
+    {
+      "simpleLocale": "{{ locale 'en' }}",
+      "fullLocale": "{{ locale 'en', 'US' }}",
+      "variantLocale": "{{ locale 'en', 'US', 'WIN' }}",
+      "pipeLocale": "{{ 'fr' | locale 'FR' }}"
+    }
+  ],
+  "template": {
+    "simple": "{{ .simpleLocale | str }}",
+    "full": "{{ .fullLocale | str }}",
+    "variant": "{{ .variantLocale | str }}",
+    "pipe": "{{ .pipeLocale | str }}"
+  }
+}
+```
+
+#### Output
+
+```json
+{
+  "simple": "en",
+  "full": "en_US",
+  "variant": "en_US_WIN",
+  "pipe": "fr_FR"
+}
+```
+
+---
+
+### Used with `formatDate`
+
+You can combine `locale` with `formatDate` to localize date formatting.
+
+#### Template
+
+```json
+{
+  "definitions": [
+    {
+      "localDate": "{{ parseDate 'dd.MM.yyyy', '05.12.2023' }}",
+      "frLocale": "{{ locale 'fr', 'FR' }}"
+    }
+  ],
+  "template": {
+    "formattedDefault": "{{ formatDate 'dd MMM yyyy', .localDate }}",
+    "formattedFR": "{{ formatDate .frLocale, 'dd MMM yyyy', .localDate }}"
+  }
+}
+```
+
+#### Output
+
+```json
+{
+  "formattedDefault": "05 Dec 2023",
+  "formattedFR": "05 déc. 2023"
+}
+```
+
+---

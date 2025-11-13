@@ -1,6 +1,14 @@
 {
+  "definitions": [
+    {
+      "usLocale": "{{ locale 'en', 'US' }}",
+      "ruLocale": "{{ locale 'ru', 'RU' }}"
+    }
+  ],
   "template": {
-    "listKey": "{{ format '%s-%b-%d-%.2f', 'text', true, 42, 3.1415 }}",
-    "listPipeKey": "{{ 3.1415 | format '%s-%b-%d-%.2f', 'text', true, 42 }}"
+    "usKey": "{{ format .usLocale, '%s-%b-%d-%.2f', 'text', true, 42, 3.1415 }}",
+    "usPipeKey": "{{ 3.1415 | format .usLocale, '%s-%b-%d-%.2f', 'text', true, 42 }}",
+    "ruKey": "{{ format .ruLocale, '%s-%b-%d-%.2f', 'text', true, 42, 3.1415 }}",
+    "ruPipeKey": "{{ 3.1415 | format .ruLocale, '%s-%b-%d-%.2f', 'text', true, 42 }}"
   }
 }

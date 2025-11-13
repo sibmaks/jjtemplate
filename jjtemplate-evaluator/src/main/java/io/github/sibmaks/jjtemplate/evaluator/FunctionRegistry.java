@@ -14,7 +14,6 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplat
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -78,7 +77,7 @@ final class FunctionRegistry {
      * @throws IllegalArgumentException if duplicate function names are detected
      */
     FunctionRegistry(TemplateEvaluationOptions options) {
-        var builtInFunctions = getBuiltInFunctions(options.getLocale());
+        var builtInFunctions = getBuiltInFunctions();
         var userFunctions = options.getFunctions();
         this.functions = new HashMap<>(builtInFunctions.size() + userFunctions.size());
         for (var function : builtInFunctions) {
@@ -100,10 +99,9 @@ final class FunctionRegistry {
      * date/time utilities, and collection helpers.
      * </p>
      *
-     * @param locale the locale used for locale-sensitive string operations
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
-    private static List<TemplateFunction<?>> getBuiltInFunctions(Locale locale) {
+    private static List<TemplateFunction<?>> getBuiltInFunctions() {
         return List.of(
                 // Type conversion
                 new BooleanTemplateFunction(),
@@ -112,9 +110,9 @@ final class FunctionRegistry {
                 new StrTemplateFunction(),
                 // String and formatting
                 new ConcatTemplateFunction(),
-                new StringLowerTemplateFunction(locale),
-                new StringUpperTemplateFunction(locale),
-                new FormatStringTemplateFunction(locale),
+                new StringLowerTemplateFunction(),
+                new StringUpperTemplateFunction(),
+                new FormatStringTemplateFunction(),
                 // Collections & String & Objects
                 new ContainsTemplateFunction(),
                 new EmptyTemplateFunction(),
@@ -138,7 +136,9 @@ final class FunctionRegistry {
                 new ParseDateTemplateFunction(),
                 new ParseDateTimeTemplateFunction(),
                 // Math
-                new NegTemplateFunction()
+                new NegTemplateFunction(),
+                // Utils
+                new LocaleTemplateFunction()
         );
     }
 

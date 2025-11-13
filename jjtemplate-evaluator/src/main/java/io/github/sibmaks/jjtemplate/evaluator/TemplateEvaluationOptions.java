@@ -43,12 +43,7 @@ import java.util.Locale;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TemplateEvaluationOptions {
-    /**
-     * The locale used for all locale-dependent operations,
-     * such as string case transformations and date formatting.
-     */
-    @NonNull
-    private final Locale locale;
+    private static final TemplateEvaluationOptions INSTANCE = TemplateEvaluationOptions.builder().build();
 
     /**
      * A list of user-defined template functions to register in addition to
@@ -61,4 +56,13 @@ public final class TemplateEvaluationOptions {
     @NonNull
     @Builder.Default
     private final List<TemplateFunction<?>> functions = List.of();
+
+    /**
+     * Get default instance of evaluation options. Without additional functions.
+     *
+     * @return default instance
+     */
+    public static TemplateEvaluationOptions getDefault() {
+        return INSTANCE;
+    }
 }

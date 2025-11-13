@@ -48,7 +48,5 @@ public final class TemplateCompileOptions {
      */
     @NonNull
     @Builder.Default
-    private final TemplateEvaluationOptions evaluationOptions = TemplateEvaluationOptions.builder()
-            .locale(Locale.ROOT)
-            .build();
+    private final TemplateEvaluationOptions evaluationOptions = TemplateEvaluationOptions.getDefault();
 }

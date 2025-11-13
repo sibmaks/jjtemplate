@@ -2,6 +2,9 @@ package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,8 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author sibmaks
  */
+@ExtendWith(MockitoExtension.class)
 class FormatStringTemplateFunctionTest {
-    private final FormatStringTemplateFunction function = new FormatStringTemplateFunction(Locale.US);
+    @InjectMocks
+    private FormatStringTemplateFunction function;
 
     @Test
     void checkFunctionName() {
@@ -28,7 +33,7 @@ class FormatStringTemplateFunctionTest {
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("format: at least 2 arguments required", exception.getMessage());
+        assertEquals("format: at least 1 argument required", exception.getMessage());
     }
 
     @Test
@@ -36,6 +41,13 @@ class FormatStringTemplateFunctionTest {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
         assertEquals("format: at least 1 argument required", exception.getMessage());
+    }
+
+    @Test
+    void localeOnlyOnInvoke() {
+        var args = List.<Object>of(Locale.FRANCE);
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("format: at least 2 arguments required", exception.getMessage());
     }
 
     @Test
@@ -55,6 +67,23 @@ class FormatStringTemplateFunctionTest {
     }
 
     @Test
+    void formatWithLocaleFirst() {
+        var format = "%s-%d-%b";
+        var string = "LocaleFirst";
+        var number = 42;
+        var bool = true;
+        var args = List.<Object>of(
+                Locale.US,
+                format,
+                string,
+                number,
+                bool
+        );
+        var actual = function.invoke(args);
+        assertEquals(String.format(Locale.US, format, string, number, bool), actual);
+    }
+
+    @Test
     void formatFromPipe() {
         var format = "%s-%d-%b";
         var string = UUID.randomUUID().toString();
@@ -70,6 +99,22 @@ class FormatStringTemplateFunctionTest {
     }
 
     @Test
+    void formatFromPipeWithLocale() {
+        var format = "%s-%d-%b";
+        var string = "PipeLocale";
+        var number = 7;
+        var bool = false;
+        var args = List.<Object>of(
+                Locale.CANADA,
+                format,
+                string,
+                number
+        );
+        var actual = function.invoke(args, bool);
+        assertEquals(String.format(Locale.CANADA, format, string, number, bool), actual);
+    }
+
+    @Test
     void formatBigDecimal() {
         var format = "%.2f";
         var random = new BigDecimal(Math.random());
@@ -79,8 +124,21 @@ class FormatStringTemplateFunctionTest {
         );
         var actual = function.invoke(args);
         assertFalse(actual.isEmpty());
-        var excepted = random.setScale(2, RoundingMode.HALF_UP);
-        assertEquals(excepted.toPlainString(), actual);
+        var expected = random.setScale(2, RoundingMode.HALF_UP);
+        assertEquals(expected.toPlainString(), actual);
+    }
+
+    @Test
+    void formatBigDecimalWithLocale() {
+        var format = "%.2f";
+        var random = new BigDecimal("3.14159");
+        var args = List.<Object>of(
+                Locale.FRANCE,
+                format,
+                random
+        );
+        var actual = function.invoke(args);
+        assertTrue(actual.contains("3,14") || actual.contains("3.14"));
     }
 
 

@@ -78,7 +78,7 @@ class TemplateCompilerImplIntegrationTest {
             Map<String, Object> context,
             Object excepted
     ) {
-        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var compiler = TemplateCompiler.getInstance();
         var begin = System.nanoTime();
         var compiled = compiler.compile(templateScript);
         var compiledAt = System.nanoTime();
@@ -131,7 +131,7 @@ class TemplateCompilerImplIntegrationTest {
             Map<String, Object> context,
             Object excepted
     ) {
-        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var compiler = TemplateCompiler.getInstance();
         var modifiedDefinitions = new ArrayList<Definition>();
         for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
             var modifiedDefinition = new Definition();
@@ -207,7 +207,7 @@ class TemplateCompilerImplIntegrationTest {
                               TemplateScript templateScript,
                               Map<String, Object> context,
                               Object excepted) {
-        var compiler = TemplateCompiler.getInstance(Locale.US);
+        var compiler = TemplateCompiler.getInstance();
         var measurementsAmount = 10_000;
         var measurementsCompiled = new double[measurementsAmount];
         var measurementsRendered = new double[measurementsAmount];

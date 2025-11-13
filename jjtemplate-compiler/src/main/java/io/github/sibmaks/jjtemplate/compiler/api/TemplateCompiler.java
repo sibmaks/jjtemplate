@@ -32,19 +32,7 @@ public interface TemplateCompiler {
      * @return the default compiler instance
      */
     static TemplateCompiler getInstance() {
-        return getInstance(Locale.getDefault());
-    }
-
-    /**
-     * Returns a {@link TemplateCompiler} instance configured with the specified {@link Locale}.
-     *
-     * @param locale the locale to use for compiler configuration
-     * @return a compiler instance for the given locale
-     */
-    static TemplateCompiler getInstance(Locale locale) {
-        var evaluationOptions = TemplateEvaluationOptions.builder()
-                .locale(locale)
-                .build();
+        var evaluationOptions = TemplateEvaluationOptions.getDefault();
         var options = TemplateCompileOptions.builder()
                 .evaluationOptions(evaluationOptions)
                 .build();
