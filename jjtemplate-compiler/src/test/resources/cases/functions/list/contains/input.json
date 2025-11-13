@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "strVar": "prefix"
+    },
+    {
+      "listVar": [
+        "prefix"
+      ]
+    }
+  ],
+  "template": "{{ list:contains .listVar, 'prefix', .strVar }}"
+}

@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +27,12 @@ class IntTemplateFunctionTest {
     private IntTemplateFunction function;
 
     @Test
+    void checkFunctionNamespace() {
+        var actual = function.getNamespace();
+        assertEquals("cast", actual);
+    }
+
+    @Test
     void checkFunctionName() {
         var actual = function.getName();
         assertEquals("int", actual);
@@ -36,21 +42,21 @@ class IntTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(1);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("int: too much arguments passed", exception.getMessage());
+        assertEquals("cast:int: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("int: 1 argument required", exception.getMessage());
+        assertEquals("cast:int: 1 argument required", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(1, 2);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("int: too much arguments passed", exception.getMessage());
+        assertEquals("cast:int: too much arguments passed", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -73,7 +79,7 @@ class IntTemplateFunctionTest {
     void invalidStringToIntArg() {
         var args = List.<Object>of("not_a_number");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertTrue(exception.getMessage().startsWith("int: cannot convert: not_a_number"));
+        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: not_a_number"));
     }
 
     @Test
@@ -81,14 +87,14 @@ class IntTemplateFunctionTest {
         var args = List.of();
         var pipe = "abc";
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
-        assertTrue(exception.getMessage().startsWith("int: cannot convert: abc"));
+        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: abc"));
     }
 
     @Test
     void unsupportedTypeArg() {
         var args = List.of(new Object());
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertTrue(exception.getMessage().startsWith("int: cannot convert: java.lang.Object"));
+        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: java.lang.Object"));
     }
 
     @Test
@@ -96,7 +102,7 @@ class IntTemplateFunctionTest {
         var args = List.of();
         var pipe = new Object();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
-        assertTrue(exception.getMessage().startsWith("int: cannot convert: java.lang.Object"));
+        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: java.lang.Object"));
     }
 
     public static Stream<Arguments> justToIntCases() {

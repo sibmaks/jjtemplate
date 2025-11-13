@@ -1,0 +1,17 @@
+{
+  "definitions": [
+    {
+      "textVar": "world"
+    }
+  ],
+  "template": {
+    "stringKey": "{{ string:upper 'hello' }}",
+    "stringPipeKey": "{{ 'hello' | string:upper }}",
+
+    "stringVarKey": "{{ string:upper .textVar }}",
+    "stringVarPipeKey": "{{ .textVar | string:upper }}",
+
+    "emptyStringKey": "{{ string:upper '' }}",
+    "emptyStringPipeKey": "{{ '' | string:upper }}"
+  }
+}

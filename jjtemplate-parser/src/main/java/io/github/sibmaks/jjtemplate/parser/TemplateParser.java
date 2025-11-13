@@ -11,13 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Parser for template expressions from {@link TemplateLexer} tokens.</p>
+ * Parser for template expressions based on {@link TemplateLexer} tokens.
+ * <p>
  * Supports:
  * <ul>
- * <li>literals ({@code true}, {@code false}, {@code null}, numbers, strings)</li>
- * <li>variable access ({@code .a}, {@code .a.b.c})</li>
- * <li>function calls ({@code func arg1 arg2})</li>
- * <li>pipe expressions ({@code .value | str | upper})</li>
+ *   <li>literals ({@code true}, {@code false}, {@code null}, numbers, strings)</li>
+ *   <li>variable access ({@code .a}, {@code .a.b.c})</li>
+ *   <li>function calls ({@code func arg1 arg2})</li>
+ *   <li>pipe expressions ({@code .value | str | upper})</li>
+ *   <li>ternary operator ({@code cond ? a : b})</li>
  * </ul>
  *
  * @author sibmaks
@@ -29,9 +31,9 @@ public final class TemplateParser {
     private int pos = 0;
 
     /**
-     * Creates a new {@code TemplateParser} instance for the specified token list.
+     * Creates a new parser for the given token list.
      *
-     * @param tokens the list of tokens produced by {@link TemplateLexer}
+     * @param tokens list of lexer tokens
      */
     public TemplateParser(List<Token> tokens) {
         this.tokens = tokens;
@@ -40,11 +42,10 @@ public final class TemplateParser {
     /**
      * Parses a single expression from the current token stream.
      * <p>
-     * Supports literals, variables, function calls, and pipe expressions.
-     * </p>
+     * Supports literals, variables, function calls,
+     * pipe expressions, and ternary expressions.
      *
-     * @return the parsed {@link Expression}
-     * @throws TemplateParserException if an unexpected token or syntax error occurs
+     * @return parsed expression
      */
     public Expression parseExpression() {
         var expr = parsePrimary();
@@ -66,10 +67,10 @@ public final class TemplateParser {
     }
 
     /**
-     * Parses an entire template, which may include text literals and embedded expressions.
+     * Parses an entire template, consisting of text literals and embedded expressions.
      * <p>
-     * When multiple parts are found, they are combined into a {@code concat(...)} call.
-     * </p>
+     * When multiple parts are found, they are combined into a
+     * {@code string:concat(...)} expression.
      *
      * @return a composite {@link Expression} representing the parsed template
      * @throws TemplateParserException if the template structure is invalid or incomplete
@@ -112,21 +113,24 @@ public final class TemplateParser {
             return parts.get(0); // single literal or expression
         }
 
-        // Build concat(...)
+        // Build string:concat(...)
         return new FunctionCallExpression(
+                "string",
                 "concat",
                 parts
         );
     }
 
     /**
-     * Parses a primary expression.
-     * <p>
-     * A primary expression can be a literal, variable, function call, or a parenthesized expression.
-     * </p>
+     * Parses a primary expression such as:
+     * <ul>
+     *   <li>literals</li>
+     *   <li>variables</li>
+     *   <li>function calls</li>
+     *   <li>parenthesized expressions</li>
+     * </ul>
      *
-     * @return the parsed {@link Expression}
-     * @throws TemplateParserException if an unexpected token is encountered
+     * @return parsed expression
      */
     private Expression parsePrimary() {
         var t = peek();
@@ -140,11 +144,9 @@ public final class TemplateParser {
             case NUMBER:
                 advance();
                 var num = t.lexeme;
-                var isDecimal = num.contains(".");
-                if (isDecimal) {
-                    return new LiteralExpression(new BigDecimal(num));
-                }
-                return new LiteralExpression(new BigInteger(num));
+                return num.contains(".")
+                        ? new LiteralExpression(new BigDecimal(num))
+                        : new LiteralExpression(new BigInteger(num));
             case BOOLEAN:
                 advance();
                 return new LiteralExpression(Boolean.valueOf(t.lexeme));
@@ -180,8 +182,8 @@ public final class TemplateParser {
             var name = ident.lexeme;
             var args = new ArrayList<Expression>();
 
-            var method = match(TokenType.LPAREN);
-            if (method) {
+            var isCall = match(TokenType.LPAREN);
+            if (isCall) {
                 if (!check(TokenType.RPAREN)) {
                     do {
                         args.add(parseExpression());
@@ -190,11 +192,11 @@ public final class TemplateParser {
                 expect(TokenType.RPAREN, ")");
             }
 
-            if (method) {
-                segments.add(new VariableExpression.Segment(name, args));
-            } else {
-                segments.add(new VariableExpression.Segment(name));
-            }
+            segments.add(
+                    isCall
+                            ? new VariableExpression.Segment(name, args)
+                            : new VariableExpression.Segment(name)
+            );
         } while (match(TokenType.DOT));
 
         return new VariableExpression(segments);
@@ -207,10 +209,8 @@ public final class TemplateParser {
      * @throws TemplateParserException if the syntax is invalid
      */
     private FunctionCallExpression parseFunctionCallOrIdent() {
-        var nameTok = expect(TokenType.IDENT, "function or identifier");
-        var name = nameTok.lexeme;
-        var args = parseArguments();
-        return new FunctionCallExpression(name, args);
+        var identToken = expect(TokenType.IDENT, "function or identifier");
+        return parseSystemFunction(identToken);
     }
 
     /**
@@ -220,8 +220,34 @@ public final class TemplateParser {
      * @throws TemplateParserException if the function name or arguments are invalid
      */
     private FunctionCallExpression parseFunctionCall() {
-        var nameTok = expect(TokenType.IDENT, "function after '|'");
-        var name = nameTok.lexeme;
+        var identToken = expect(TokenType.IDENT, "function after '|'");
+        return parseSystemFunction(identToken);
+    }
+
+    /**
+     * Parses a system-level function call using the initial identifier token.
+     * <p>
+     * Supports two forms:
+     * <ul>
+     *   <li>{@code namespace:function arg1 arg2}</li>
+     *   <li>{@code function arg1 arg2}</li>
+     * </ul>
+     * If a namespace prefix is present, it must be followed by a colon.
+     * Arguments are parsed as primary expressions.
+     *
+     * @param identToken the initial identifier token representing either the function name
+     *                   or the namespace in a namespaced call
+     * @return a {@link FunctionCallExpression} representing the parsed function call
+     * @throws TemplateParserException if the function name or arguments are invalid
+     */
+    private FunctionCallExpression parseSystemFunction(Token identToken) {
+        if (check(TokenType.COLON)) {
+            advance();
+            var functionName = expect(TokenType.IDENT, "function name required");
+            var args = parseArguments();
+            return new FunctionCallExpression(identToken.lexeme, functionName.lexeme, args);
+        }
+        var name = identToken.lexeme;
         var args = parseArguments();
         return new FunctionCallExpression(name, args);
     }

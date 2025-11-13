@@ -1,10 +1,13 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
-
 import java.util.List;
 
 /**
+ * Template function that checks whether one numeric value is strictly less than another.
+ *
+ * <p>Uses the comparison logic provided by {@link CompareTemplateFunction}
+ * and supports both direct and pipe invocation forms.</p>
+ *
  * @author sibmaks
  * @since 0.0.1
  */
@@ -13,7 +16,7 @@ public class LTCompareTemplateFunction extends CompareTemplateFunction {
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 1) {
-            throw new TemplateEvalException("lt: 1 argument required");
+            throw fail("1 argument required");
         }
         var y = args.get(0);
         return fnCmp(pipeArg, y, -1, false);
@@ -22,11 +25,16 @@ public class LTCompareTemplateFunction extends CompareTemplateFunction {
     @Override
     public Boolean invoke(List<Object> args) {
         if (args.size() != 2) {
-            throw new TemplateEvalException("lt: 2 arguments required");
+            throw fail("2 arguments required");
         }
         var x = args.get(0);
         var y = args.get(1);
         return fnCmp(x, y, -1, false);
+    }
+
+    @Override
+    public String getNamespace() {
+        return "";
     }
 
     @Override

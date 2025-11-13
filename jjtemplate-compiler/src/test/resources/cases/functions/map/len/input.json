@@ -1,0 +1,18 @@
+{
+  "definitions": [
+    {
+      "defMap": {
+        "key": 42,
+        "key-2": true
+      },
+      "varEmptyMap": {
+      }
+    }
+  ],
+  "template": {
+    "key": "{{ map:len .defMap }}",
+    "pipeKey": "{{ .defMap | map:len }}",
+    "emptyKey": "{{ map:len .varEmptyMap }}",
+    "emptyPipeKey": "{{ .varEmptyMap | map:len }}"
+  }
+}

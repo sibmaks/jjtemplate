@@ -1,8 +1,0 @@
-{
-  "definitions": [
-    {
-      "strVar": "value"
-    }
-  ],
-  "template": "{{ concat true, .strVar, 42, 3.1415, true }}"
-}

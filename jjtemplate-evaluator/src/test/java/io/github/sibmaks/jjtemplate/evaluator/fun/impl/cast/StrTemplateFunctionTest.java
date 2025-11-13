@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,6 +35,12 @@ class StrTemplateFunctionTest {
     }
 
     @Test
+    void checkFunctionNamespace() {
+        var actual = function.getNamespace();
+        assertEquals("cast", actual);
+    }
+
+    @Test
     void checkFunctionName() {
         var actual = function.getName();
         assertEquals("str", actual);
@@ -50,21 +56,21 @@ class StrTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("str: too much arguments passed", exception.getMessage());
+        assertEquals("cast:str: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(42, true);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("str: too much arguments passed", exception.getMessage());
+        assertEquals("cast:str: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("str: 1 argument required", exception.getMessage());
+        assertEquals("cast:str: 1 argument required", exception.getMessage());
     }
 
     @Test

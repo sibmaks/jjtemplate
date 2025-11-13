@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.math;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.math.BigDecimal;
@@ -8,12 +7,16 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * @author sibmaks
+ * Template function that returns the numeric negation of a value.
+ *
+ * <p>Supports {@link BigDecimal}, {@link BigInteger}, and all {@link Number} types.
+ * Returns {@code null} for {@code null} input.</p>
+ *
  * @since 0.0.1
  */
 public class NegTemplateFunction implements TemplateFunction<Number> {
 
-    private static Number neg(Object value) {
+    private Number neg(Object value) {
         if (value == null) {
             return null;
         }
@@ -37,13 +40,13 @@ public class NegTemplateFunction implements TemplateFunction<Number> {
             return BigInteger.valueOf(longValue)
                     .negate();
         }
-        throw new TemplateEvalException("neg: not a number passed: " + value);
+        throw fail("not a number passed: " + value);
     }
 
     @Override
     public Number invoke(List<Object> args, Object pipeArg) {
         if (!args.isEmpty()) {
-            throw new TemplateEvalException("neg: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         return neg(pipeArg);
     }
@@ -51,12 +54,17 @@ public class NegTemplateFunction implements TemplateFunction<Number> {
     @Override
     public Number invoke(List<Object> args) {
         if (args.isEmpty()) {
-            throw new TemplateEvalException("neg: 1 argument required");
+            throw fail("1 argument required");
         }
         if (args.size() != 1) {
-            throw new TemplateEvalException("neg: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         return neg(args.get(0));
+    }
+
+    @Override
+    public String getNamespace() {
+        return "math";
     }
 
     @Override

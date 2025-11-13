@@ -1,0 +1,17 @@
+{
+  "definitions": [
+    {
+      "textVar": "WORLD"
+    }
+  ],
+  "template": {
+    "stringKey": "{{ string:lower 'HELLO' }}",
+    "stringPipeKey": "{{ 'HELLO' | string:lower }}",
+
+    "stringVarKey": "{{ string:lower .textVar }}",
+    "stringVarPipeKey": "{{ .textVar | string:lower }}",
+
+    "emptyStringKey": "{{ string:lower '' }}",
+    "emptyStringPipeKey": "{{ '' | string:lower }}"
+  }
+}

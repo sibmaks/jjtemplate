@@ -1,0 +1,18 @@
+{
+  "args": {
+    "42": true,
+    "key": "value",
+    "object": {
+      "key": "value",
+      "int": 42
+    }
+  },
+  "pipe": {
+    "42": true,
+    "key": "value",
+    "object": {
+      "key": "value",
+      "int": 42
+    }
+  }
+}

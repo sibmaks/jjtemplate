@@ -1,0 +1,15 @@
+{
+  "template": {
+    "stringKey": "{{ cast:int .string }}",
+    "stringPipeKey": "{{ .string | cast:int }}",
+
+    "integerKey": "{{ cast:int .integer }}",
+    "integerPipeKey": "{{ .integer | cast:int }}",
+
+    "floatKey": "{{ cast:int .float }}",
+    "floatPipeKey": "{{ .float | cast:int }}",
+
+    "nullVarKey": "{{ cast:int .nullVar }}",
+    "nullVarPipeKey": "{{ .nullVar | cast:int }}"
+  }
+}

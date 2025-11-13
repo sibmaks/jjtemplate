@@ -1,0 +1,16 @@
+{
+  "args": [
+    "prefix",
+    "value",
+    42,
+    3.1415,
+    true
+  ],
+  "pipe": [
+    "prefix",
+    "value",
+    42,
+    3.1415,
+    true
+  ]
+}

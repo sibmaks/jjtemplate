@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.reflection;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

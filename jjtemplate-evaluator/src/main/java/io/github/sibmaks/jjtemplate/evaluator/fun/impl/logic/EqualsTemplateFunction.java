@@ -1,12 +1,15 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
+ * Template function that checks two values for equality using {@link Objects#equals}.
+ *
+ * <p>Supports both direct and pipe invocation forms.</p>
+ *
  * @author sibmaks
  * @since 0.0.1
  */
@@ -15,7 +18,7 @@ public class EqualsTemplateFunction implements TemplateFunction<Boolean> {
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 1) {
-            throw new TemplateEvalException("eq: 1 argument required");
+            throw fail("1 argument required");
         }
         return Objects.equals(args.get(0), pipeArg);
     }
@@ -23,9 +26,14 @@ public class EqualsTemplateFunction implements TemplateFunction<Boolean> {
     @Override
     public Boolean invoke(List<Object> args) {
         if (args.size() != 2) {
-            throw new TemplateEvalException("eq: 2 arguments required");
+            throw fail("2 arguments required");
         }
         return Objects.equals(args.get(0), args.get(1));
+    }
+
+    @Override
+    public String getNamespace() {
+        return "";
     }
 
     @Override

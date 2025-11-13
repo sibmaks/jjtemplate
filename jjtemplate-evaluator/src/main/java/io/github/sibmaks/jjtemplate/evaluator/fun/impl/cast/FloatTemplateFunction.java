@@ -1,17 +1,18 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 /**
+ * Template function that converts a value to {@link BigDecimal}.
+ *
  * @author sibmaks
  * @since 0.0.1
  */
 public final class FloatTemplateFunction implements TemplateFunction<BigDecimal> {
-    private static BigDecimal toFloat(Object arg) {
+    private BigDecimal toFloat(Object arg) {
         if (arg == null) {
             return null;
         }
@@ -30,16 +31,16 @@ public final class FloatTemplateFunction implements TemplateFunction<BigDecimal>
             try {
                 return new BigDecimal((String) arg);
             } catch (Exception e) {
-                throw new TemplateEvalException("float: cannot convert: " + arg, e);
+                throw fail("cannot convert: " + arg, e);
             }
         }
-        throw new TemplateEvalException("float: cannot convert: " + arg);
+        throw fail("cannot convert: " + arg);
     }
 
     @Override
     public BigDecimal invoke(List<Object> args, Object pipeArg) {
         if (!args.isEmpty()) {
-            throw new TemplateEvalException("float: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         return toFloat(pipeArg);
     }
@@ -47,13 +48,18 @@ public final class FloatTemplateFunction implements TemplateFunction<BigDecimal>
     @Override
     public BigDecimal invoke(List<Object> args) {
         if (args.isEmpty()) {
-            throw new TemplateEvalException("float: 1 argument required");
+            throw fail("1 argument required");
         }
         if (args.size() != 1) {
-            throw new TemplateEvalException("float: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         var arg = args.get(0);
         return toFloat(arg);
+    }
+
+    @Override
+    public String getNamespace() {
+        return "cast";
     }
 
     @Override

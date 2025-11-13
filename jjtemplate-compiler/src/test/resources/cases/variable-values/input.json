@@ -14,7 +14,7 @@
       "{{ .float }}",
       "{{ .nullVar }}"
     ],
-    "fun": "{{ (neg .integer) | str | concat (.booleanTrue | str)}}",
+    "fun": "{{ (math:neg .integer) | cast:str | string:concat (.booleanTrue | cast:str)}}",
     "nullDot": "{{ .notExisted.child }}",
     "methodCall_get": "{{ .object.get('key') }}",
     "methodCall_isEmpty": "{{ .object.isEmpty() }}",

@@ -20,6 +20,10 @@ import java.util.List;
 @AllArgsConstructor
 public class FunctionCallExpression implements Expression {
     /**
+     * Function namespace. May be empty.
+     */
+    public final String namespace;
+    /**
      * The name of the function being called.
      */
     public final String name;
@@ -27,6 +31,18 @@ public class FunctionCallExpression implements Expression {
      * The list of argument expressions passed to the function.
      */
     public final List<Expression> args;
+
+    /**
+     * Creates a function call expression without namespace.
+     *
+     * @param name function name
+     * @param args argument expressions
+     */
+    public FunctionCallExpression(String name, List<Expression> args) {
+        this.namespace = "";
+        this.name = name;
+        this.args = args;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {

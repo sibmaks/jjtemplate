@@ -16,26 +16,26 @@
       "{{. .varObject }}": true
     },
     "staticArray": [
-      "{{. list 'a', true, 42, 3.1415 }}"
+      "{{. list:new 'a', true, 42, 3.1415 }}"
     ],
     "nullSpread": [
       "{{. .notExistsVar }}"
     ],
     "funcOperator": [
-      "{{. str .defTrue }}",
-      "{{. str .defFalse }}"
+      "{{. cast:str .defTrue }}",
+      "{{. cast:str .defFalse }}"
     ],
     "funcStaticOperator": [
-      "{{. str true  }}",
-      "{{. str false }}"
+      "{{. cast:str true  }}",
+      "{{. cast:str false }}"
     ],
     "pipeOperator": [
-      "{{. .defTrue | str }}",
-      "{{. .defFalse | str }}"
+      "{{. .defTrue | cast:str }}",
+      "{{. .defFalse | cast:str }}"
     ],
     "pipeStaticOperator": [
-      "{{. true | str }}",
-      "{{. false | str }}"
+      "{{. true | cast:str }}",
+      "{{. false | cast:str }}"
     ],
     "ternaryOperator": [
       "{{. .defTrue ? .varParentObject.child : null }}",

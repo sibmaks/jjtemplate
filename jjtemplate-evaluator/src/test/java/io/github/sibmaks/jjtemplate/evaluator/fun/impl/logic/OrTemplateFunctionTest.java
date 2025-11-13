@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,14 +70,14 @@ class OrTemplateFunctionTest {
     void passInvalidLeftArgument() {
         var args = List.<Object>of(42, true);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("or: All arguments must be a boolean", exception.getMessage());
+        assertEquals("or: all arguments must be a boolean", exception.getMessage());
     }
 
     @Test
     void passInvalidRightArgument() {
         var args = List.<Object>of(true, 42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("or: All arguments must be a boolean", exception.getMessage());
+        assertEquals("or: all arguments must be a boolean", exception.getMessage());
     }
 
 }

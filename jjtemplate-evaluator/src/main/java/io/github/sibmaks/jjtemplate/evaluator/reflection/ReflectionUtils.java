@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.reflection;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -13,13 +13,12 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
  * @author sibmaks
  * @since 0.0.1
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtils {
-
+    private static final List<String> GET_METHOD_PREFIX = List.of("get", "is");
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final Map<Class<?>, Map<String, AccessDescriptor>> PROPERTY_CACHE = new ConcurrentHashMap<>();
     private static final Map<Class<?>, List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ConcurrentHashMap<>();
@@ -28,23 +27,29 @@ public final class ReflectionUtils {
     private static Map<String, AccessDescriptor> buildDescriptorMap(Class<?> type) {
         var fields = type.getFields();
         var map = new LinkedHashMap<String, AccessDescriptor>(fields.length);
-        for (var f : fields) {
-            f.setAccessible(true);
+        for (var field : fields) {
+            field.setAccessible(true);
             try {
-                var getter = LOOKUP.unreflectGetter(f);
-                map.put(f.getName(), new AccessDescriptor(f.getName(), getter));
+                var getter = LOOKUP.unreflectGetter(field);
+                map.put(field.getName(), new AccessDescriptor(field.getName(), getter));
             } catch (IllegalAccessException ignored) {
                 // skip forbidden fields
             }
         }
-        for (var m : type.getMethods()) {
-            var methodName = m.getName();
-            if (m.getParameterCount() == 0 && (methodName.startsWith("get") || methodName.startsWith("is"))) {
-                var name = propertyNameFromGetter(methodName);
-                m.setAccessible(true);
+        for (var method : type.getMethods()) {
+            var methodName = method.getName();
+            if (method.getParameterCount() > 0) {
+                continue;
+            }
+            for (var prefix : GET_METHOD_PREFIX) {
+                if (!methodName.startsWith(prefix)) {
+                    continue;
+                }
+                var name = decapitalize(methodName.substring(prefix.length()));
+                method.setAccessible(true);
                 try {
-                    var mh = LOOKUP.unreflect(m);
-                    map.put(name, new AccessDescriptor(name, mh));
+                    var methodHandle = LOOKUP.unreflect(method);
+                    map.put(name, new AccessDescriptor(name, methodHandle));
                 } catch (IllegalAccessException ignored) {
                     // skip forbidden methods
                 }
@@ -66,16 +71,6 @@ public final class ReflectionUtils {
         return new ArrayList<>(buildDescriptorMap(clazz).values());
     }
 
-    private static String propertyNameFromGetter(String methodName) {
-        if (methodName.startsWith("get")) {
-            return decapitalize(methodName.substring(3));
-        }
-        if (methodName.startsWith("is")) {
-            return decapitalize(methodName.substring(2));
-        }
-        return methodName;
-    }
-
     private static String decapitalize(String s) {
         return s.isEmpty() ? s : Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
@@ -91,10 +86,10 @@ public final class ReflectionUtils {
 
     private static ConversionResult tryConvertArgs(Class<?>[] params, List<Object> args) {
         var converted = new Object[params.length];
-        int score = 0;
+        var score = 0;
 
         for (int i = 0; i < params.length; i++) {
-            Object arg = i < args.size() ? args.get(i) : null;
+            var arg = i < args.size() ? args.get(i) : null;
             if (arg == null) {
                 converted[i] = null;
                 continue;
@@ -185,26 +180,6 @@ public final class ReflectionUtils {
         newArgs[normalCount] = varargArray;
         bestConverted = newArgs;
         return bestConverted;
-    }
-
-    @AllArgsConstructor
-    private static class AccessDescriptor {
-        private String name;
-        private MethodHandle getter;
-
-        Object get(Object target) throws Throwable {
-            return getter == null ? null : getter.invoke(target);
-        }
-    }
-
-    private static class ConversionResult {
-        final Object[] values;
-        final int score;
-
-        ConversionResult(Object[] values, int score) {
-            this.values = values;
-            this.score = score;
-        }
     }
 
     public static Map<String, Object> getAllProperties(Object obj) {
@@ -346,6 +321,26 @@ public final class ReflectionUtils {
             return bestMatch.invoke(target, bestConverted);
         } catch (ReflectiveOperationException e) {
             throw new TemplateEvalException("Error invoking method " + methodName + ": " + e.getMessage(), e);
+        }
+    }
+
+    @AllArgsConstructor
+    private static class AccessDescriptor {
+        private String name;
+        private MethodHandle getter;
+
+        Object get(Object target) throws Throwable {
+            return getter == null ? null : getter.invoke(target);
+        }
+    }
+
+    private static class ConversionResult {
+        final Object[] values;
+        final int score;
+
+        ConversionResult(Object[] values, int score) {
+            this.values = values;
+            this.score = score;
         }
     }
 }

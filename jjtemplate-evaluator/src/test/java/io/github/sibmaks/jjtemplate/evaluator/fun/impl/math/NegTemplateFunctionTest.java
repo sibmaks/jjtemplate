@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.math;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,21 +49,21 @@ class NegTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("neg: too much arguments passed", exception.getMessage());
+        assertEquals("math:neg: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(42, true);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("neg: too much arguments passed", exception.getMessage());
+        assertEquals("math:neg: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("neg: 1 argument required", exception.getMessage());
+        assertEquals("math:neg: 1 argument required", exception.getMessage());
     }
 
     @Test
@@ -71,7 +71,7 @@ class NegTemplateFunctionTest {
         var item = UUID.randomUUID().toString();
         var args = List.<Object>of(item);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("neg: not a number passed: " + item, exception.getMessage());
+        assertEquals("math:neg: not a number passed: " + item, exception.getMessage());
     }
 
     @ParameterizedTest

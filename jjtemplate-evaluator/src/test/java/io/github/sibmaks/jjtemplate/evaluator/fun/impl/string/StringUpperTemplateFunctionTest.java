@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,7 +35,7 @@ class StringUpperTemplateFunctionTest {
     void tooMuchArgsOnPipeInvoke() {
         var args = List.<Object>of(Locale.US, Locale.UK);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
-        assertEquals("upper: too much arguments passed", exception.getMessage());
+        assertEquals("string:upper: too much arguments passed", exception.getMessage());
     }
 
     @Test
@@ -56,14 +56,14 @@ class StringUpperTemplateFunctionTest {
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("upper: at least 1 argument required", exception.getMessage());
+        assertEquals("string:upper: at least 1 argument required", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsOnInvoke() {
         var args = List.<Object>of(Locale.US, "a", "b");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("upper: too much arguments passed", exception.getMessage());
+        assertEquals("string:upper: too much arguments passed", exception.getMessage());
     }
 
     @ParameterizedTest

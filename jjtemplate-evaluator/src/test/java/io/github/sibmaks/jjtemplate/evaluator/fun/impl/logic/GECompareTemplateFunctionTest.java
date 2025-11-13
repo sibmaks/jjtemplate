@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -68,6 +68,24 @@ class GECompareTemplateFunctionTest {
         args.add(null);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, null));
         assertEquals("ge: 1 argument required", exception.getMessage());
+    }
+
+    @Test
+    void withNotANumberString() {
+        var args = new ArrayList<>();
+        args.add("ok");
+        args.add("fail");
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("ge: expected number, actual: ok", exception.getMessage());
+    }
+
+    @Test
+    void unsupportedType() {
+        var args = new ArrayList<>();
+        args.add(true);
+        args.add(false);
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("ge: expected number, actual: true", exception.getMessage());
     }
 
     @ParameterizedTest

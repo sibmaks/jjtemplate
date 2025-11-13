@@ -1,18 +1,19 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.lexer.api.Reserved;
 
 import java.util.List;
 
 /**
+ * Template function that converts a value to boolean.
+ *
  * @author sibmaks
  * @since 0.0.1
  */
 public final class BooleanTemplateFunction implements TemplateFunction<Boolean> {
 
-    private static Boolean convert(Object value) {
+    private Boolean convert(Object value) {
         if (value == null) {
             return null;
         }
@@ -28,13 +29,13 @@ public final class BooleanTemplateFunction implements TemplateFunction<Boolean> 
                 return false;
             }
         }
-        throw new TemplateEvalException("boolean: cannot convert: " + value);
+        throw fail("cannot convert: " + value);
     }
 
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (!args.isEmpty()) {
-            throw new TemplateEvalException("boolean: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         return convert(pipeArg);
     }
@@ -42,13 +43,18 @@ public final class BooleanTemplateFunction implements TemplateFunction<Boolean> 
     @Override
     public Boolean invoke(List<Object> args) {
         if (args.isEmpty()) {
-            throw new TemplateEvalException("boolean: 1 argument required");
+            throw fail("1 argument required");
         }
         if (args.size() != 1) {
-            throw new TemplateEvalException("boolean: too much arguments passed");
+            throw fail("too much arguments passed");
         }
         var arg = args.get(0);
         return convert(arg);
+    }
+
+    @Override
+    public String getNamespace() {
+        return "cast";
     }
 
     @Override

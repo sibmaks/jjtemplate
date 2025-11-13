@@ -1,0 +1,10 @@
+{
+  "template": {
+    "collapsedKey": "{{  map:collapse .varObject, .varList }}",
+    "collapsedPipeKey": "{{  .varObject | map:collapse .varList }}",
+    "collapsedKeyList1st": "{{  map:collapse .varList, .varObject }}",
+    "collapsedPipeKeyList1st": "{{  .varList | map:collapse .varObject }}",
+    "collapsed1ArgKeyList1st": "{{  map:collapse .varList }}",
+    "collapsed1ArgPipeKeyList1st": "{{  .varList | map:collapse }}"
+  }
+}

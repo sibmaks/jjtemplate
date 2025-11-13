@@ -1,17 +1,11 @@
 package io.github.sibmaks.jjtemplate.evaluator;
 
+import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.*;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.BooleanTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.FloatTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.IntTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.cast.StrTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.logic.*;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.math.NegTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.FormatStringTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringLowerTemplateFunction;
-import io.github.sibmaks.jjtemplate.evaluator.fun.impl.string.StringUpperTemplateFunction;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +57,7 @@ import java.util.Map;
  * @since 0.1.2
  */
 final class FunctionRegistry {
-    private final Map<String, TemplateFunction<?>> functions;
+    private final Map<String, Map<String, TemplateFunction<?>>> functions;
 
     /**
      * Constructs a function registry using the provided evaluation options.
@@ -80,16 +74,8 @@ final class FunctionRegistry {
         var builtInFunctions = getBuiltInFunctions();
         var userFunctions = options.getFunctions();
         this.functions = new HashMap<>(builtInFunctions.size() + userFunctions.size());
-        for (var function : builtInFunctions) {
-            functions.put(function.getName(), function);
-        }
-        for (var function : userFunctions) {
-            var functionName = function.getName();
-            var overwritten = functions.put(functionName, function);
-            if (overwritten != null) {
-                throw new IllegalArgumentException("Duplicate function name: " + functionName);
-            }
-        }
+        addFunctions(builtInFunctions);
+        addFunctions(userFunctions);
     }
 
     /**
@@ -102,58 +88,58 @@ final class FunctionRegistry {
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
     private static List<TemplateFunction<?>> getBuiltInFunctions() {
-        return List.of(
-                // Type conversion
-                new BooleanTemplateFunction(),
-                new FloatTemplateFunction(),
-                new IntTemplateFunction(),
-                new StrTemplateFunction(),
-                // String and formatting
-                new ConcatTemplateFunction(),
-                new StringLowerTemplateFunction(),
-                new StringUpperTemplateFunction(),
-                new FormatStringTemplateFunction(),
-                // Collections & String & Objects
-                new ContainsTemplateFunction(),
-                new EmptyTemplateFunction(),
-                new LengthTemplateFunction(),
-                new ListTemplateFunction(),
-                new CollapseTemplateFunction(),
-                // Logic and comparison
-                new EqualsTemplateFunction(),
-                new NotEqualsTemplateFunction(),
-                new NotTemplateFunction(),
-                new DefaultTemplateFunction(),
-                new LTCompareTemplateFunction(),
-                new LECompareTemplateFunction(),
-                new GTCompareTemplateFunction(),
-                new GECompareTemplateFunction(),
-                new AndTemplateFunction(),
-                new OrTemplateFunction(),
-                new XorTemplateFunction(),
-                // Date and time
-                new FormatDateTemplateFunction(),
-                new ParseDateTemplateFunction(),
-                new ParseDateTimeTemplateFunction(),
-                // Math
-                new NegTemplateFunction(),
-                // Utils
-                new LocaleTemplateFunction()
-        );
+        var result = new ArrayList<TemplateFunction<?>>();
+        var basePackage = "io.github.sibmaks.jjtemplate.evaluator.fun.impl";
+
+        for (var type : ClasspathScanner.findClasses(basePackage)) {
+            if (!TemplateFunction.class.isAssignableFrom(type) ||
+                    Modifier.isAbstract(type.getModifiers()) ||
+                    Modifier.isInterface(type.getModifiers())) {
+                continue;
+            }
+            try {
+                var castType = (Class<TemplateFunction<?>>) type;
+                var defaultConstructor = castType.getDeclaredConstructor();
+                defaultConstructor.setAccessible(true);
+                var instance = defaultConstructor.newInstance();
+                result.add(instance);
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
+                throw new RuntimeException(String.format("Failed to create built-in function: %s", type.getName()), e);
+            }
+        }
+
+        return result;
+    }
+
+    private void addFunctions(List<TemplateFunction<?>> builtInFunctions) {
+        for (var function : builtInFunctions) {
+            var functionName = function.getName();
+            var namespaceFunctions = functions.computeIfAbsent(function.getNamespace(), k -> new HashMap<>());
+            var overwritten = namespaceFunctions.put(functionName, function);
+            if (overwritten != null) {
+                throw new IllegalArgumentException(String.format("Duplicate function name: %s:%s", function.getNamespace(), functionName));
+            }
+        }
     }
 
     /**
      * Retrieves a template function by its name.
      *
-     * @param functionName the name of the function to look up
+     * @param namespace the name of the function namespace to look up
+     * @param name      the name of the function to look up
      * @return the {@link TemplateFunction} associated with the given name
      * @throws TemplateEvalException if no function with the specified name exists
      */
     @SuppressWarnings("unchecked")
-    public <T> TemplateFunction<T> getFunction(String functionName) {
-        var templateFunction = functions.get(functionName);
+    public <T> TemplateFunction<T> getFunction(String namespace, String name) {
+        var namespaceFunctions = functions.get(namespace);
+        if (namespaceFunctions == null) {
+            throw new TemplateEvalException(String.format("No such namespace: '%s'", namespace));
+        }
+        var templateFunction = namespaceFunctions.get(name);
         if (templateFunction == null) {
-            throw new TemplateEvalException("Function '" + functionName + "' not found");
+            throw new TemplateEvalException(String.format("Function '%s' not found in namespace: '%s'", name, namespace));
         }
         return (TemplateFunction<T>) templateFunction;
     }

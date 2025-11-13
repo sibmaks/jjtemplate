@@ -1,0 +1,14 @@
+{
+  "definitions": [
+    {
+      "varMap": {
+        "key": "value",
+        "int": 42
+      }
+    }
+  ],
+  "template": {
+    "args": "{{ map:new 42, true, 'key', 'value', 'object', .varMap }}",
+    "pipe": "{{ .varMap | map:new 42, true, 'key', 'value', 'object' }}"
+  }
+}
