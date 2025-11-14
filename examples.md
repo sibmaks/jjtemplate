@@ -2,8 +2,12 @@
 
 This document demonstrates basic template conversions using **JJTemplate**.
 
-All inputs and outputs are valid JSON.  
-Templates may contain `definitions` (optional) and the main `template` object.
+All inputs and outputs are valid JSON.
+
+Templates may contain:
+
+* optional `definitions`
+* main `template` object
 
 ---
 
@@ -18,7 +22,7 @@ Templates may contain `definitions` (optional) and the main `template` object.
     "answer": "{{ 42 }}"
   }
 }
-````
+```
 
 **Output:**
 
@@ -194,7 +198,9 @@ var context = Map.of("status", "fail");
 }
 ```
 
-## Inner switch
+---
+
+## Nested switch
 
 **Template:**
 
@@ -239,7 +245,7 @@ var context = Map.of("status", "fail");
     }
   ],
   "template": {
-    "message": "{{ concat 'Hello, ', .name | upper }}"
+    "message": "{{ 'Hello, ' | string:concat .name | string:upper }}"
   }
 }
 ```
@@ -256,13 +262,13 @@ var context = Map.of("status", "fail");
 
 ## Date and Time Functions
 
-This section demonstrates how to use `formatDate`, `parseDate`, and `parseDateTime` functions.
+Demonstrating `date:format`, `date:parse`, and `datetime:parse`.
 
 ---
 
-### `formatDate`
+### `date:format`
 
-Formats date or time objects into a string according to a provided pattern.  
+Formats date or time values using a given pattern.
 Supports:
 
 - `java.time.LocalDate`
@@ -270,23 +276,23 @@ Supports:
 - `java.time.ZonedDateTime`
 - `java.util.Date`
 
-#### Template
+**Template:**
 
 ```json
 {
   "definitions": [
     {
-      "localDate": "{{ parseDate 'dd.MM.yyyy', '28.10.2024' }}"
+      "localDate": "{{ date:parse 'dd.MM.yyyy', '28.10.2024' }}"
     }
   ],
   "template": {
-    "formatted": "{{ formatDate 'dd/MM/yyyy', .localDate }}",
-    "pipeFormatted": "{{ .localDate | formatDate 'yyyy-MM-dd' }}"
+    "formatted": "{{ date:format 'dd/MM/yyyy', .localDate }}",
+    "pipeFormatted": "{{ .localDate | date:format 'yyyy-MM-dd' }}"
   }
 }
-````
+```
 
-#### Output
+**Output:**
 
 ```json
 {
@@ -297,23 +303,23 @@ Supports:
 
 ---
 
-### `parseDate`
+### `date:parse`
 
 Parses a **string** into a `java.time.LocalDate` using the given format.
 Commonly used before formatting or as a definition variable.
 
-#### Template
+**Template:**
 
 ```json
 {
   "template": {
-    "parsed": "{{ parseDate 'dd.MM.yyyy', '05.12.2023' | str }}",
-    "pipeParsed": "{{ '05.12.2023' | parseDate 'dd.MM.yyyy' | str }}"
+    "parsed": "{{ date:parse 'dd.MM.yyyy', '05.12.2023' | cast:str }}",
+    "pipeParsed": "{{ '05.12.2023' | date:parse 'dd.MM.yyyy' | cast:str }}"
   }
 }
 ```
 
-#### Output
+**Output:**
 
 ```json
 {
@@ -322,26 +328,26 @@ Commonly used before formatting or as a definition variable.
 }
 ```
 
-> The `| str` is used here to convert `LocalDate` into a JSON string for readability.
+> The `| cast:str` converts `LocalDate` into a JSON string for display.
 
 ---
 
-### `parseDateTime`
+### `datetime:parse`
 
 Parses a **string with date and time** into a `java.time.LocalDateTime`.
 
-#### Template
+**Template:**
 
 ```json
 {
   "template": {
-    "parsed": "{{ parseDateTime 'dd.MM.yyyy HH:mm', '05.12.2023 14:30' | str }}",
-    "pipeParsed": "{{ '05.12.2023 14:30' | parseDateTime 'dd.MM.yyyy HH:mm' | str }}"
+    "parsed": "{{ datetime:parse 'dd.MM.yyyy HH:mm', '05.12.2023 14:30' | cast:str }}",
+    "pipeParsed": "{{ '05.12.2023 14:30' | datetime:parse 'dd.MM.yyyy HH:mm' | cast:str }}"
   }
 }
 ```
 
-#### Output
+**Output:**
 
 ```json
 {
@@ -352,15 +358,7 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
 
 ---
 
-### Notes
-
-* `formatDate` accepts both Java `Date` and `TemporalAccessor` types (`LocalDate`, `LocalDateTime`, etc.).
-* `parseDate` and `parseDateTime` always return **Java time objects**, not strings.
-* Combine them with `| str` to safely render as plain JSON text.
-
----
-
-## Collapse function
+## Map and Collapse
 
 **Template:**
 
@@ -378,7 +376,7 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
       }
     }
   ],
-  "template": "{{ .objects | collapse }}"
+  "template": "{{ .objects | map:collapse }}"
 }
 ```
 
@@ -394,54 +392,51 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
 
 ---
 
-## Locale Function
+## Locale Functions
 
-The `locale` function creates or transforms Java `Locale` objects.
-It can be used to define locale settings dynamically and combine with functions like `formatDate` or `format`.
-
----
+The `locale:new` function creates Java `Locale` instances.
 
 ### Syntax
 
 ```text
-locale(language)
-locale(language, country)
-locale(language, country, variant)
+locale:new(language)
+locale:new(language, country)
+locale:new(language, country, variant)
 ```
 
-or with **pipe syntax**:
+or via pipe:
 
 ```text
-'EN' | locale 'US'
-'EN' | locale 'US', 'WIN'
+'EN' | locale:new 'US'
+'EN' | locale:new 'US', 'WIN'
 ```
 
 ---
 
-### Examples
+### Example
 
-#### Template
+**Template:**
 
 ```json
 {
   "definitions": [
     {
-      "simpleLocale": "{{ locale 'en' }}",
-      "fullLocale": "{{ locale 'en', 'US' }}",
-      "variantLocale": "{{ locale 'en', 'US', 'WIN' }}",
-      "pipeLocale": "{{ 'fr' | locale 'FR' }}"
+      "simpleLocale": "{{ locale:new 'en' }}",
+      "fullLocale": "{{ locale:new 'en', 'US' }}",
+      "variantLocale": "{{ locale:new 'en', 'US', 'WIN' }}",
+      "pipeLocale": "{{ 'fr' | locale:new 'FR' }}"
     }
   ],
   "template": {
-    "simple": "{{ .simpleLocale | str }}",
-    "full": "{{ .fullLocale | str }}",
-    "variant": "{{ .variantLocale | str }}",
-    "pipe": "{{ .pipeLocale | str }}"
+    "simple": "{{ .simpleLocale | cast:str }}",
+    "full": "{{ .fullLocale | cast:str }}",
+    "variant": "{{ .variantLocale | cast:str }}",
+    "pipe": "{{ .pipeLocale | cast:str }}"
   }
 }
 ```
 
-#### Output
+**Output:**
 
 ```json
 {
@@ -454,28 +449,26 @@ or with **pipe syntax**:
 
 ---
 
-### Used with `formatDate`
+### Used with `date:format`
 
-You can combine `locale` with `formatDate` to localize date formatting.
-
-#### Template
+**Template:**
 
 ```json
 {
   "definitions": [
     {
-      "localDate": "{{ parseDate 'dd.MM.yyyy', '05.12.2023' }}",
-      "frLocale": "{{ locale 'fr', 'FR' }}"
+      "localDate": "{{ date:parse 'dd.MM.yyyy', '05.12.2023' }}",
+      "frLocale": "{{ locale:new 'fr', 'FR' }}"
     }
   ],
   "template": {
-    "formattedDefault": "{{ formatDate 'dd MMM yyyy', .localDate }}",
-    "formattedFR": "{{ formatDate .frLocale, 'dd MMM yyyy', .localDate }}"
+    "formattedDefault": "{{ date:format 'dd MMM yyyy', .localDate }}",
+    "formattedFR": "{{ date:format .frLocale, 'dd MMM yyyy', .localDate }}"
   }
 }
 ```
 
-#### Output
+**Output:**
 
 ```json
 {
@@ -485,3 +478,92 @@ You can combine `locale` with `formatDate` to localize date formatting.
 ```
 
 ---
+
+## Ternary Operator Examples
+
+**Template:**
+
+```json
+{
+  "definitions": [
+    {
+      "age": 20
+    }
+  ],
+  "template": {
+    "category": "{{ gt .age 18 ? 'adult' : 'minor' }}",
+    "inline": "{{ .age | lt 10 ? 'child' : gt .age 60 ? 'senior' : 'adult' }}"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "category": "adult",
+  "inline": "adult"
+}
+```
+
+> You can nest ternaries and use them inside pipes or namespace calls.
+
+---
+
+## List and Map Creation
+
+**Template:**
+
+```json
+{
+  "template": {
+    "listExample": "{{ list:new 1, 2, 3 | list:concat [4,5] }}",
+    "mapExample": "{{ map:new 'a', 1, 'b', 2 }}"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "listExample": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "mapExample": {
+    "a": 1,
+    "b": 2
+  }
+}
+```
+
+---
+
+## Default Fallback
+
+**Template:**
+
+```json
+{
+  "definitions": [
+    {
+      "name": null
+    }
+  ],
+  "template": {
+    "safeName": "{{ default .name 'Anonymous' }}"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "safeName": "Anonymous"
+}
+```
