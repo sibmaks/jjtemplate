@@ -84,46 +84,176 @@ Variable definitions: static, conditional (`switch`), and range-based (`range`)
 
 ## Built-in Functions
 
-### Type Converters
+Functions are organized into **namespaces** by type or purpose.
+Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | string:upper }}`.
 
-- `str(value)` - Convert any value to string
-- `int(value)` - Convert to integer
-- `float(value)` - Convert to float
-- `boolean(value)` - Convert to boolean
+---
 
-### Logical Operations
+### `cast` — Type Conversions
 
-- `not(value)` - Boolean inversion
-- `eq(a, b)`, `neq(a, b)` - Equality checks
-- `lt(a, b)`, `le(a, b)`, `gt(a, b)`, `ge(a, b)` - Comparisons
-- `and(a, b)`, `or(a, b)`, `xor(a, b)` - Logical operations
+* `cast:str(value)` — Convert to string
+* `cast:int(value)` — Convert to integer (`BigInteger`)
+* `cast:float(value)` — Convert to decimal (`BigDecimal`)
+* `cast:boolean(value)` — Convert to boolean
 
-### Collection Operations
+---
 
-- `list(...items)` - Create lists
-- `len(collection)` - Get length/size
-- `empty(value)` - Check if empty
-- `concat(...values)` - Concatenate values
-- `contains(container, ...values)` - Membership checking
-- `collapse(array)` - Merge array of objects
+### `string` — String Operations
 
-### Utilities
+* `string:concat(base, ...values)` — Concatenate strings
+* `string:len(string)` — Get string length
+* `string:empty(string)` — Check if empty or null
+* `string:contains(string, ...substrings)` — Check if all substrings exist in string
+* `string:format([locale], pattern, ...args)` — Format string (like `String.format`)
+* `string:lower([locale], value)` — Convert to lowercase
+* `string:upper([locale], value)` — Convert to uppercase
 
-- `default(value, fallback)` - Provide default values
-- `format(pattern, ...args)` - String formatting
-- `formatDate(date, pattern)` - Date formatting
-- `parseDate(string, pattern)` - Date parsing
+---
 
-### String Operations
+### `list` — List / Array Operations
 
-- `concat(object, ...values)` - Concat objects to string
-- `len(string)` - Get string length
-- `empty(string)` - Check if empty
-- `contains(string, ...values)` - String contains checking
+* `list:new(...items)` — Create a list
+* `list:concat(...lists)` — Concatenate multiple lists or arrays
+* `list:len(list)` — Get size
+* `list:empty(list)` — Check if empty
+* `list:contains(list, ...values)` — Check if list contains all values
 
-Composable expressions: via `|` (pipe operator)
+---
 
-Ternary conditions: `condition ? value1 : value2`
+### `map` — Map / Object Operations
+
+* `map:new(key, value, ...)` — Create a map
+* `map:len(map)` — Get number of entries
+* `map:empty(map)` — Check if empty
+* `map:contains(map, ...keys)` — Check if all keys exist
+* `map:collapse(object|array|collection)` — Merge object properties into one map
+
+---
+
+### `date` — Date Utilities
+
+* `date:format([locale], pattern, date)` — Format date (`Date`, `LocalDate`, `LocalDateTime`, `ZonedLocalDateTime`)
+* `date:parse(pattern, string)` — Parse string into `LocalDate`
+
+---
+
+### `datetime` — DateTime Utilities
+
+* `datetime:parse(pattern, string)` — Parse string into `LocalDateTime`
+
+---
+
+### `locale` — Locale Utilities
+
+* `locale:new(language[, country[, variant]])` — Create a `Locale` instance
+
+---
+
+### `math` — Math Operations
+
+* `math:neg(value)` — Negate numeric value
+
+---
+
+### `default`
+
+* `default(value, fallback)` — Return fallback if value is `null`
+
+---
+
+### Logical and Comparison Operators
+
+(These remain **global**, without namespace.)
+
+* `not(value)` — Boolean inversion
+* `eq(a, b)`, `neq(a, b)` — Equality checks
+* `lt(a, b)`, `le(a, b)`, `gt(a, b)`, `ge(a, b)` — Comparisons
+* `and(a, b)`, `or(a, b)`, `xor(a, b)` — Logical operations
+
+---
+
+### Notes
+
+* All functions can be used **in pipe form**, e.g.
+
+  ```json
+  { "upperName": "{{ .name | string:upper }}" }
+  ```
+* Namespace separation ensures no name collisions and improves clarity.
+
+---
+
+### `?` Conditional Expressions (Ternary Operator)
+
+JJTemplate supports inline conditional expressions using the ternary operator:
+
+```text
+condition ? valueIfTrue : valueIfFalse
+```
+
+The operator evaluates the condition and returns one of two values:
+
+* If the condition is **true**, the expression before the colon (`:`) is returned.
+* If the condition is **false** or `null`, the expression after the colon is returned.
+
+#### Example
+
+```json
+{
+  "status": "{{ eq .ge 18 ? 'adult' : 'minor' }}"
+}
+```
+
+If `.age >= 18`, the result will be:
+
+```json
+{
+  "status": "adult"
+}
+```
+
+Otherwise:
+
+```json
+{
+  "status": "minor"
+}
+```
+
+---
+
+#### ⚙️ Expressions inside ternary
+
+Both `condition` and results (`valueIfTrue` / `valueIfFalse`)
+can contain **any expression**, including function calls and pipes:
+
+```json
+{
+  "greeting": "{{ .isMorning ? string:upper 'good morning' : string:upper 'good evening' }}"
+}
+```
+
+or with pipe syntax:
+
+```json
+{
+  "formatted": "{{ .amount | gt 1000 ? 'large' : 'small' }}"
+}
+```
+
+---
+
+#### Nesting
+
+Ternary expressions can be **nested** for compact logic:
+
+```json
+{
+  "label": "{{ eq .type 'a' ? 'Alpha' : eq .type 'b' ? 'Beta' : 'Other' }}"
+}
+```
+
+---
 
 See more examples [here](examples.md).
 
