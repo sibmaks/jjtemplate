@@ -143,14 +143,16 @@ class DateFormatTemplateFunctionTest {
     @Test
     void wrongArgsCountInInvokePipeLocale() {
         var args = List.<Object>of(Locale.US);
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Date()));
+        var date = new Date();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, date));
         assertEquals("date:format: at least 2 arguments required", exception.getMessage());
     }
 
     @Test
     void tooMuchArgsInInvokePipe() {
         var args = List.<Object>of("test", 42);
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, new Date()));
+        var date = new Date();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, date));
         assertEquals("date:format: 1 argument required", exception.getMessage());
     }
 }
