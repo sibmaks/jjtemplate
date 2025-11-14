@@ -5,6 +5,8 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 
+> ⚠️ Project is under active development. Backwards compatibility is not guaranteed.
+
 **JJTemplate** is a lightweight templating engine designed for **minimal render time** and **JSON-compatible
 input/output**. It compiles templates into optimized abstract syntax trees (ASTs) for fast execution while guaranteeing
 valid JSON results.
@@ -18,7 +20,7 @@ valid JSON results.
 <dependency>
     <groupId>io.github.sibmaks.jjtemplate</groupId>
     <artifactId>jjtemplate</artifactId>
-    <version>0.1.0</version>
+    <version>0.3.0</version>
     <type>pom</type>
 </dependency>
 ```
@@ -26,7 +28,7 @@ valid JSON results.
 ### Gradle
 
 ```kotlin
-implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.1.0")
+implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.3.0")
 ```
 
 ## Example Workflow
