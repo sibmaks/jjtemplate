@@ -1,6 +1,6 @@
-import org.jreleaser.gradle.plugin.JReleaserPlugin
-import org.jreleaser.gradle.plugin.JReleaserExtension
 import org.gradle.api.publish.PublishingExtension
+import org.jreleaser.gradle.plugin.JReleaserExtension
+import org.jreleaser.gradle.plugin.JReleaserPlugin
 
 initscript {
     repositories {
@@ -13,6 +13,9 @@ initscript {
 }
 
 allprojects {
+    if (this != rootProject) {
+        return@allprojects
+    }
     apply<JReleaserPlugin>()
 
     afterEvaluate {
@@ -20,12 +23,14 @@ allprojects {
             configFile.set(rootProject.layout.projectDirectory.file("jreleaser.yml"))
         }
     }
+}
 
+allprojects {
     afterProject {
         if (project == rootProject) {
             return@afterProject
         }
-        if(!plugins.hasPlugin("maven-publish")) {
+        if (!plugins.hasPlugin("maven-publish")) {
             return@afterProject
         }
         extensions.configure<PublishingExtension>("publishing") {
