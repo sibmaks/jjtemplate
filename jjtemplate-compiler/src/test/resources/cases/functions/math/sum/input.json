@@ -1,0 +1,15 @@
+{
+  "template": {
+    "sumInt": "{{ math:sum 42, 38 }}",
+    "sumIntKey": "{{ 38 | math:sum 42 }}",
+
+    "sumNegativeInt": "{{ math:sum -6, -4 }}",
+    "sumNegativeIntKey": "{{ -4 | math:sum -6 }}",
+
+    "sumDouble": "{{ math:sum 3.14, 2.12 }}",
+    "sumDoubleKey": "{{ 3.14 | math:sum 2.12 }}",
+
+    "sumNegativeDouble": "{{ math:sum -1.23, -4.32 }}",
+    "sumNegativeDoubleKey": "{{ -1.23 | math:sum -4.32 }}"
+  }
+}

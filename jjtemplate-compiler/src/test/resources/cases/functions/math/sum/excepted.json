@@ -1,0 +1,13 @@
+{
+  "sumInt": 80,
+  "sumIntKey": 80,
+
+  "sumNegativeInt": -10,
+  "sumNegativeIntKey": -10,
+
+  "sumDouble": 5.26,
+  "sumDoubleKey": 5.26,
+
+  "sumNegativeDouble": -5.55,
+  "sumNegativeDoubleKey": -5.55
+}
