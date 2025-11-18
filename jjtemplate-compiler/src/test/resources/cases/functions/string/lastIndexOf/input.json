@@ -1,0 +1,6 @@
+{
+  "template": {
+    "args": "{{ string:lastIndexOf 'hello world a', ' ' }}",
+    "pipe": "{{ 'hello world a' | string:lastIndexOf  ' ' }}"
+  }
+}

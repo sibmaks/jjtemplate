@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "strVar": "value"
+    }
+  ],
+  "template": {
+    "args": "{{ string:joinNotEmpty ' ', false, .strVar, 42, 3.1415, true, null, '' }}",
+    "pipe": "{{ false | string:joinNotEmpty ' ', .strVar, 42, 3.1415, true, null, '' }}"
+  }
+}

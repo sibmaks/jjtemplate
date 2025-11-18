@@ -1,0 +1,8 @@
+{
+  "template": {
+    "args": "{{ string:split 'a,b,c', ',' }}",
+    "pipe": "{{ 'a,b,c' | string:split ',' }}",
+    "argsWithLimits": "{{ string:split 'a,b,c', ',', 2 }}",
+    "pipeWithLimits": "{{ 'a,b,c' | string:split ',', 2 }}"
+  }
+}

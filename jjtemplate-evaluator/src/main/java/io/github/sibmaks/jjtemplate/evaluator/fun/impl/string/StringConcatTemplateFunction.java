@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Template function that concatenates multiple values into a single string.
@@ -16,8 +15,8 @@ import java.util.stream.Collectors;
  * @since 0.4.0
  */
 public class StringConcatTemplateFunction implements TemplateFunction<String> {
-    private static String concat(Object first, List<Object> args) {
-        var sb = new StringBuilder(String.valueOf(first));
+    private static String concat(List<Object> args) {
+        var sb = new StringBuilder();
         for (var v : args) {
             sb.append(v);
         }
@@ -29,11 +28,9 @@ public class StringConcatTemplateFunction implements TemplateFunction<String> {
         if (args.isEmpty()) {
             throw fail("at least 1 argument required");
         }
-        var all = args.stream()
-                .skip(1)
-                .collect(Collectors.toCollection(ArrayList::new));
+        var all = new ArrayList<>(args);
         all.add(pipeArg);
-        return concat(args.get(0), all);
+        return concat(all);
     }
 
     @Override
@@ -41,10 +38,7 @@ public class StringConcatTemplateFunction implements TemplateFunction<String> {
         if (args.isEmpty()) {
             throw fail("at least 1 argument required");
         }
-        var all = args.stream()
-                .skip(1)
-                .collect(Collectors.toCollection(ArrayList::new));
-        return concat(args.get(0), all);
+        return concat(args);
     }
 
     @Override

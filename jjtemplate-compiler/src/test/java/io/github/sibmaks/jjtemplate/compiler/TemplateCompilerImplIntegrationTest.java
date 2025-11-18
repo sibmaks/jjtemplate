@@ -131,7 +131,6 @@ class TemplateCompilerImplIntegrationTest {
             return arr;
         }
 
-        // Для массивов — применяем рекурсивно к элементам
         if (value != null && value.getClass().isArray()) {
             int len = Array.getLength(value);
             Object[] arr = new Object[len];
@@ -141,7 +140,6 @@ class TemplateCompilerImplIntegrationTest {
             return arr;
         }
 
-        // Примитивные значения возвращаем как есть
         return value;
     }
 

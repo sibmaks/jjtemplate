@@ -30,6 +30,12 @@ class StringFormatTemplateFunctionTest {
     }
 
     @Test
+    void checkFunctionNamespace() {
+        var actual = function.getNamespace();
+        assertEquals("string", actual);
+    }
+
+    @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));

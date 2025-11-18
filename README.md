@@ -101,12 +101,20 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 ### `string` — String Operations
 
 * `string:concat(base, ...values)` — Concatenate strings
+* `string:join(glue, ...values)` — Concatenate strings with glue between values
+* `string:joinNotEmpty(glue, ...values)` — Concatenate strings with glue between values, skip null and empty values
 * `string:len(string)` — Get string length
 * `string:empty(string)` — Check if empty or null
 * `string:contains(string, ...substrings)` — Check if all substrings exist in string
 * `string:format([locale], pattern, ...args)` — Format string (like `String.format`)
 * `string:lower([locale], value)` — Convert to lowercase
 * `string:upper([locale], value)` — Convert to uppercase
+* `string:trim(value)` — Remove all leading and trailing space
+* `string:split(value, regex, [limit])` — Splits this string around matches of the given regular expression.
+* `string:indexOf(value, str)` — Returns the index within this string of the first occurrence of the specified substring.
+* `string:lastIndexOf(value, str)` — Returns the index within this string of the last occurrence of the specified substring.
+* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string. 
+The substring begins at the specified `beginIndex` and extends to the character at index `endIndex - 1`.
 
 ---
 
@@ -152,6 +160,8 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 ### `math` — Math Operations
 
 * `math:neg(value)` — Negate numeric value
+* `math:sum(left, right)` — Sum two numeric values
+* `math:sub(left, right)` — Subtract two numeric values
 
 ---
 
