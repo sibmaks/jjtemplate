@@ -58,7 +58,7 @@ public final class ClasspathScanner {
                 }
             }
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException("Invalid URL passed", e);
         }
         return classes;
     }
@@ -83,7 +83,7 @@ public final class ClasspathScanner {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Class path scan jar error", e);
         }
     }
 
