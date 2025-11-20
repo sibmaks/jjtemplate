@@ -119,7 +119,7 @@ class StringSplitTemplateFunctionTest {
     void splitPipeNullValue() {
         var args = List.<Object>of(",");
         var result = function.invoke(args, null);
-        assertNull(result);
+        assertEquals(List.of(), result);
     }
 
     @Test
@@ -128,6 +128,6 @@ class StringSplitTemplateFunctionTest {
         args.add(null);
         args.add(",");
         var result = function.invoke(args);
-        assertNull(result);
+        assertEquals(List.of(), result);
     }
 }
