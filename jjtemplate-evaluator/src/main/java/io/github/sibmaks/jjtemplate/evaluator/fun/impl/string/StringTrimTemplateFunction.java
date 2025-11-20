@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author sibmaks
