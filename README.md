@@ -52,7 +52,7 @@ Templates are written in pure JSON with embedded expressions using double curly 
 {
   "definitions": [
     {
-      "greeting": "{{ concat 'Hello, ', .name }}"
+      "greeting": "{{ string:concat 'Hello, ', .name }}"
     }
   ],
   "template": {
