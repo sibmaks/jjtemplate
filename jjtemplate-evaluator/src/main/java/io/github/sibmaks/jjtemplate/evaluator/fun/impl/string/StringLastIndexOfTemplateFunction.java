@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-import lombok.NonNull;
 
 import java.util.List;
 
