@@ -1,7 +1,5 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.math;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
@@ -14,33 +12,22 @@ import java.util.List;
  *
  * @since 0.0.1
  */
-public class NegTemplateFunction implements TemplateFunction<Number> {
+public class NegTemplateFunction extends MathTemplateFunction {
 
     private Number neg(Object value) {
         if (value == null) {
             return null;
         }
-        if (value instanceof BigDecimal) {
-            var bigDecimal = (BigDecimal) value;
+        if (!(value instanceof Number)) {
+            throw fail("not a number passed: " + value);
+        }
+        var number = (Number) value;
+        if (number instanceof BigDecimal || number instanceof Double || number instanceof Float) {
+            var bigDecimal = toBigDecimal(number);
             return bigDecimal.negate();
         }
-        if (value instanceof BigInteger) {
-            var bigInteger = (BigInteger) value;
-            return bigInteger.negate();
-        }
-        if (value instanceof Double || value instanceof Float) {
-            var number = (Number) value;
-            var doubleValue = number.doubleValue();
-            return BigDecimal.valueOf(doubleValue)
-                    .negate();
-        }
-        if (value instanceof Number) {
-            var number = (Number) value;
-            var longValue = number.longValue();
-            return BigInteger.valueOf(longValue)
-                    .negate();
-        }
-        throw fail("not a number passed: " + value);
+        var bigInteger = toBigInteger(number);
+        return bigInteger.negate();
     }
 
     @Override
@@ -60,11 +47,6 @@ public class NegTemplateFunction implements TemplateFunction<Number> {
             throw fail("too much arguments passed");
         }
         return neg(args.get(0));
-    }
-
-    @Override
-    public String getNamespace() {
-        return "math";
     }
 
     @Override

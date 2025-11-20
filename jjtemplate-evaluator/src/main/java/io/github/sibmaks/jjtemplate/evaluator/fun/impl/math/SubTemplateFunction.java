@@ -1,7 +1,5 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.math;
 
-import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
@@ -9,24 +7,7 @@ import java.util.List;
 /**
  * @since 0.4.0
  */
-public class SubTemplateFunction implements TemplateFunction<Number> {
-
-    private static BigDecimal toBigDecimal(Number value) {
-        if (value instanceof BigDecimal) {
-            return (BigDecimal) value;
-        }
-        if (value instanceof BigInteger) {
-            return new BigDecimal((BigInteger) value);
-        }
-        return BigDecimal.valueOf(value.doubleValue());
-    }
-
-    private static BigInteger toBigInteger(Number value) {
-        if (value instanceof BigInteger) {
-            return (BigInteger) value;
-        }
-        return BigInteger.valueOf(value.longValue());
-    }
+public class SubTemplateFunction extends MathTemplateFunction {
 
     private Number sum(Object left, Object right) {
         if (left == null || right == null) {
@@ -74,11 +55,6 @@ public class SubTemplateFunction implements TemplateFunction<Number> {
         var left = args.get(0);
         var right = args.get(1);
         return sum(left, right);
-    }
-
-    @Override
-    public String getNamespace() {
-        return "math";
     }
 
     @Override
