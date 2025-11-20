@@ -29,20 +29,8 @@ import java.util.jar.JarFile;
 public final class ClasspathScanner {
 
     private static final String CLASS_SUFFIX = ".class";
+    private static final int MAX_JAR_ENTRIES = 100_000;
     private static final long MAX_JAR_SIZE_BYTES = 1024L * 1024L * 1024L; // 1Gb safety limit
-
-    /**
-     * Basic security check to avoid expanding huge JAR archives
-     */
-    private static void validateJarSize(String jarPath) {
-        var file = new File(jarPath);
-        if (!file.exists()) {
-            throw new IllegalStateException("JAR file does not exist: " + jarPath);
-        }
-        if (file.length() > MAX_JAR_SIZE_BYTES) {
-            throw new IllegalStateException("JAR file is too large and may be unsafe to process: " + jarPath);
-        }
-    }
 
     /**
      * Extracted nested try block
@@ -111,24 +99,37 @@ public final class ClasspathScanner {
         return classes;
     }
 
-    private static void scanJar(
-            URL resource,
-            String path,
-            List<Class<?>> classes
-    ) {
+    private static void scanJar(URL resource, String path, List<Class<?>> classes) {
         var rawPath = resource.getPath();
         var jarPath = rawPath.substring(5, rawPath.indexOf("!"));
 
-        validateJarSize(jarPath);
+        var file = new File(jarPath);
 
-        try (var jarFile = new JarFile(jarPath)) {
+        if (!file.exists()) {
+            throw new IllegalStateException("JAR file does not exist: " + jarPath);
+        }
+
+        if (file.length() > MAX_JAR_SIZE_BYTES) {
+            throw new IllegalStateException("JAR file too large, possible zip bomb: " + jarPath);
+        }
+
+        try (var jarFile = new JarFile(file, true)) {
             var entries = jarFile.entries();
+            var entryCount = 0;
 
             while (entries.hasMoreElements()) {
-                processJarEntry(entries.nextElement(), path, classes);
+                entryCount++;
+
+                if (entryCount > MAX_JAR_ENTRIES) {
+                    throw new IllegalStateException("Too many JAR entries, possible zip bomb: " + jarPath);
+                }
+
+                var entry = entries.nextElement();
+                processJarEntry(entry, path, classes);
             }
+
         } catch (IOException e) {
-            throw new IllegalStateException("Class path scan jar error", e);
+            throw new IllegalStateException("Error scanning JAR file: " + jarPath, e);
         }
     }
 
