@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.evaluator.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
-import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +29,7 @@ public class StringSplitTemplateFunction implements TemplateFunction<List<String
             throw fail("at least 1 argument required");
         }
         if (pipeArg == null) {
-            return null;
+            return List.of();
         }
         if (args.size() == 1) {
             regex = String.valueOf(args.get(0));
@@ -55,7 +54,7 @@ public class StringSplitTemplateFunction implements TemplateFunction<List<String
         }
         var arg0 = args.get(0);
         if (arg0 == null) {
-            return null;
+            return List.of();
         }
         if (args.size() == 2) {
             value = String.valueOf(arg0);
