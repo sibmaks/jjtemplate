@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
@@ -26,6 +27,53 @@ import java.util.jar.JarFile;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClasspathScanner {
+
+    private static final String CLASS_SUFFIX = ".class";
+    private static final long MAX_JAR_SIZE_BYTES = 1024L * 1024L * 1024L; // 1Gb safety limit
+
+    /**
+     * Basic security check to avoid expanding huge JAR archives
+     */
+    private static void validateJarSize(String jarPath) {
+        var file = new File(jarPath);
+        if (!file.exists()) {
+            throw new IllegalStateException("JAR file does not exist: " + jarPath);
+        }
+        if (file.length() > MAX_JAR_SIZE_BYTES) {
+            throw new IllegalStateException("JAR file is too large and may be unsafe to process: " + jarPath);
+        }
+    }
+
+    /**
+     * Extracted nested try block
+     */
+    private static void processJarEntry(
+            JarEntry entry,
+            String path,
+            List<Class<?>> classes
+    ) {
+        var name = entry.getName();
+
+        if (!name.startsWith(path) || !name.endsWith(CLASS_SUFFIX)) {
+            return;
+        }
+        var className = name
+                .replace('/', '.')
+                .substring(0, name.length() - CLASS_SUFFIX.length());
+
+        tryLoadClass(className, classes);
+    }
+
+    private static void tryLoadClass(
+            String className,
+            List<Class<?>> classes
+    ) {
+        try {
+            classes.add(Class.forName(className));
+        } catch (Throwable ignored) {
+            // intentionally ignored
+        }
+    }
 
     /**
      * Finds and loads all classes located under the specified base package.
@@ -63,31 +111,32 @@ public final class ClasspathScanner {
         return classes;
     }
 
-    private static void scanJar(URL resource, String path, List<Class<?>> classes) {
-        var jarPath = resource.getPath().substring(5, resource.getPath().indexOf("!"));
+    private static void scanJar(
+            URL resource,
+            String path,
+            List<Class<?>> classes
+    ) {
+        var rawPath = resource.getPath();
+        var jarPath = rawPath.substring(5, rawPath.indexOf("!"));
+
+        validateJarSize(jarPath);
+
         try (var jarFile = new JarFile(jarPath)) {
             var entries = jarFile.entries();
 
             while (entries.hasMoreElements()) {
-                var entry = entries.nextElement();
-                var name = entry.getName();
-
-                if (name.startsWith(path) && name.endsWith(".class")) {
-                    var className = name.replace('/', '.')
-                            .replace(".class", "");
-
-                    try {
-                        classes.add(Class.forName(className));
-                    } catch (Throwable ignored) {
-                    }
-                }
+                processJarEntry(entries.nextElement(), path, classes);
             }
         } catch (IOException e) {
             throw new IllegalStateException("Class path scan jar error", e);
         }
     }
 
-    private static void scanDirectory(File directory, String basePackage, List<Class<?>> classes) {
+    private static void scanDirectory(
+            File directory,
+            String basePackage,
+            List<Class<?>> classes
+    ) {
         if (!directory.exists()) {
             return;
         }
@@ -102,14 +151,13 @@ public final class ClasspathScanner {
                         basePackage + "." + file.getName(),
                         classes
                 );
-            } else if (file.getName().endsWith(".class")) {
-                var className = basePackage + '.' + file.getName().substring(0, file.getName().length() - 6);
+            } else if (file.getName().endsWith(CLASS_SUFFIX)) {
+                var className = basePackage + '.' +
+                        file.getName().substring(0, file.getName().length() - CLASS_SUFFIX.length());
 
-                try {
-                    classes.add(Class.forName(className));
-                } catch (Throwable ignored) {
-                }
+                tryLoadClass(className, classes);
             }
         }
     }
+
 }
