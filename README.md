@@ -232,7 +232,7 @@ Otherwise:
 
 ---
 
-#### ⚙️ Expressions inside ternary
+#### Expressions inside ternary
 
 Both `condition` and results (`valueIfTrue` / `valueIfFalse`)
 can contain **any expression**, including function calls and pipes:
