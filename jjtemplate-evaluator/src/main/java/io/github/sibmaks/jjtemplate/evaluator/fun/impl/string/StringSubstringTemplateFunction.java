@@ -11,9 +11,6 @@ import java.util.List;
 public class StringSubstringTemplateFunction implements TemplateFunction<String> {
 
     private String substr(Object value, int beginIndex, Integer endIndex) {
-        if (value == null) {
-            return null;
-        }
         var string = String.valueOf(value);
 
         if (beginIndex < 0 || beginIndex > string.length()) {

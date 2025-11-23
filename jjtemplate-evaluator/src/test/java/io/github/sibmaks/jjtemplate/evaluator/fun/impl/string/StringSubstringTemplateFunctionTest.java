@@ -26,6 +26,7 @@ class StringSubstringTemplateFunctionTest {
 
     static Stream<Arguments> substrCases() {
         return Stream.of(
+                Arguments.of(null, 0, null, null),
                 Arguments.of("hello", 0, null, "hello"),
                 Arguments.of("hello", 1, null, "ello"),
                 Arguments.of("hello", 4, null, "o"),
@@ -51,11 +52,12 @@ class StringSubstringTemplateFunctionTest {
     @ParameterizedTest
     @MethodSource("substrCases")
     void directInvoke(String value, int begin, Integer end, String expected) {
-        List<Object> args;
-        if (end == null) {
-            args = List.of(value, begin);
-        } else {
-            args = List.of(value, begin, end);
+        var args = new ArrayList<>();
+        args.add(value);
+        args.add(begin);
+
+        if (end != null) {
+            args.add(end);
         }
 
         var actual = function.invoke(args);
@@ -88,6 +90,13 @@ class StringSubstringTemplateFunctionTest {
     @Test
     void directInvokeBeginIndexOutOfBounds() {
         var args = List.<Object>of("hello", 10);
+        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("string:substr: beginIndex out of bounds", ex.getMessage());
+    }
+
+    @Test
+    void directInvokeBeginIndexOutOfBoundsNegative() {
+        var args = List.<Object>of("hello", -1);
         var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("string:substr: beginIndex out of bounds", ex.getMessage());
     }
