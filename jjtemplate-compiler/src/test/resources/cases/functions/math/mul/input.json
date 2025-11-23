@@ -1,0 +1,15 @@
+{
+  "template": {
+    "mulInt": "{{ math:mul 4, 6 }}",
+    "mulIntKey": "{{ 6 | math:mul 4 }}",
+
+    "mulNegativeInt": "{{ math:mul -6, -4 }}",
+    "mulNegativeIntKey": "{{ -4 | math:mul -6 }}",
+
+    "mulDouble": "{{ math:mul 3.14, 2.12 }}",
+    "mulDoubleKey": "{{ 3.14 | math:mul 2.12 }}",
+
+    "mulNegativeDouble": "{{ math:mul -2.12, -3.14 }}",
+    "mulNegativeDoubleKey": "{{ -2.12 | math:mul -3.14 }}"
+  }
+}

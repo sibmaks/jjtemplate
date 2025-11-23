@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 /**
  *
@@ -24,6 +25,9 @@ public abstract class MathTemplateFunction implements TemplateFunction<Number> {
         if (value instanceof BigInteger) {
             return new BigDecimal((BigInteger) value);
         }
+        if (value instanceof Long) {
+            return new BigDecimal((Long) value);
+        }
         return BigDecimal.valueOf(value.doubleValue());
     }
 
@@ -38,6 +42,23 @@ public abstract class MathTemplateFunction implements TemplateFunction<Number> {
             return (BigInteger) value;
         }
         return BigInteger.valueOf(value.longValue());
+    }
+
+    /**
+     * Convert an object into RoundingMode
+     *
+     * @param value raw value
+     * @return converted value
+     */
+    protected RoundingMode toRoundingMode(Object value) {
+        if (value == null) {
+            throw fail("null cannot be converted to rounding mode");
+        }
+        if (value instanceof RoundingMode) {
+            return (RoundingMode) value;
+        }
+        var string = value.toString();
+        return RoundingMode.valueOf(string);
     }
 
     @Override

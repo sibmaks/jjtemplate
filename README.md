@@ -170,6 +170,11 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 * `math:neg(value)` — Negate numeric value
 * `math:sum(left, right)` — Sum two numeric values
 * `math:sub(left, right)` — Subtract two numeric values
+* `math:mul(left, right)` — Multiply two numeric values
+* `math:div(left, right, [mode])` — Divide two numeric values and scale using passed `mode`.
+* `math:scale(value, amount, mode)` — Returns a `float` whose scale is the specified value, and whose unscaled value is
+  determined by multiplying or dividing this `float`'s unscaled value by the appropriate power of ten to maintain its
+  overall value.
 
 ---
 
