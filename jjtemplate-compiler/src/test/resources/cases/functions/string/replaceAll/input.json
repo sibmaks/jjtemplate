@@ -1,0 +1,9 @@
+{
+  "template": {
+    "stringKey": "{{ string:replaceAll 'pello' , '[p]+', 'h' }}",
+    "stringPipeKey": "{{ 'hello' | string:replaceAll '[p]+', 'h' }}",
+
+    "emptyStringKey": "{{ string:replaceAll '', 'a', 'b' }}",
+    "emptyStringPipeKey": "{{ '' | string:replaceAll 'a', 'b' }}"
+  }
+}

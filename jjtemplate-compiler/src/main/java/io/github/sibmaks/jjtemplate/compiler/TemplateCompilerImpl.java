@@ -14,6 +14,7 @@ import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
 import io.github.sibmaks.jjtemplate.lexer.api.Token;
 import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
+import io.github.sibmaks.jjtemplate.parser.TemplateParserException;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
 import io.github.sibmaks.jjtemplate.parser.api.LiteralExpression;
 
@@ -352,6 +353,8 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         try {
             var expression = parser.parseTemplate();
             return expression.accept(astTreeConvert);
+        } catch (TemplateParserException e) {
+            throw new IllegalArgumentException("String parsing error: '" + raw + "'", e);
         } catch (TemplateLexerException e) {
             throw new IllegalArgumentException("String compilation error: '" + raw + "'", e);
         }

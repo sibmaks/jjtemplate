@@ -111,10 +111,16 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 * `string:upper([locale], value)` — Convert to uppercase
 * `string:trim(value)` — Remove all leading and trailing space
 * `string:split(value, regex, [limit])` — Splits this string around matches of the given regular expression.
-* `string:indexOf(value, str)` — Returns the index within this string of the first occurrence of the specified substring.
-* `string:lastIndexOf(value, str)` — Returns the index within this string of the last occurrence of the specified substring.
-* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string. 
-The substring begins at the specified `beginIndex` and extends to the character at index `endIndex - 1`.
+* `string:indexOf(value, str)` — Returns the index within this string of the first occurrence of the specified
+  substring.
+* `string:lastIndexOf(value, str)` — Returns the index within this string of the last occurrence of the specified
+  substring.
+* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string.
+* `string:replace(value, target, replacement)` — Replaces each substring of this string that matches the literal target
+  sequence with the specified literal replacement sequence.
+* `string:replaceAll(value, regex, replacement)` — Replaces each substring of this string that matches the given regular
+  expression with the given replacement.
+  The substring begins at the specified `beginIndex` and extends to the character at index `endIndex - 1`.
 
 ---
 
