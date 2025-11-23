@@ -39,6 +39,9 @@ class MultiplyTemplateFunctionTest {
 
     @ParameterizedTest
     @MethodSource("cases")
+    @MethodSource("bigDecimalCases")
+    @MethodSource("bigIntegerCases")
+    @MethodSource("floatDoubleCases")
     void multiplyAsArgs(Number left, Number right, Number expected) {
         var args = List.<Object>of(left, right);
         var result = function.invoke(args);
@@ -47,6 +50,9 @@ class MultiplyTemplateFunctionTest {
 
     @ParameterizedTest
     @MethodSource("cases")
+    @MethodSource("bigDecimalCases")
+    @MethodSource("bigIntegerCases")
+    @MethodSource("floatDoubleCases")
     void multiplyAsPipe(Number left, Number right, Number expected) {
         var args = List.<Object>of(left);
         var result = function.invoke(args, right);
@@ -102,30 +108,6 @@ class MultiplyTemplateFunctionTest {
         var args = List.<Object>of(1, 2);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, 3));
         assertEquals("math:mul: too much arguments passed", exception.getMessage());
-    }
-
-    @ParameterizedTest
-    @MethodSource("bigDecimalCases")
-    void multiplyBigDecimal(Number left, Number right, Number expected) {
-        var args = List.<Object>of(left, right);
-        var result = function.invoke(args);
-        assertEquals(expected, result);
-    }
-
-    @ParameterizedTest
-    @MethodSource("bigIntegerCases")
-    void multiplyBigInteger(Number left, Number right, Number expected) {
-        var args = List.<Object>of(left, right);
-        var result = function.invoke(args);
-        assertEquals(expected, result);
-    }
-
-    @ParameterizedTest
-    @MethodSource("floatDoubleCases")
-    void multiplyFloatDouble(Number left, Number right, Number expected) {
-        var args = List.<Object>of(left, right);
-        var result = function.invoke(args);
-        assertEquals(expected, result);
     }
 
     @Test
