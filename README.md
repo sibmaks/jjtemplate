@@ -131,6 +131,8 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 * `list:len(list)` — Get size
 * `list:empty(list)` — Check if empty
 * `list:contains(list, ...values)` — Check if list contains all values
+* `list:head(list)` — Get head of list or null
+* `list:tail(list)` — Get tail of list or empty list
 
 ---
 
