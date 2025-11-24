@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -154,5 +155,22 @@ class DateFormatTemplateFunctionTest {
         var date = new Date();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, date));
         assertEquals("date:format: 1 argument required", exception.getMessage());
+    }
+
+    @Test
+    void invokeArgsWithNull() {
+        var args = new ArrayList<>();
+        args.add("yyyy-MM-dd");
+        args.add(null);
+        var actual = function.invoke(args);
+        assertNull(actual);
+    }
+
+    @Test
+    void invokePipeWithNull() {
+        var args = new ArrayList<>();
+        args.add("yyyy-MM-dd");
+        var actual = function.invoke(args, null);
+        assertNull(actual);
     }
 }

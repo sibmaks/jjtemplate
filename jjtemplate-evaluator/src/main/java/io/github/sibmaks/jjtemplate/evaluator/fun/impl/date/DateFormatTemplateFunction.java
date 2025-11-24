@@ -21,6 +21,9 @@ import java.util.Locale;
 public class DateFormatTemplateFunction implements TemplateFunction<String> {
 
     private String format(Locale locale, String format, Object date) {
+        if (date == null) {
+            return null;
+        }
         if (date instanceof TemporalAccessor) {
             var formatter = DateTimeFormatter.ofPattern(format, locale);
             return formatter.format((TemporalAccessor) date);
