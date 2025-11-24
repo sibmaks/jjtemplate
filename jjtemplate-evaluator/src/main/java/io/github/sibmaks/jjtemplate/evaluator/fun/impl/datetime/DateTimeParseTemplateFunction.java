@@ -17,6 +17,9 @@ import java.util.List;
 public class DateTimeParseTemplateFunction implements TemplateFunction<LocalDateTime> {
 
     private LocalDateTime parseDate(String format, String date) {
+        if (date == null) {
+            return null;
+        }
         var formatter = DateTimeFormatter.ofPattern(format);
         try {
             return LocalDateTime.parse(date, formatter);

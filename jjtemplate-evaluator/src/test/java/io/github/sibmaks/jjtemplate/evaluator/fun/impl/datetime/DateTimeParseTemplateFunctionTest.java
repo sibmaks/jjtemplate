@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,6 +54,23 @@ class DateTimeParseTemplateFunctionTest {
         var args = List.<Object>of(format);
         var actual = function.invoke(args, dateString);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void invokeArgsWithNull() {
+        var args = new ArrayList<>();
+        args.add("yyyy-MM-dd");
+        args.add(null);
+        var actual = function.invoke(args);
+        assertNull(actual);
+    }
+
+    @Test
+    void invokePipeWithNull() {
+        var args = new ArrayList<>();
+        args.add("yyyy-MM-dd");
+        var actual = function.invoke(args, null);
+        assertNull(actual);
     }
 
     @Test
