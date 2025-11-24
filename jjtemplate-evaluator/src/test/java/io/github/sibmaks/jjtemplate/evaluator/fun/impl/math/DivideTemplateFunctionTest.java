@@ -40,8 +40,6 @@ class DivideTemplateFunctionTest {
     @ParameterizedTest
     @MethodSource("cases")
     @MethodSource("bigIntegerCases")
-    @MethodSource("floatDoubleCases")
-    @MethodSource("bigDecimalCases")
     void divideAsArgs(Number left, Number right, Number expected) {
         var args = List.<Object>of(left, right);
         var result = function.invoke(args);
@@ -49,12 +47,28 @@ class DivideTemplateFunctionTest {
     }
 
     @ParameterizedTest
-    @MethodSource("cases")
-    @MethodSource("bigIntegerCases")
     @MethodSource("floatDoubleCases")
     @MethodSource("bigDecimalCases")
+    void divideFloatAsArgs(Number left, Number right, Number expected) {
+        var args = List.<Object>of(left, right, RoundingMode.HALF_UP);
+        var result = function.invoke(args);
+        assertEquals(expected, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    @MethodSource("bigIntegerCases")
     void divideAsPipe(Number left, Number right, Number expected) {
         var args = List.<Object>of(left);
+        var result = function.invoke(args, right);
+        assertEquals(expected, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource("floatDoubleCases")
+    @MethodSource("bigDecimalCases")
+    void divideFloatAsPipe(Number left, Number right, Number expected) {
+        var args = List.<Object>of(left, RoundingMode.HALF_UP);
         var result = function.invoke(args, right);
         assertEquals(expected, result);
     }
