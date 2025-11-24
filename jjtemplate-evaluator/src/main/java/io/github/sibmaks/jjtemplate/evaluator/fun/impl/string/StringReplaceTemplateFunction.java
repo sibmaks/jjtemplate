@@ -10,13 +10,21 @@ import java.util.List;
  */
 public class StringReplaceTemplateFunction implements TemplateFunction<String> {
 
-    private String replace(String value, String target, String replacement) {
+    /**
+     * Replace function
+     *
+     * @param value       string value to replace
+     * @param target      string to replace
+     * @param replacement replacement string
+     * @return formatted string
+     */
+    protected String replace(String value, String target, String replacement) {
         var string = String.valueOf(value);
         return string.replace(target, replacement);
     }
 
     @Override
-    public String invoke(List<Object> args, Object pipeArg) {
+    public final String invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 2) {
             throw fail("2 arguments required");
         }
@@ -30,7 +38,7 @@ public class StringReplaceTemplateFunction implements TemplateFunction<String> {
     }
 
     @Override
-    public String invoke(List<Object> args) {
+    public final String invoke(List<Object> args) {
         if (args.size() != 3) {
             throw fail("3 arguments required");
         }
@@ -45,7 +53,7 @@ public class StringReplaceTemplateFunction implements TemplateFunction<String> {
     }
 
     @Override
-    public String getNamespace() {
+    public final String getNamespace() {
         return "string";
     }
 
