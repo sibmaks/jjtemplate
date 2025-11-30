@@ -1,0 +1,14 @@
+{
+  "definitions": [
+    {
+      "internalTrue": true
+    },
+    {
+      "switched switch .internalTrue": {
+        "then": "foo",
+        "else": "bar"
+      }
+    }
+  ],
+  "template": "{{ .switched }}"
+}

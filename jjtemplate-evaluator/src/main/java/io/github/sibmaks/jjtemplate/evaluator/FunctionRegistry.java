@@ -2,13 +2,11 @@ package io.github.sibmaks.jjtemplate.evaluator;
 
 import io.github.sibmaks.jjtemplate.evaluator.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Central registry for all available template functions.
@@ -56,6 +54,7 @@ import java.util.Map;
  * @see TemplateFunction
  * @since 0.1.2
  */
+@Slf4j
 final class FunctionRegistry {
     private final Map<String, Map<String, TemplateFunction<?>>> functions;
 
@@ -89,12 +88,17 @@ final class FunctionRegistry {
      */
     private static List<TemplateFunction<?>> getBuiltInFunctions() {
         var result = new ArrayList<TemplateFunction<?>>();
+        var found = new HashSet<String>();
         var basePackage = "io.github.sibmaks.jjtemplate.evaluator.fun.impl";
 
         for (var type : ClasspathScanner.findClasses(basePackage)) {
             if (!TemplateFunction.class.isAssignableFrom(type) ||
                     Modifier.isAbstract(type.getModifiers()) ||
                     Modifier.isInterface(type.getModifiers())) {
+                continue;
+            }
+            if (!found.add(type.getName())) {
+                log.warn("Duplicate built-in function class found: {}", type.getName());
                 continue;
             }
             try {

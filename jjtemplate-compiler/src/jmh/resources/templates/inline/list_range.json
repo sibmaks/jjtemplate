@@ -1,0 +1,16 @@
+{
+  "definitions": [
+    {
+      "internalList": [
+        42,
+        3.14,
+        "hello",
+        true
+      ]
+    },
+    {
+      "ranged range item,index of .internalList": "{{ .item | cast:str }}"
+    }
+  ],
+  "template": "{{ .ranged }}"
+}

@@ -1,3 +1,7 @@
+plugins {
+    id("me.champeau.jmh") version "0.7.3"
+}
+
 dependencies {
     compileOnly(libs.lombok)
 
@@ -14,4 +18,7 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    jmh("org.openjdk.jmh:jmh-core:1.37")
+    jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 }

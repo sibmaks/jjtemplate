@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "internalObject": {
+        "key": "value"
+      }
+    }
+  ],
+  "template": "{{ .internalObject.key }}"
+}
