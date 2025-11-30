@@ -8,7 +8,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringIndexOfTemplateFunction implements TemplateFunction<Integer> {
+public final class StringIndexOfTemplateFunction implements TemplateFunction<Integer> {
 
     private Integer indexOf(Object value, String str) {
         var string = String.valueOf(value);

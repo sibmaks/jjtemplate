@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @since 0.4.0
  */
-public class ScaleTemplateFunction extends MathTemplateFunction {
+public final class ScaleTemplateFunction extends MathTemplateFunction {
 
     private Number scale(Object value, int scale, RoundingMode roundingMode) {
         if (value == null) {

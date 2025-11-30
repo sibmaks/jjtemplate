@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringJoinTemplateFunction implements TemplateFunction<String> {
+public final class StringJoinTemplateFunction implements TemplateFunction<String> {
     private static String join(String glue, List<Object> args) {
         return args.stream()
                 .map(String::valueOf)

@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-public class LiteralExpression implements Expression {
+public final class LiteralExpression implements Expression {
     /**
      * The literal value of this expression.
      */

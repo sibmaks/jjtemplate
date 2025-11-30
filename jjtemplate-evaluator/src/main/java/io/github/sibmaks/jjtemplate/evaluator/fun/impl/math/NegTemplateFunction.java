@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @since 0.0.1
  */
-public class NegTemplateFunction extends MathTemplateFunction {
+public final class NegTemplateFunction extends MathTemplateFunction {
 
     private Number neg(Object value) {
         if (value == null) {

@@ -15,7 +15,7 @@ import java.util.Map;
  * @author sibmaks
  * @since 0.4.0
  */
-public class MapNewTemplateFunction implements TemplateFunction<Map<?, ?>> {
+public final class MapNewTemplateFunction implements TemplateFunction<Map<?, ?>> {
 
     @Override
     public Map<?, ?> invoke(List<Object> args, Object pipeArg) {

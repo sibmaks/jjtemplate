@@ -17,7 +17,7 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.0.1
  */
-public class StringFormatTemplateFunction implements TemplateFunction<String> {
+public final class StringFormatTemplateFunction implements TemplateFunction<String> {
 
     private String format(List<Object> args) {
         var locale = Locale.getDefault();

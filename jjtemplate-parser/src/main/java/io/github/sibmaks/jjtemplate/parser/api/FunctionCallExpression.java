@@ -18,7 +18,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-public class FunctionCallExpression implements Expression {
+public final class FunctionCallExpression implements Expression {
     /**
      * Function namespace. May be empty.
      */

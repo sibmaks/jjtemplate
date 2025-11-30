@@ -13,7 +13,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class XorTemplateFunction implements TemplateFunction<Boolean> {
+public final class XorTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean xor(Object left, Object right) {
         if (!(left instanceof Boolean)) {

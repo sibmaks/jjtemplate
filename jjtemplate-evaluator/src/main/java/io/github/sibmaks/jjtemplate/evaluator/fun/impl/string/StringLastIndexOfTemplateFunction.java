@@ -8,7 +8,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringLastIndexOfTemplateFunction implements TemplateFunction<Integer> {
+public final class StringLastIndexOfTemplateFunction implements TemplateFunction<Integer> {
 
     private Integer lastIndexOf(Object value, String str) {
         var string = String.valueOf(value);

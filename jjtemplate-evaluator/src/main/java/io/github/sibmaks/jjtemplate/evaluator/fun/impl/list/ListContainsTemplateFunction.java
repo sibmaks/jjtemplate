@@ -20,7 +20,7 @@ import java.util.Set;
  * @author sibmaks
  * @since 0.4.0
  */
-public class ListContainsTemplateFunction implements TemplateFunction<Boolean> {
+public final class ListContainsTemplateFunction implements TemplateFunction<Boolean> {
 
     private static boolean containsCollection(
             Collection<?> collection,

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.4.0
  */
-public class ListTailTemplateFunction implements TemplateFunction<List<Object>> {
+public final class ListTailTemplateFunction implements TemplateFunction<List<Object>> {
 
     private List<Object> getTail(Object value) {
         if (value == null) {

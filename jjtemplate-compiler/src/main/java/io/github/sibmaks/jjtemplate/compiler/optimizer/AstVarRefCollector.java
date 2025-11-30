@@ -125,8 +125,4 @@ final class AstVarRefCollector implements AstVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visitDefault(Object node) {
-        return null;
-    }
 }

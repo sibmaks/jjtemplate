@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.4.1
  */
-public class ListJoinTemplateFunction implements TemplateFunction<String> {
+public final class ListJoinTemplateFunction implements TemplateFunction<String> {
 
     protected String join(String glue, List<Object> args) {
         var items = new ArrayList<String>();

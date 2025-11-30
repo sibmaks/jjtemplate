@@ -20,7 +20,7 @@ import java.util.*;
  * @since 0.0.1
  */
 @AllArgsConstructor
-public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
+public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
     /**
      * Evaluator used to compute the values of expressions within the template.
      */
@@ -204,11 +204,6 @@ public class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
             }
         }
         return Nodes.StaticNode.of(out);
-    }
-
-    @Override
-    public Nodes.StaticNode visitDefault(Object node) {
-        return Nodes.StaticNode.empty();
     }
 
 }

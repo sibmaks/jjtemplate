@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.4.0
  */
-public class PrettyPrintVisitor implements ExpressionVisitor<String> {
+public final class PrettyPrintVisitor implements ExpressionVisitor<String> {
 
     @Override
     public String visitLiteral(LiteralExpression expr) {

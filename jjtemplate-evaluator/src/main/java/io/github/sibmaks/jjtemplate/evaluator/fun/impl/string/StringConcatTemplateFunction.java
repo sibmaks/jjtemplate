@@ -14,7 +14,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringConcatTemplateFunction implements TemplateFunction<String> {
+public final class StringConcatTemplateFunction implements TemplateFunction<String> {
     private static String concat(List<Object> args) {
         var sb = new StringBuilder();
         for (var v : args) {

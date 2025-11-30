@@ -11,7 +11,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class LTCompareTemplateFunction extends CompareTemplateFunction {
+public final class LTCompareTemplateFunction extends CompareTemplateFunction {
 
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {

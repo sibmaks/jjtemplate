@@ -8,7 +8,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringSubstringTemplateFunction implements TemplateFunction<String> {
+public final class StringSubstringTemplateFunction implements TemplateFunction<String> {
 
     private String substr(Object value, int beginIndex, Integer endIndex) {
         var string = String.valueOf(value);

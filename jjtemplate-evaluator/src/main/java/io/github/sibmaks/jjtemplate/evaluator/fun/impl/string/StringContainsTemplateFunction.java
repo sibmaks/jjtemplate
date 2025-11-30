@@ -15,7 +15,7 @@ import java.util.Set;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringContainsTemplateFunction implements TemplateFunction<Boolean> {
+public final class StringContainsTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean contains(Object value, Set<Object> args) {
         var line = String.valueOf(value);

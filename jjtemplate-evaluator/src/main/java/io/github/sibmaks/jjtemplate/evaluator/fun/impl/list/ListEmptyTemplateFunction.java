@@ -14,7 +14,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class ListEmptyTemplateFunction implements TemplateFunction<Boolean> {
+public final class ListEmptyTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean isEmpty(Object value) {
         if (value == null) {

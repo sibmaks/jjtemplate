@@ -14,7 +14,7 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.3.0
  */
-public class LocaleNewTemplateFunction implements TemplateFunction<Locale> {
+public final class LocaleNewTemplateFunction implements TemplateFunction<Locale> {
 
     @Override
     public Locale invoke(List<Object> args, Object pipeArg) {

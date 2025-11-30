@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringJoinNotEmptyTemplateFunction implements TemplateFunction<String> {
+public final class StringJoinNotEmptyTemplateFunction implements TemplateFunction<String> {
     private static String join(String glue, List<Object> args) {
         return args.stream()
                 .filter(Objects::nonNull)

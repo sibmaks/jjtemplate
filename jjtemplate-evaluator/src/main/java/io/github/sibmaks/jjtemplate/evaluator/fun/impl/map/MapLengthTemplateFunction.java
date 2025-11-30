@@ -14,7 +14,7 @@ import java.util.Map;
  * @author sibmaks
  * @since 0.0.1
  */
-public class MapLengthTemplateFunction implements TemplateFunction<Integer> {
+public final class MapLengthTemplateFunction implements TemplateFunction<Integer> {
 
     private int getLength(Object value) {
         if (value == null) {

@@ -13,7 +13,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class ListNewTemplateFunction implements TemplateFunction<List<?>> {
+public final class ListNewTemplateFunction implements TemplateFunction<List<?>> {
 
     @Override
     public List<?> invoke(List<Object> args, Object pipeArg) {

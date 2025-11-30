@@ -14,7 +14,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class DateTimeParseTemplateFunction implements TemplateFunction<LocalDateTime> {
+public final class DateTimeParseTemplateFunction implements TemplateFunction<LocalDateTime> {
 
     private LocalDateTime parseDate(String format, String date) {
         if (date == null) {

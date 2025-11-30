@@ -8,7 +8,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringTrimTemplateFunction implements TemplateFunction<String> {
+public final class StringTrimTemplateFunction implements TemplateFunction<String> {
 
     private String trim(Object value) {
         if (value == null) {

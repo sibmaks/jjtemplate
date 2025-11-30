@@ -16,7 +16,7 @@ import java.util.Set;
  * @author sibmaks
  * @since 0.1.2
  */
-public class MapContainsTemplateFunction implements TemplateFunction<Boolean> {
+public final class MapContainsTemplateFunction implements TemplateFunction<Boolean> {
 
     private static boolean containsMap(
             Map<?, ?> collection,

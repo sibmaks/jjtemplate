@@ -18,7 +18,7 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.0.1
  */
-public class DateFormatTemplateFunction implements TemplateFunction<String> {
+public final class DateFormatTemplateFunction implements TemplateFunction<String> {
 
     private String format(Locale locale, String format, Object date) {
         if (date == null) {

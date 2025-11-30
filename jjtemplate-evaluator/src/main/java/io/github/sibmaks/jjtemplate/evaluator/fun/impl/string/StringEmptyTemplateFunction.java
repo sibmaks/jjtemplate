@@ -13,7 +13,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringEmptyTemplateFunction implements TemplateFunction<Boolean> {
+public final class StringEmptyTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean isEmpty(Object value) {
         if (value == null) {

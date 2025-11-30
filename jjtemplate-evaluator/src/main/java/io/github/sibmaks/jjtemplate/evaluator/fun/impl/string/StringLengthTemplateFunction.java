@@ -13,7 +13,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringLengthTemplateFunction implements TemplateFunction<Integer> {
+public final class StringLengthTemplateFunction implements TemplateFunction<Integer> {
 
     private int getLength(Object value) {
         if (value == null) {

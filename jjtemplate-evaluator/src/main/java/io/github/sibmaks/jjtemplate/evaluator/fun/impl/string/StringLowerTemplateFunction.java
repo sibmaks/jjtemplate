@@ -11,7 +11,7 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.0.1
  */
-public class StringLowerTemplateFunction extends StringCaseTemplateFunction {
+public final class StringLowerTemplateFunction extends StringCaseTemplateFunction {
 
     @Override
     protected String toCase(Locale locale, Object value) {

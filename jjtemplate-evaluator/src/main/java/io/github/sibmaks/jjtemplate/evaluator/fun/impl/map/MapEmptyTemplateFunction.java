@@ -14,7 +14,7 @@ import java.util.Map;
  * @author sibmaks
  * @since 0.0.1
  */
-public class MapEmptyTemplateFunction implements TemplateFunction<Boolean> {
+public final class MapEmptyTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean isEmpty(Object value) {
         if (value == null) {

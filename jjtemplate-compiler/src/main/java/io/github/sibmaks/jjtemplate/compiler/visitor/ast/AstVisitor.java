@@ -78,11 +78,4 @@ public interface AstVisitor<R> {
      */
     R visitList(Nodes.ListNode node);
 
-    /**
-     * Default visitor method called when no specific handler matches the node type.
-     *
-     * @param node the node or object to visit
-     * @return the result of the fallback visit
-     */
-    R visitDefault(Object node);
 }

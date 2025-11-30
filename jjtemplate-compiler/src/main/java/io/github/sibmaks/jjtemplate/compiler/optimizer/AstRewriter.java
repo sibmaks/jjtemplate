@@ -327,11 +327,4 @@ final class AstRewriter implements AstVisitor<AstNode> {
         return new Nodes.ListNode(out);
     }
 
-    @Override
-    public AstNode visitDefault(Object node) {
-        if (node instanceof AstNode) {
-            return (AstNode) node;
-        }
-        return Nodes.StaticNode.of(node);
-    }
 }

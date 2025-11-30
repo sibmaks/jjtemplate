@@ -19,7 +19,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-public class PipeExpression implements Expression {
+public final class PipeExpression implements Expression {
     /**
      * The left-hand expression whose result is passed through the pipe chain.
      */

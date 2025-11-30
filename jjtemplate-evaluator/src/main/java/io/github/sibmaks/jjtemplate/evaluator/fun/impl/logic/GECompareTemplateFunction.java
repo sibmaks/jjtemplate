@@ -12,7 +12,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class GECompareTemplateFunction extends CompareTemplateFunction {
+public final class GECompareTemplateFunction extends CompareTemplateFunction {
 
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {

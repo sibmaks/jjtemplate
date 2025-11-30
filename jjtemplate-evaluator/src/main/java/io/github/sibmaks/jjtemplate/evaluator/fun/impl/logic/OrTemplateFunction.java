@@ -13,7 +13,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.0.1
  */
-public class OrTemplateFunction implements TemplateFunction<Boolean> {
+public final class OrTemplateFunction implements TemplateFunction<Boolean> {
 
     private boolean or(Object left, Object right) {
         if (!(left instanceof Boolean)) {

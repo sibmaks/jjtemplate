@@ -10,7 +10,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class StringSplitTemplateFunction implements TemplateFunction<List<String>> {
+public final class StringSplitTemplateFunction implements TemplateFunction<List<String>> {
 
     private List<String> split(Object value, String regex, int limit) {
         var string = String.valueOf(value);

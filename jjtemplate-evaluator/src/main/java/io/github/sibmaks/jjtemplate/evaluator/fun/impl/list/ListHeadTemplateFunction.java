@@ -10,7 +10,7 @@ import java.util.List;
  * @author sibmaks
  * @since 0.4.0
  */
-public class ListHeadTemplateFunction implements TemplateFunction<Object> {
+public final class ListHeadTemplateFunction implements TemplateFunction<Object> {
 
     private Object getHead(Object value) {
         if (value == null) {

@@ -56,9 +56,8 @@ public final class TemplateEvaluator {
                 var test = (boolean) cond;
                 if (test) {
                     return eval(ternary.ifTrue, context);
-                } else {
-                    return eval(ternary.ifFalse, context);
                 }
+                return eval(ternary.ifFalse, context);
             }
             throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
         } catch (Exception e) {

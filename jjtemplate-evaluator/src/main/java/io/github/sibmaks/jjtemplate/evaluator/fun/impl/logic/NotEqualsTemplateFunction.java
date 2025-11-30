@@ -13,7 +13,7 @@ import java.util.Objects;
  * @author sibmaks
  * @since 0.0.1
  */
-public class NotEqualsTemplateFunction implements TemplateFunction<Boolean> {
+public final class NotEqualsTemplateFunction implements TemplateFunction<Boolean> {
 
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {

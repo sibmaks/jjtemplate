@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @since 0.4.0
  */
-public class DivideTemplateFunction extends MathTemplateFunction {
+public final class DivideTemplateFunction extends MathTemplateFunction {
 
     private Number divide(Object left, Object right, Object rawRoundingMode) {
         if (left == null || right == null) {
@@ -20,7 +20,9 @@ public class DivideTemplateFunction extends MathTemplateFunction {
         var l = (Number) left;
         var r = (Number) right;
 
-        if (l instanceof BigDecimal || r instanceof BigDecimal) {
+        if (l instanceof BigDecimal || r instanceof BigDecimal ||
+                l instanceof Double || r instanceof Double ||
+                l instanceof Float || r instanceof Float) {
             var lbd = toBigDecimal(l);
             var rbd = toBigDecimal(r);
 
@@ -29,15 +31,6 @@ public class DivideTemplateFunction extends MathTemplateFunction {
             rbd = rbd.setScale(Math.max(lbd.scale(), rbd.scale()), roundingMode);
 
             return lbd.divide(rbd, roundingMode);
-        }
-
-        if (l instanceof BigInteger || r instanceof BigInteger) {
-            return toBigInteger(l).divide(toBigInteger(r));
-        }
-
-        if (l instanceof Double || r instanceof Double || l instanceof Float || r instanceof Float) {
-            var roundingMode = toRoundingMode(rawRoundingMode);
-            return toBigDecimal(l).divide(toBigDecimal(r), roundingMode);
         }
 
         return toBigInteger(l).divide(toBigInteger(r));
