@@ -109,7 +109,7 @@ final class FunctionRegistry {
                 result.add(instance);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                throw new RuntimeException(String.format("Failed to create built-in function: %s", type.getName()), e);
+                throw new IllegalStateException(String.format("Failed to create built-in function: %s", type.getName()), e);
             }
         }
 
@@ -133,17 +133,17 @@ final class FunctionRegistry {
      * @param namespace the name of the function namespace to look up
      * @param name      the name of the function to look up
      * @return the {@link TemplateFunction} associated with the given name
-     * @throws TemplateEvalException if no function with the specified name exists
+     * @throws IllegalArgumentException if no function with the specified name exists
      */
     @SuppressWarnings("unchecked")
     public <T> TemplateFunction<T> getFunction(String namespace, String name) {
         var namespaceFunctions = functions.get(namespace);
         if (namespaceFunctions == null) {
-            throw new TemplateEvalException(String.format("No such namespace: '%s'", namespace));
+            throw new IllegalArgumentException(String.format("No such namespace: '%s'", namespace));
         }
         var templateFunction = namespaceFunctions.get(name);
         if (templateFunction == null) {
-            throw new TemplateEvalException(String.format("Function '%s' not found in namespace: '%s'", name, namespace));
+            throw new IllegalArgumentException(String.format("Function '%s' not found in namespace: '%s'", name, namespace));
         }
         return (TemplateFunction<T>) templateFunction;
     }

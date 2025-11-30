@@ -104,7 +104,8 @@ class StringSplitTemplateFunctionTest {
 
     @Test
     void pipeInvokeNoArgs() {
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), "a,b"));
+        var args = new ArrayList<>();
+        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "a,b"));
         assertEquals("string:split: at least 1 argument required", ex.getMessage());
     }
 
