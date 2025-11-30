@@ -1,9 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
-import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.compiler.api.*;
 import io.github.sibmaks.jjtemplate.compiler.optimizer.TemplateOptimizer;
 import io.github.sibmaks.jjtemplate.compiler.visitor.AstTreeConvertVisitor;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
@@ -127,10 +124,23 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             throw new IllegalArgumentException("'template' field required");
         }
 
-        var compiledDefs = new ArrayList<Map<String, AstNode>>();
+        var internalVariables = compileInternalVariables(defs);
+
+        var compiledTemplate = compileNode(template);
+        if (options.isOptimize()) {
+            var optimizer = new TemplateOptimizer(templateEvaluator);
+            var optimized = optimizer.optimize(internalVariables, compiledTemplate);
+            var optimizedTemplate = optimized.getTemplate();
+            var optimizedDefinitions = optimized.getInternalVariables();
+            return buildCompiledTemplate(optimizedTemplate, optimizedDefinitions);
+        }
+        return buildCompiledTemplate(compiledTemplate, internalVariables);
+    }
+
+    private ArrayList<InternalVariable> compileInternalVariables(List<Definition> defs) {
+        var internalVariables = new ArrayList<InternalVariable>();
         for (var d : defs) {
             var def = (Map<String, Object>) d;
-            var compiled = new LinkedHashMap<String, AstNode>();
             for (var e : def.entrySet()) {
                 var header = e.getKey();
                 var valueSpec = e.getValue();
@@ -139,44 +149,46 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 var ch = parseSwitchHeader(header);
                 if (ch != null) {
                     var defn = compileSwitch(valueSpec, ch.expr);
-                    compiled.put(ch.varName, defn);
+                    var variable = InternalVariable.builder()
+                            .name(ch.varName)
+                            .value(defn)
+                            .build();
+                    internalVariables.add(variable);
                     continue;
                 }
                 // range
                 var rh = parseRangeHeader(header);
                 if (rh != null) {
                     var defn = new Nodes.RangeDefinition(rh.item, rh.index, compileExpression(rh.expr), compileNode(valueSpec));
-                    compiled.put(rh.varName, defn);
+                    var variable = InternalVariable.builder()
+                            .name(rh.varName)
+                            .value(defn)
+                            .build();
+                    internalVariables.add(variable);
                 } else {
                     // explicit
                     var varName = parseSimpleHeader(header);
-                    compiled.put(varName, compileNode(valueSpec));
+                    var variable = InternalVariable.builder()
+                            .name(varName)
+                            .value(compileNode(valueSpec))
+                            .build();
+                    internalVariables.add(variable);
                 }
             }
-            compiledDefs.add(compiled);
         }
-
-        var compiledTemplate = compileNode(template);
-        if (options.isOptimize()) {
-            var optimizer = new TemplateOptimizer(templateEvaluator);
-            var optimized = optimizer.optimize(compiledDefs, compiledTemplate);
-            var optimizedTemplate = optimized.getTemplate();
-            var optimizedDefinitions = optimized.getDefinitions();
-            return buildCompiledTemplate(optimizedTemplate, optimizedDefinitions);
-        }
-        return buildCompiledTemplate(compiledTemplate, compiledDefs);
+        return internalVariables;
     }
 
     private CompiledTemplate buildCompiledTemplate(
             AstNode compiledTemplate,
-            List<Map<String, AstNode>> compiledDefs
+            List<InternalVariable> internalVariables
     ) {
         if (compiledTemplate instanceof Nodes.StaticNode) {
             var staticNode = (Nodes.StaticNode) compiledTemplate;
             var value = staticNode.getValue();
             return new StaticCompiledTemplateImpl(value);
         }
-        return new CompiledTemplateImpl(templateEvaluator, compiledDefs, compiledTemplate);
+        return new CompiledTemplateImpl(templateEvaluator, internalVariables, compiledTemplate);
     }
 
     private Nodes.SwitchDefinition compileSwitch(Object valueSpec, String switchExpression) {
@@ -346,7 +358,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         // generic expression or inline text — parse with parseTemplate (builds concat when TEXT present)
         var lexer = new TemplateLexer(raw);
         var tokens = lexer.tokens();
-        if(tokens.isEmpty()) {
+        if (tokens.isEmpty()) {
             return Nodes.StaticNode.of(raw);
         }
         var parser = new TemplateParser(tokens);

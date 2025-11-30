@@ -1,17 +1,17 @@
 package io.github.sibmaks.jjtemplate.compiler.optimizer;
 
+import io.github.sibmaks.jjtemplate.compiler.InternalVariable;
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents the result of an optimization or compilation pass.
  * <p>
  * Contains the optimized or compiled template along with its associated
- * definition maps.
+ * internal variables.
  * </p>
  *
  * @author sibmaks
@@ -21,9 +21,9 @@ import java.util.Map;
 @AllArgsConstructor
 public final class Result {
     /**
-     * The list of compiled or optimized definition maps.
+     * The list of compiled or optimized internal variables.
      */
-    private final List<Map<String, AstNode>> definitions;
+    private final List<InternalVariable> internalVariables;
 
     /**
      * The root node of the optimized or compiled template AST.

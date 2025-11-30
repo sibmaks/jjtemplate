@@ -28,9 +28,9 @@ final class CompiledTemplateImpl implements CompiledTemplate {
     private final TemplateEvaluator evaluator;
 
     /**
-     * The list of compiled definition layers associated with this template.
+     * The list of compiled internal variables.
      */
-    private final List<Map<String, AstNode>> compiledDefs;
+    private final List<InternalVariable> internalVariables;
 
     /**
      * The root abstract syntax tree node representing the compiled template.
@@ -50,13 +50,11 @@ final class CompiledTemplateImpl implements CompiledTemplate {
             TemplateExecutionVisitor executor,
             Map<String, Object> context
     ) {
-        for (var def : compiledDefs) {
-            for (var e : def.entrySet()) {
-                var value = e.getValue();
-                var selectedValue = value.accept(executor);
-                if (!selectedValue.isEmpty()) {
-                    context.put(e.getKey(), selectedValue.getValue());
-                }
+        for (var variable : internalVariables) {
+            var value = variable.getValue();
+            var selectedValue = value.accept(executor);
+            if (!selectedValue.isEmpty()) {
+                context.put(variable.getName(), selectedValue.getValue());
             }
         }
     }
