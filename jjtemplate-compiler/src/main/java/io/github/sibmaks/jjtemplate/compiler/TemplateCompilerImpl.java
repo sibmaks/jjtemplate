@@ -8,8 +8,6 @@ import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
 import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
 import io.github.sibmaks.jjtemplate.lexer.api.TemplateLexerException;
-import io.github.sibmaks.jjtemplate.lexer.api.Token;
-import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.TemplateParser;
 import io.github.sibmaks.jjtemplate.parser.TemplateParserException;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
@@ -284,7 +282,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     }
 
     private AstNode compileObject(Map<?, ?> nodeMap) {
-        var entries = new ArrayList<Nodes.CompiledObject.Entry>();
+        var entries = new ArrayList<Nodes.CompiledObject.Entry>(nodeMap.size());
         var staticMap = new LinkedHashMap<String, Object>(nodeMap.size());
         var allStatic = true;
 

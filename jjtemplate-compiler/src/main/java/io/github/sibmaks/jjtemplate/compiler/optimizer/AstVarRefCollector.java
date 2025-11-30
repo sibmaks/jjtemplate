@@ -6,7 +6,7 @@ import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstVisitor;
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -23,7 +23,7 @@ final class AstVarRefCollector implements AstVisitor<Void> {
     /**
      * Accumulator set for collected variable names.
      */
-    private final Set<String> accumulator = new LinkedHashSet<>();
+    private final Set<String> accumulator = new HashSet<>();
 
     /**
      * Traverses the given AST node and returns a set of all variable names

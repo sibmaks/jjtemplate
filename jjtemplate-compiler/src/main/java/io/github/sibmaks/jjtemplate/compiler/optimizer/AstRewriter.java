@@ -284,7 +284,7 @@ final class AstRewriter implements AstVisitor<AstNode> {
         if (value instanceof Iterable<?>) {
             var i = 0;
             for (var it : (Iterable<?>) value) {
-                var localContext = new LinkedHashMap<String, Object>();
+                var localContext = new HashMap<String, Object>();
                 localContext.put(node.getItem(), it); // nullable
                 localContext.put(node.getIndex(), i++);
                 var templateExecution = new TemplateExecutionVisitor(evaluator, localContext);

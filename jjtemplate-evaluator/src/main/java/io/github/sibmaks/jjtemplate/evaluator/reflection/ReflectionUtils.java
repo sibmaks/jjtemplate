@@ -26,7 +26,7 @@ public final class ReflectionUtils {
 
     private static Map<String, AccessDescriptor> buildDescriptorMap(Class<?> type) {
         var fields = type.getFields();
-        var map = new LinkedHashMap<String, AccessDescriptor>(fields.length);
+        var map = new HashMap<String, AccessDescriptor>(fields.length);
         for (var field : fields) {
             field.setAccessible(true);
             try {

@@ -23,13 +23,6 @@ public final class TemplateEvaluator {
     }
 
     public Object evaluate(Expression expression, Context context) {
-        return eval(expression, context);
-    }
-
-    private Object eval(
-            Expression expression,
-            Context context
-    ) {
         try {
             if (expression instanceof LiteralExpression) {
                 var literalExpression = (LiteralExpression) expression;
@@ -49,15 +42,15 @@ public final class TemplateEvaluator {
             }
             if (expression instanceof TernaryExpression) {
                 var ternary = (TernaryExpression) expression;
-                var cond = eval(ternary.condition, context);
+                var cond = evaluate(ternary.condition, context);
                 if (!(cond instanceof Boolean)) {
                     throw new TemplateEvalException("cond must be a boolean: " + cond);
                 }
                 var test = (boolean) cond;
                 if (test) {
-                    return eval(ternary.ifTrue, context);
+                    return evaluate(ternary.ifTrue, context);
                 }
-                return eval(ternary.ifFalse, context);
+                return evaluate(ternary.ifFalse, context);
             }
             throw new TemplateEvalException("Unknown expr type: " + expression.getClass());
         } catch (Exception e) {
@@ -97,7 +90,7 @@ public final class TemplateEvaluator {
 
             var args = new ArrayList<>();
             for (var argExpr : seg.args) {
-                args.add(eval(argExpr, context));
+                args.add(evaluate(argExpr, context));
             }
             current = ReflectionUtils.invokeMethodReflective(current, seg.name, args);
         }
@@ -106,7 +99,7 @@ public final class TemplateEvaluator {
     }
 
     private Object evalPipe(PipeExpression p, Context ctx) {
-        var cur = eval(p.left, ctx);
+        var cur = evaluate(p.left, ctx);
         for (var call : p.chain) {
             cur = evalCall(call, ctx, cur);
         }
@@ -120,7 +113,7 @@ public final class TemplateEvaluator {
     ) {
         var args = new ArrayList<>();
         for (var a : c.args) {
-            args.add(eval(a, context));
+            args.add(evaluate(a, context));
         }
         var templateFunction = functionRegistry.getFunction(c.namespace, c.name);
         return templateFunction.invoke(args, pipeInput);
@@ -132,7 +125,7 @@ public final class TemplateEvaluator {
     ) {
         var args = new ArrayList<>();
         for (var a : c.args) {
-            args.add(eval(a, context));
+            args.add(evaluate(a, context));
         }
         var templateFunction = functionRegistry.getFunction(c.namespace, c.name);
         return templateFunction.invoke(args);

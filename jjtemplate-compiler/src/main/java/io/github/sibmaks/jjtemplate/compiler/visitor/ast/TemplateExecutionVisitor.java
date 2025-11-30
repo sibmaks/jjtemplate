@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.visitor.ast;
 import io.github.sibmaks.jjtemplate.compiler.Nodes;
 import io.github.sibmaks.jjtemplate.evaluator.Context;
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
-import lombok.AllArgsConstructor;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -19,7 +18,6 @@ import java.util.*;
  * @author sibmaks
  * @since 0.0.1
  */
-@AllArgsConstructor
 public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNode> {
     /**
      * Evaluator used to compute the values of expressions within the template.
@@ -29,8 +27,15 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
     /**
      * The current variable context used during template execution.
      */
-    private final Map<String, Object> context;
+    private final Context context;
 
+    public TemplateExecutionVisitor(
+            TemplateEvaluator evaluator,
+            Map<String, Object> context
+    ) {
+        this.evaluator = evaluator;
+        this.context = new Context(context);
+    }
 
     @Override
     public Nodes.StaticNode visitStatic(Nodes.StaticNode node) {
@@ -39,13 +44,12 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
 
     @Override
     public Nodes.StaticNode visitSwitch(Nodes.SwitchDefinition node) {
-        var localContext = new Context(context);
-        var switchVal = evaluator.evaluate(node.getSwitchExpr(), localContext);
+        var switchVal = evaluator.evaluate(node.getSwitchExpr(), context);
         AstNode selected = null;
         var matched = false;
         var branches = node.getBranches();
         for (var branch : branches.entrySet()) {
-            var keyVal = evaluator.evaluate(branch.getKey(), localContext);
+            var keyVal = evaluator.evaluate(branch.getKey(), context);
             if (Objects.equals(switchVal, keyVal)) {
                 selected = branch.getValue();
                 matched = true;
@@ -67,38 +71,60 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
 
     @Override
     public Nodes.StaticNode visitRange(Nodes.RangeDefinition node) {
-        var source = evaluator.evaluate(node.getSourceExpr(), new Context(context));
+        var source = evaluator.evaluate(node.getSourceExpr(), context);
         if (source == null) {
             return Nodes.StaticNode.empty();
         }
-        var out = new ArrayList<>();
         if (source instanceof Iterable<?>) {
-            var i = 0;
-            for (var it : (Iterable<?>) source) {
-                collectRangeItem(node, it, i, out);
-                i++;
-            }
+            var iterable = (Iterable<?>) source;
+            return visitRangeIterable(node, iterable);
         } else if (source.getClass().isArray()) {
-            var len = Array.getLength(source);
-            for (int j = 0; j < len; j++) {
-                var item = Array.get(source, j);
-                collectRangeItem(node, item, j, out);
-            }
-        } else {
-            throw new IllegalArgumentException("range: expression must be iterable or array");
+            return visitRangeArray(node, source);
+        }
+        throw new IllegalArgumentException("range: expression must be iterable or array");
+    }
+
+    private Nodes.StaticNode visitRangeIterable(Nodes.RangeDefinition node, Iterable<?> iterable) {
+        var out = new ArrayList<>();
+        var i = 0;
+        var child = new HashMap<String, Object>(2);
+        var itemName = node.getItem();
+        var indexName = node.getIndex();
+        var bodyNode = node.getBodyNode();
+        for (var item : iterable) {
+            child.put(itemName, item);
+            child.put(indexName, i);
+            collectRangeItem(bodyNode, child, out);
+            i++;
         }
         return Nodes.StaticNode.of(out);
     }
 
-    private void collectRangeItem(Nodes.RangeDefinition node, Object it, int i, List<Object> out) {
-        var child = new LinkedHashMap<>(context);
-        child.put(node.getItem(), it);
-        child.put(node.getIndex(), i);
+    private Nodes.StaticNode visitRangeArray(Nodes.RangeDefinition node, Object source) {
+        var out = new ArrayList<>();
+        var len = Array.getLength(source);
+        var child = new HashMap<String, Object>(2);
+        var itemName = node.getItem();
+        var indexName = node.getIndex();
         var bodyNode = node.getBodyNode();
-        var executor = new TemplateExecutionVisitor(evaluator, child);
-        var selectedValue = bodyNode.accept(executor);
-        if (!selectedValue.isEmpty()) {
-            out.add(selectedValue.getValue());
+        for (int i = 0; i < len; i++) {
+            var item = Array.get(source, i);
+            child.put(itemName, item);
+            child.put(indexName, i);
+            collectRangeItem(bodyNode, child, out);
+        }
+        return Nodes.StaticNode.of(out);
+    }
+
+    private void collectRangeItem(AstNode bodyNode, Map<String, Object> child, List<Object> out) {
+        try {
+            context.in(child);
+            var selectedValue = bodyNode.accept(this);
+            if (!selectedValue.isEmpty()) {
+                out.add(selectedValue.getValue());
+            }
+        } finally {
+            context.out();
         }
     }
 
@@ -134,7 +160,7 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
 
     private void visitObjectSpreadField(Nodes.CompiledObject.Spread spread, Map<String, Object> out) {
         var spreadExpression = spread.getExpression();
-        var value = evaluator.evaluate(spreadExpression, new Context(context));
+        var value = evaluator.evaluate(spreadExpression, context);
         if (value == null) {
             return;
         }
@@ -149,7 +175,7 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
     @Override
     public Nodes.StaticNode visitCond(Nodes.CondNode node) {
         var expression = node.getExpression();
-        var value = evaluator.evaluate(expression, new Context(context));
+        var value = evaluator.evaluate(expression, context);
         if (value != null) {
             return Nodes.StaticNode.ofCondition(value);
         }
@@ -159,8 +185,8 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
     @Override
     public Nodes.StaticNode visitSpread(Nodes.SpreadNode node) {
         var expression = node.getExpression();
-        var value = evaluator.evaluate(expression, new Context(context));
-        if(value == null) {
+        var value = evaluator.evaluate(expression, context);
+        if (value == null) {
             return Nodes.StaticNode.notSpread();
         }
         var out = new ArrayList<>();
@@ -181,7 +207,7 @@ public final class TemplateExecutionVisitor implements AstVisitor<Nodes.StaticNo
 
     @Override
     public Nodes.StaticNode visitExpression(Nodes.ExpressionNode node) {
-        var evaluated = evaluator.evaluate(node.getExpression(), new Context(context));
+        var evaluated = evaluator.evaluate(node.getExpression(), context);
         return Nodes.StaticNode.of(evaluated);
     }
 

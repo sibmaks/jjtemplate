@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,14 +28,17 @@ public final class DataSamples {
         return load(String.format("data/%s.json", scenario.dataset.name().toLowerCase()));
     }
 
-    private static Map<String, Object> load(String path) {
+    private static DataSample load(String path) {
         try (var is = DataSamples.class.getClassLoader().getResourceAsStream(path)) {
             if (is == null) {
                 throw new RuntimeException("Resource not found: " + path);
             }
-            return OBJECT_MAPPER.readValue(is, Map.class);
+            return OBJECT_MAPPER.readValue(is, DataSample.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static final class DataSample extends HashMap<String, Object> {
     }
 }

@@ -29,7 +29,7 @@ public final class TemplateOptimizer {
     private final TemplateEvaluator evaluator;
 
     private static Map<String, Object> collectConstantDefs(List<InternalVariable> internalVariables) {
-        var constants = new LinkedHashMap<String, Object>();
+        var constants = new HashMap<String, Object>();
         for (var variable : internalVariables) {
             var node = variable.getValue();
             if (node instanceof Nodes.StaticNode) {
@@ -45,7 +45,7 @@ public final class TemplateOptimizer {
             AstNode template,
             List<InternalVariable> internalVariables
     ) {
-        var deps = new LinkedHashMap<String, Set<String>>();
+        var deps = new HashMap<String, Set<String>>();
         for (var e : internalVariables) {
             var varName = e.getName();
             var refs = AstVarRefCollector.collect(e.getValue());
@@ -57,7 +57,7 @@ public final class TemplateOptimizer {
         var changed = true;
         while (changed) {
             changed = false;
-            var add = new LinkedHashSet<String>();
+            var add = new HashSet<String>();
             for (var reached : reachable) {
                 var rs = deps.get(reached);
                 if (rs != null) {

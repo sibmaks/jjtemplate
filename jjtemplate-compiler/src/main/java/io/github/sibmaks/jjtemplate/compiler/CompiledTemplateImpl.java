@@ -6,7 +6,7 @@ import io.github.sibmaks.jjtemplate.compiler.visitor.ast.TemplateExecutionVisito
 import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluator;
 import lombok.AllArgsConstructor;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ final class CompiledTemplateImpl implements CompiledTemplate {
 
     @Override
     public Object render(Map<String, Object> context) {
-        var local = new LinkedHashMap<>(context);
+        var local = new HashMap<>(context);
         var executor = new TemplateExecutionVisitor(evaluator, local);
         evalDefinitions(executor, local);
         var selectedValue = compiledTemplate.accept(executor);
