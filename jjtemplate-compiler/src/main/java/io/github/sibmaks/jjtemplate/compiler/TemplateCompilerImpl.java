@@ -379,26 +379,8 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
     private Expression compileExpression(String expr) {
         var lexer = new TemplateLexer(expr);
         var tokens = lexer.tokens();
-        var inner = new ArrayList<Token>();
-        var started = false;
-        for (var t : tokens) {
-            switch (t.type) {
-                case OPEN_EXPR:
-                case OPEN_COND:
-                case OPEN_SPREAD:
-                    started = true;
-                    break;
-                case CLOSE:
-                    started = false;
-                    break;
-                default:
-                    if (started && t.type != TokenType.TEXT) {
-                        inner.add(t);
-                    }
-            }
-        }
-        var parser = new TemplateParser(inner);
-        return parser.parseExpression();
+        var parser = new TemplateParser(tokens);
+        return parser.parseTemplate();
     }
 
     private String parseSimpleHeader(String h) {

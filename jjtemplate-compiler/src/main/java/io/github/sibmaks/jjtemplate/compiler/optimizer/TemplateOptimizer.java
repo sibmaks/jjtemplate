@@ -103,10 +103,8 @@ public final class TemplateOptimizer {
             Map<String, Object> constants
     ) {
         var value = AstRewriter.inlineConstants(evaluator, internalVariable.getValue(), constants);
-        return InternalVariable.builder()
-                .name(internalVariable.getName())
-                .value(value)
-                .build();
+        internalVariable.setValue(value);
+        return internalVariable;
     }
 
     /**

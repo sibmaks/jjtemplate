@@ -8,7 +8,7 @@ import io.github.sibmaks.jjtemplate.evaluator.fun.TemplateFunction;
  * @author sibmaks
  * @since 0.4.0
  */
-public class TemplateFunctionEvalException extends TemplateEvalException {
+public final class TemplateFunctionEvalException extends TemplateEvalException {
     /**
      * Creates a new instance with the specified function and message.
      *

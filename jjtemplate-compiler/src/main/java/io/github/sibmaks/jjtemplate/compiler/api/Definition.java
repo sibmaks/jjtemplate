@@ -12,5 +12,5 @@ import java.util.LinkedHashMap;
  * @author sibmaks
  * @since 0.0.1
  */
-public class Definition extends LinkedHashMap<String, Object> {
+public final class Definition extends LinkedHashMap<String, Object> {
 }

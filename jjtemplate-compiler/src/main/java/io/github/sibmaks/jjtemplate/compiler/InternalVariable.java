@@ -1,10 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler;
 
 import io.github.sibmaks.jjtemplate.compiler.visitor.ast.AstNode;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 
 /**
  * @since 0.4.1
@@ -14,7 +11,8 @@ import lombok.Getter;
 @Builder
 @EqualsAndHashCode
 @AllArgsConstructor
-public class InternalVariable {
+public final class InternalVariable {
     private final String name;
-    private final AstNode value;
+    @Setter
+    private AstNode value;
 }

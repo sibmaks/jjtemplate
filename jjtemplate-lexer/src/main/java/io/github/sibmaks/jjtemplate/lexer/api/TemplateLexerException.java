@@ -13,7 +13,7 @@ import lombok.Getter;
  * @since 0.0.1
  */
 @Getter
-public class TemplateLexerException extends RuntimeException {
+public final class TemplateLexerException extends RuntimeException {
     /**
      * The position in the template source where the lexing error occurred.
      */

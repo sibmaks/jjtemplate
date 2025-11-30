@@ -10,7 +10,7 @@ package io.github.sibmaks.jjtemplate.parser;
  * @author sibmaks
  * @since 0.0.1
  */
-public class TemplateParserException extends RuntimeException {
+public final class TemplateParserException extends RuntimeException {
     /**
      * Constructs a new {@code TemplateParserException} with the specified error message
      * and the token position where the error occurred.

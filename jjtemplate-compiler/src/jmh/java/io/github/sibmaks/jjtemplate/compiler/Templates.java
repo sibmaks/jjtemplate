@@ -12,7 +12,7 @@ import java.io.IOException;
  * @author sibmaks
  * @since 0.4.1
  */
-public class Templates {
+public final class Templates {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
             .enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);

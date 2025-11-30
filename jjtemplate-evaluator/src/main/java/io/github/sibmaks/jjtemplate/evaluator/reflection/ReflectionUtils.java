@@ -325,7 +325,7 @@ public final class ReflectionUtils {
     }
 
     @AllArgsConstructor
-    private static class AccessDescriptor {
+    private static final class AccessDescriptor {
         private String name;
         private MethodHandle getter;
 
@@ -334,7 +334,7 @@ public final class ReflectionUtils {
         }
     }
 
-    private static class ConversionResult {
+    private static final class ConversionResult {
         final Object[] values;
         final int score;
 
