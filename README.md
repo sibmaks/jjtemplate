@@ -151,12 +151,14 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 
 * `date:format([locale], pattern, date)` — Format date (`Date`, `LocalDate`, `LocalDateTime`, `ZonedLocalDateTime`)
 * `date:parse(pattern, string)` — Parse string into `LocalDate`
+* `date:now()` — Get current `LocalDate`
 
 ---
 
 ### `datetime` — DateTime Utilities
 
 * `datetime:parse(pattern, string)` — Parse string into `LocalDateTime`
+* `datetime:now()` — Get current `LocalDateTime`
 
 ---
 
