@@ -1,0 +1,18 @@
+{
+  "definitions": [
+    {
+      "booleanVar": false,
+      "anotherBooleanVar": true
+    },
+    {
+      "{{ defResult switch .booleanVar }}": {
+        "{{ then }}": "fail-out",
+        "{{ else switch .anotherBooleanVar }}": {
+          "{{ then }}": "ok",
+          "{{ else }}": "fail-in"
+        }
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

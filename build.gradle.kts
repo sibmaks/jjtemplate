@@ -94,9 +94,7 @@ subprojects {
 }
 
 dependencies {
-    implementation(project(":jjtemplate-parser"))
-    implementation(project(":jjtemplate-lexer"))
-    implementation(project(":jjtemplate-evaluator"))
+    implementation(project(":jjtemplate-frontend"))
     implementation(project(":jjtemplate-compiler"))
 }
 

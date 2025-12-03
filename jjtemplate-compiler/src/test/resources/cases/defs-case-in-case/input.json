@@ -5,29 +5,29 @@
       "defTrue": true
     },
     {
-      "defResult switch .defFalse": {
-        "true": "fail-out",
-        "false switch .defTrue": {
-          "true": "ok",
-          "false": "fail-in"
+      "{{ defResult switch .defFalse }}": {
+        "{{ true }}": "fail-out",
+        "{{ false switch .defTrue }}": {
+          "{{ true }}": "ok",
+          "{{ false }}": "fail-in"
         }
       }
     },
     {
-      "defResultThen switch .defTrue": {
-        "then switch .defFalse": {
-          "then": "fail-in",
-          "else": "ok"
+      "{{ defResultThen switch .defTrue }}": {
+        "{{ then switch .defFalse }}": {
+          "{{ then }}": "fail-in",
+          "{{ else }}": "ok"
         },
-        "else": "fail-out"
+        "{{ else }}": "fail-out"
       }
     },
     {
-      "varResult switch .varFalse": {
-        "true": "fail-out",
-        "false switch .varTrue": {
-          "true": "ok",
-          "false": "fail-in"
+      "{{ varResult switch .varFalse }}": {
+        "{{ true }}": "fail-out",
+        "{{ false switch .varTrue }}": {
+          "{{ true }}": "ok",
+          "{{ false }}": "fail-in"
         }
       }
     }

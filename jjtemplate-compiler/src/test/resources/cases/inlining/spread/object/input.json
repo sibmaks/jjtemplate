@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "varObject": {
+        "key": "new-value"
+      }
+    }
+  ],
+  "template": {
+    "object": {
+      "key": "value",
+      "{{. .varObject }}": true
+    }
+  }
+}

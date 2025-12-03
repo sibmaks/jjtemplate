@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "{{ defList range item,index of .varList }}": {
+        "key-{{ .index }}": "{{ .item }}"
+      }
+    }
+  ],
+  "template": "{{. .defList }}"
+}

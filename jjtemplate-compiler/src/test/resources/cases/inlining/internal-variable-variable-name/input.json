@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "name": "var"
+    },
+    {
+      "{{ .name }}": "ok"
+    }
+  ],
+  "template": "{{ .var }}"
+}

@@ -1,0 +1,8 @@
+{
+  "definitions": [
+    {
+      "valTrue": true
+    }
+  ],
+  "template": "{{ .valTrue | cast:str }}"
+}

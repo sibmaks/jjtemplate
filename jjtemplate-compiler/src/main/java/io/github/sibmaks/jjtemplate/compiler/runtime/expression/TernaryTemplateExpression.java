@@ -1,0 +1,47 @@
+package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
+
+import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+/**
+ * Represents a ternary conditional expression of the form
+ * <code>condition ? thenTrue : thenFalse</code>.
+ * <p>
+ * During evaluation, the condition is resolved first; its result must be
+ * a boolean value. Depending on this result, either the <em>true</em> branch
+ * or the <em>false</em> branch is evaluated.
+ * </p>
+ *
+ * @author sibmaks
+ * @since 0.5.0
+ */
+@Getter
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
+public final class TernaryTemplateExpression implements TemplateExpression {
+    private final TemplateExpression condition;
+    private final TemplateExpression thenTrue;
+    private final TemplateExpression thenFalse;
+
+    @Override
+    public Object apply(final Context context) {
+        var evaluate = condition.apply(context);
+        if (!(evaluate instanceof Boolean)) {
+            throw new IllegalStateException("Cannot evaluate expression: " + this + ", condition is not boolean: " + evaluate);
+        }
+        var condition = (Boolean) evaluate;
+        if (condition) {
+            return thenTrue.apply(context);
+        }
+        return thenFalse.apply(context);
+    }
+
+    @Override
+    public <T> T visit(TemplateExpressionVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+}
