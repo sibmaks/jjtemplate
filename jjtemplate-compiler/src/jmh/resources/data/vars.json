@@ -1,11 +1,5 @@
 {
   "string": "foo",
-  "list": [
-    42,
-    3.14,
-    "hello",
-    true
-  ],
   "object": {
     "key": "value"
   },

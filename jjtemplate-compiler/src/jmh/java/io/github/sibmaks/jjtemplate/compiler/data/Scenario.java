@@ -1,4 +1,4 @@
-package io.github.sibmaks.jjtemplate.compiler;
+package io.github.sibmaks.jjtemplate.compiler.data;
 
 /**
  * Benchmark scenarios
@@ -11,9 +11,6 @@ public enum Scenario {
 
     VARS__STRING_CONCAT(DataSet.VARS, TemplateScript.STRING_CONCAT),
     EMPTY__STRING_CONCAT_INLINE(DataSet.EMPTY, TemplateScript.STRING_CONCAT, true),
-
-    VARS__LIST_RANGE(DataSet.VARS, TemplateScript.LIST_RANGE),
-    EMPTY__LIST_RANGE_INLINE(DataSet.EMPTY, TemplateScript.LIST_RANGE, true),
 
     VARS__SWITCH(DataSet.VARS, TemplateScript.SWITCH),
     EMPTY__SWITCH_INLINE(DataSet.EMPTY, TemplateScript.SWITCH, true),

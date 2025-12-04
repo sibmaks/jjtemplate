@@ -1,4 +1,4 @@
-package io.github.sibmaks.jjtemplate.compiler;
+package io.github.sibmaks.jjtemplate.compiler.data;
 
 
 /**

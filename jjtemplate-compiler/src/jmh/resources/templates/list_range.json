@@ -1,8 +1,0 @@
-{
-  "definitions": [
-    {
-      "ranged range item,index of .list": "{{ .item | cast:str }}"
-    }
-  ],
-  "template": "{{ .ranged }}"
-}

@@ -4,6 +4,9 @@ import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.compiler.data.DataSamples;
+import io.github.sibmaks.jjtemplate.compiler.data.Scenario;
+import io.github.sibmaks.jjtemplate.compiler.data.Templates;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Map;
@@ -13,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
 public class TemplateCompilerBenchmark {
 
     @Param

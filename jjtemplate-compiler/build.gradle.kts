@@ -1,5 +1,15 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+
 plugins {
     id("me.champeau.jmh") version "0.7.3"
+}
+
+jmh {
+    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
+
+    resultFormat.set("json")
+    resultsFile.set(layout.buildDirectory.file("reports/jmh/results-$version-${formatter.format(Date())}.json"))
 }
 
 dependencies {

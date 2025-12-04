@@ -1,4 +1,4 @@
-package io.github.sibmaks.jjtemplate.compiler;
+package io.github.sibmaks.jjtemplate.compiler.data;
 
 /**
  * Benchmark template scripts
@@ -9,7 +9,6 @@ package io.github.sibmaks.jjtemplate.compiler;
 public enum TemplateScript {
     EMPTY,
     STRING_CONCAT,
-    LIST_RANGE,
     SWITCH,
     TERNARY,
     SUB_FIELD
