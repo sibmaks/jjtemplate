@@ -1,0 +1,8 @@
+{
+  "template": {
+    "args": "{{ string:substr 'hello world', -5 }}",
+    "pipe": "{{ 'hello world' | string:substr -5 }}",
+    "argsWithBoth": "{{ string:substr 'hello world', -13, -6 }}",
+    "pipeWithBoth": "{{ 'hello world' | string:substr -13, -6 }}"
+  }
+}

@@ -33,7 +33,28 @@ class StringSubstringTemplateFunctionTest {
                 Arguments.of("hello", 0, 5, "hello"),
                 Arguments.of("hello", 1, 3, "el"),
                 Arguments.of("abcdef", 2, 4, "cd"),
-                Arguments.of("test", 0, 0, "") // empty substr
+                Arguments.of("abcdef", 0, 10, "abcdef"),
+                Arguments.of("abcdef", 10, 12, ""),
+                Arguments.of("test", 0, 0, ""), // empty substr,
+
+                // begin < 0
+                Arguments.of("hello", -1, null, "o"),
+                Arguments.of("hello", -2, null, "lo"),
+                Arguments.of("hello", -5, null, "hello"),
+                Arguments.of("hello", -10, null, "hello"),
+
+                // end < 0
+                Arguments.of("hello", 0, -1, "hell"),
+                Arguments.of("hello", 1, -1, "ell"),
+                Arguments.of("hello", 0, -2, "hel"),
+
+                // begin < 0 and end < 0
+                Arguments.of("abcdef", -4, -1, "cde"),
+                Arguments.of("abcdef", -3, -2, "d"),
+
+                Arguments.of("test", -1, -1, ""),
+                Arguments.of("test", -5, -1, "tes"),
+                Arguments.of("test", -4, -4, "")
         );
     }
 
@@ -88,31 +109,10 @@ class StringSubstringTemplateFunctionTest {
     }
 
     @Test
-    void directInvokeBeginIndexOutOfBounds() {
-        var args = List.<Object>of("hello", 10);
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("string:substr: beginIndex out of bounds", ex.getMessage());
-    }
-
-    @Test
-    void directInvokeBeginIndexOutOfBoundsNegative() {
-        var args = List.<Object>of("hello", -1);
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("string:substr: beginIndex out of bounds", ex.getMessage());
-    }
-
-    @Test
-    void directInvokeEndIndexOutOfBounds() {
-        var args = List.<Object>of("hello", 1, 10);
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("string:substr: endIndex out of bounds", ex.getMessage());
-    }
-
-    @Test
     void directInvokeEndIndexLessThanBegin() {
         var args = List.<Object>of("hello", 3, 2);
         var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("string:substr: endIndex out of bounds", ex.getMessage());
+        assertEquals("string:substr: endIndex < beginIndex after normalization", ex.getMessage());
     }
 
     @ParameterizedTest
@@ -151,24 +151,25 @@ class StringSubstringTemplateFunctionTest {
     }
 
     @Test
-    void pipeInvokeBeginIndexOutOfBounds() {
-        var args = List.<Object>of(10);
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "hello"));
-        assertEquals("string:substr: beginIndex out of bounds", ex.getMessage());
-    }
-
-    @Test
-    void pipeInvokeEndIndexOutOfBounds() {
-        var args = List.<Object>of(1, 10);
-        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "hello"));
-        assertEquals("string:substr: endIndex out of bounds", ex.getMessage());
-    }
-
-    @Test
     void pipeInvokeEndIndexLessThanBegin() {
         var args = List.<Object>of(3, 1);
         var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "hello"));
-        assertEquals("string:substr: endIndex out of bounds", ex.getMessage());
+        assertEquals("string:substr: endIndex < beginIndex after normalization", ex.getMessage());
     }
+
+    @Test
+    void directInvokeNegativeIndexesBecomeInvalidAfterNormalization() {
+        var args = List.<Object>of("hello", -1, 1);
+        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
+        assertEquals("string:substr: endIndex < beginIndex after normalization", ex.getMessage());
+    }
+
+    @Test
+    void pipeInvokeNegativeIndexesBecomeInvalidAfterNormalization() {
+        var args = List.<Object>of(-1, 1);
+        var ex = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "hello"));
+        assertEquals("string:substr: endIndex < beginIndex after normalization", ex.getMessage());
+    }
+
 
 }

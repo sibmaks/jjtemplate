@@ -1,0 +1,6 @@
+{
+  "args": "world",
+  "pipe": "world",
+  "argsWithBoth": "hello",
+  "pipeWithBoth": "hello"
+}

@@ -12,20 +12,37 @@ public final class StringSubstringTemplateFunction implements TemplateFunction<S
 
     private String substr(Object value, int beginIndex, Integer endIndex) {
         var string = String.valueOf(value);
+        var len = string.length();
 
-        if (beginIndex < 0 || beginIndex > string.length()) {
-            throw fail("beginIndex out of bounds");
+        var b = beginIndex < 0 ? len + beginIndex : beginIndex;
+        if (b < 0) {
+            b = 0;
+        }
+        if (b > len) {
+            b = len;
         }
 
-        if (endIndex == null) {
-            return string.substring(beginIndex);
+        Integer e = null;
+        if (endIndex != null) {
+            int tmp = endIndex < 0 ? len + endIndex : endIndex;
+            if (tmp < 0) {
+                tmp = 0;
+            }
+            if (tmp > len) {
+                tmp = len;
+            }
+            e = tmp;
         }
 
-        if (endIndex < beginIndex || endIndex > string.length()) {
-            throw fail("endIndex out of bounds");
+        if (e == null) {
+            return string.substring(b);
         }
 
-        return string.substring(beginIndex, endIndex);
+        if (e < b) {
+            throw fail("endIndex < beginIndex after normalization");
+        }
+
+        return string.substring(b, e);
     }
 
     @Override

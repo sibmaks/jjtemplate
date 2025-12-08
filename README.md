@@ -115,7 +115,7 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
   substring.
 * `string:lastIndexOf(value, str)` — Returns the index within this string of the last occurrence of the specified
   substring.
-* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string.
+* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string. Support negative indexes.
 * `string:replace(value, target, replacement)` — Replaces each substring of this string that matches the literal target
   sequence with the specified literal replacement sequence.
 * `string:replaceAll(value, regex, replacement)` — Replaces each substring of this string that matches the given regular
