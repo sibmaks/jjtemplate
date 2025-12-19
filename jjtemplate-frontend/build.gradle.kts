@@ -1,8 +1,13 @@
 plugins {
+    id("java")
     id("antlr")
 }
 
 val pkg = "io.github.sibmaks.jjtemplate.frontend.antlr"
+val antlrDirectory = layout.buildDirectory
+    .dir("generated-sources/antlr/main")
+    .get()
+    .asFile
 
 dependencies {
     antlr("org.antlr:antlr4:4.13.2")
@@ -10,19 +15,28 @@ dependencies {
 }
 
 tasks.withType<JavaCompile> {
-    dependsOn("generateGrammarSource")
+    dependsOn(tasks.generateGrammarSource)
 }
 
 tasks.generateGrammarSource {
-    arguments = arguments + listOf(
+    arguments = listOf(
         "-visitor",
         "-package", pkg
     )
-    outputDirectory = file("src/main/java/${pkg.replace('.', '/')}")
+
+    outputDirectory = antlrDirectory.resolve(pkg.replace('.', '/'))
 }
 
 
 tasks.named<Jar>("sourcesJar") {
     duplicatesStrategy = DuplicatesStrategy.WARN
-    dependsOn("generateGrammarSource")
+    dependsOn(tasks.generateGrammarSource)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir(antlrDirectory)
+        }
+    }
 }
