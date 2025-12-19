@@ -78,7 +78,7 @@ public final class RootTemplateExpressionFactory {
         }
 
         if (object instanceof Collection<?>) {
-            var rawExpression = (Collection<Object>) object;
+            var rawExpression = (Collection<?>) object;
             return compileList(rawExpression);
         }
 
@@ -89,7 +89,7 @@ public final class RootTemplateExpressionFactory {
         return new ConstantTemplateExpression(object);
     }
 
-    private TemplateExpression compileList(Collection<Object> rawExpression) {
+    private TemplateExpression compileList(Collection<?> rawExpression) {
         var items = new ArrayList<ListElement>(rawExpression.size());
         for (var item : rawExpression) {
             compileCollectionItem(items, item);
@@ -217,11 +217,6 @@ public final class RootTemplateExpressionFactory {
             Map<String, Object> rawValue
     ) {
         var expressionKey = (SwitchTemplateExpression) keyContext.accept(expressionFactory);
-
-        var switchBuilder = SwitchTemplateExpression.builder()
-                .switchKey(expressionKey.getSwitchKey())
-                .condition(expressionKey.getCondition());
-
         var switchCases = new ArrayList<SwitchCase>(rawValue.size());
 
         for (var entry : rawValue.entrySet()) {
@@ -248,7 +243,9 @@ public final class RootTemplateExpressionFactory {
             }
         }
 
-        var switchExpression = switchBuilder
+        var switchExpression = SwitchTemplateExpression.builder()
+                .switchKey(expressionKey.getSwitchKey())
+                .condition(expressionKey.getCondition())
                 .cases(switchCases)
                 .build();
 

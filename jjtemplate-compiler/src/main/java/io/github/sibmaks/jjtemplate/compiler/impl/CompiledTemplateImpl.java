@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.compiler.impl;
 import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -24,7 +25,7 @@ public final class CompiledTemplateImpl implements CompiledTemplate {
     /**
      * The list of compiled internal variables.
      */
-    private final List<InternalVariable> internalVariables;
+    private final List<ObjectFieldElement> internalVariables;
 
     /**
      * The root abstract syntax tree node representing the compiled template.
@@ -44,10 +45,10 @@ public final class CompiledTemplateImpl implements CompiledTemplate {
             Context localContext
     ) {
         for (var variable : internalVariables) {
+            var key = variable.getKey();
+            var staticNameValue = key.apply(localContext);
             var value = variable.getValue();
             var selectedValue = value.apply(localContext);
-            var name = variable.getName();
-            var staticNameValue = name.apply(localContext);
             context.put(String.valueOf(staticNameValue), selectedValue);
         }
     }

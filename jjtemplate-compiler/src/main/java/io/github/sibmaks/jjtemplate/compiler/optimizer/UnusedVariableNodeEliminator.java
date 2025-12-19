@@ -1,8 +1,8 @@
 package io.github.sibmaks.jjtemplate.compiler.optimizer;
 
 import io.github.sibmaks.jjtemplate.compiler.impl.CompiledTemplateImpl;
-import io.github.sibmaks.jjtemplate.compiler.impl.InternalVariable;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage.VariableUsageCollector;
 
 import java.util.Set;
@@ -32,8 +32,8 @@ public final class UnusedVariableNodeEliminator implements TemplateOptimizer {
         var collector = new VariableUsageCollector();
 
         for (var internalVariable : internalVariables) {
-            var name = internalVariable.getName();
-            name.visit(collector);
+            var key = internalVariable.getKey();
+            key.visit(collector);
             var value = internalVariable.getValue();
             value.visit(collector);
         }
@@ -54,10 +54,10 @@ public final class UnusedVariableNodeEliminator implements TemplateOptimizer {
         return new CompiledTemplateImpl(cleaned, astNode);
     }
 
-    private boolean isUsed(InternalVariable internalVariable, Set<String> usedVariables) {
-        var nodeName = internalVariable.getName();
-        if (nodeName instanceof ConstantTemplateExpression) {
-            var constantTemplateExpression = (ConstantTemplateExpression) nodeName;
+    private boolean isUsed(ObjectFieldElement internalVariable, Set<String> usedVariables) {
+        var nodeKey = internalVariable.getKey();
+        if (nodeKey instanceof ConstantTemplateExpression) {
+            var constantTemplateExpression = (ConstantTemplateExpression) nodeKey;
             var value = constantTemplateExpression.getValue();
             return usedVariables.contains(String.valueOf(value));
         }

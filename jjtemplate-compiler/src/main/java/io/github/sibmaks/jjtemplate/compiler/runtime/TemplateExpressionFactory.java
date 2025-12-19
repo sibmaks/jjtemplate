@@ -70,17 +70,20 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
 
     @Override
     public TemplateExpression visitExprInterpolation(JJTemplateParser.ExprInterpolationContext context) {
-        return context.getChild(1).accept(this);
+        var child = context.getChild(1);
+        return child.accept(this);
     }
 
     @Override
     public TemplateExpression visitCondInterpolation(JJTemplateParser.CondInterpolationContext context) {
-        return context.getChild(1).accept(this);
+        var child = context.getChild(1);
+        return child.accept(this);
     }
 
     @Override
     public TemplateExpression visitSpreadInterpolation(JJTemplateParser.SpreadInterpolationContext context) {
-        return context.getChild(1).accept(this);
+        var child = context.getChild(1);
+        return child.accept(this);
     }
 
     @Override
@@ -88,20 +91,21 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
         var switchExpression = context.expression();
         var condition = switchExpression.accept(this);
 
-        if (context.name != null) {
-            return SwitchTemplateExpression.builder()
-                    .switchKey(new ConstantTemplateExpression(context.name.getText()))
-                    .condition(condition)
-                    .build();
+        var switchTemplateExpressionBuilder = SwitchTemplateExpression.builder()
+                .condition(condition);
+
+        var name = context.name;
+        if (name != null) {
+            switchTemplateExpressionBuilder
+                    .switchKey(new ConstantTemplateExpression(name.getText()));
+        } else {
+            var switchCase = context.switchCase;
+            var switchKey = switchCase.accept(this);
+            switchTemplateExpressionBuilder
+                    .switchKey(switchKey);
         }
 
-        var switchCase = context.switchCase;
-        var switchKey = switchCase.accept(this);
-
-        return SwitchTemplateExpression.builder()
-                .switchKey(switchKey)
-                .condition(condition)
-                .build();
+        return switchTemplateExpressionBuilder.build();
     }
 
     @Override

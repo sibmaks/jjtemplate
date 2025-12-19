@@ -104,18 +104,14 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         }
     }
 
-    private List<InternalVariable> compileInternalVariables(List<Definition> defs) {
-        var internalVariables = new ArrayList<InternalVariable>();
+    private List<ObjectFieldElement> compileInternalVariables(List<Definition> defs) {
+        var internalVariables = new ArrayList<ObjectFieldElement>();
         for (var def : defs) {
             var objectVariables = compileInternalVariable(def);
             for (var element : objectVariables.getElements()) {
                 if (element instanceof ObjectFieldElement) {
                     var objectFieldElement = (ObjectFieldElement) element;
-                    var internalVariable = InternalVariable.builder()
-                            .name(objectFieldElement.getKey())
-                            .value(objectFieldElement.getValue())
-                            .build();
-                    internalVariables.add(internalVariable);
+                    internalVariables.add(objectFieldElement);
                 } else {
                     throw new TemplateEvalException(String.format("Unknown object field element type: %s", element.getClass()));
                 }

@@ -1,7 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.optimizer;
 
 import io.github.sibmaks.jjtemplate.compiler.impl.CompiledTemplateImpl;
-import io.github.sibmaks.jjtemplate.compiler.impl.InternalVariable;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder.TemplateExpressionFolder;
 
 import java.util.ArrayList;
@@ -56,11 +56,11 @@ public final class CompiledTemplateFolder implements TemplateOptimizer {
 
         var anyFolded = false;
 
-        var foldedVariables = new ArrayList<InternalVariable>(internalVariables.size());
+        var foldedVariables = new ArrayList<ObjectFieldElement>(internalVariables.size());
         for (var internalVariable : internalVariables) {
-            var name = internalVariable.getName();
-            var foldedName = name.visit(folder);
-            var wasFolded = name != foldedName;
+            var key = internalVariable.getKey();
+            var foldedName = key.visit(folder);
+            var wasFolded = key != foldedName;
 
             var value = internalVariable.getValue();
             var foldedValue = value.visit(folder);
@@ -68,8 +68,8 @@ public final class CompiledTemplateFolder implements TemplateOptimizer {
 
             if (wasFolded) {
                 anyFolded = true;
-                var foldedInternalVariable = InternalVariable.builder()
-                        .name(foldedName)
+                var foldedInternalVariable = ObjectFieldElement.builder()
+                        .key(foldedName)
                         .value(foldedValue)
                         .build();
                 foldedVariables.add(foldedInternalVariable);

@@ -1,8 +1,8 @@
 package io.github.sibmaks.jjtemplate.compiler.optimizer;
 
 import io.github.sibmaks.jjtemplate.compiler.impl.CompiledTemplateImpl;
-import io.github.sibmaks.jjtemplate.compiler.impl.InternalVariable;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner.TemplateExpressionVariableInliner;
 
 import java.util.ArrayList;
@@ -33,18 +33,18 @@ public final class VariableNodeInliner implements TemplateOptimizer {
         var staticVariables = new HashMap<String, Object>();
 
         for (var internalVariable : internalVariables) {
-            var nodeName = internalVariable.getName();
-            if (!(nodeName instanceof ConstantTemplateExpression)) {
+            var nodeKey = internalVariable.getKey();
+            if (!(nodeKey instanceof ConstantTemplateExpression)) {
                 continue;
             }
-            var staticNodeName = (ConstantTemplateExpression) nodeName;
+            var staticNodeKey = (ConstantTemplateExpression) nodeKey;
             var value = internalVariable.getValue();
             if (!(value instanceof ConstantTemplateExpression)) {
                 continue;
             }
             var staticNodeValue = (ConstantTemplateExpression) value;
 
-            staticVariables.put(String.valueOf(staticNodeName.getValue()), staticNodeValue.getValue());
+            staticVariables.put(String.valueOf(staticNodeKey.getValue()), staticNodeValue.getValue());
         }
 
         if (staticVariables.isEmpty()) {
@@ -55,11 +55,11 @@ public final class VariableNodeInliner implements TemplateOptimizer {
 
         var anyInlined = false;
 
-        var inlinedVariables = new ArrayList<InternalVariable>(internalVariables.size());
+        var inlinedVariables = new ArrayList<ObjectFieldElement>(internalVariables.size());
         for (var internalVariable : internalVariables) {
-            var name = internalVariable.getName();
-            var inlinedName = name.visit(expresssionInliner);
-            var wasInlined = name != inlinedName;
+            var key = internalVariable.getKey();
+            var inlinedKey = key.visit(expresssionInliner);
+            var wasInlined = key != inlinedKey;
 
             var value = internalVariable.getValue();
             var inlinedValue = value.visit(expresssionInliner);
@@ -67,8 +67,8 @@ public final class VariableNodeInliner implements TemplateOptimizer {
 
             if (wasInlined) {
                 anyInlined = true;
-                var foldedInternalVariable = InternalVariable.builder()
-                        .name(inlinedName)
+                var foldedInternalVariable = ObjectFieldElement.builder()
+                        .key(inlinedKey)
                         .value(inlinedValue)
                         .build();
                 inlinedVariables.add(foldedInternalVariable);
