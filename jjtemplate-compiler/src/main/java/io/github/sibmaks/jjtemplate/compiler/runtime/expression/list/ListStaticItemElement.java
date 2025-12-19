@@ -24,7 +24,7 @@ import java.util.List;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ListStaticItemElement implements ListElement {
+public final class ListStaticItemElement implements ListElement {
     private final Object value;
 
     @Override

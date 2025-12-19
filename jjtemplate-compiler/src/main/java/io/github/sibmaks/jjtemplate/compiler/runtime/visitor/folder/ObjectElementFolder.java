@@ -14,7 +14,7 @@ import java.util.Map;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class ObjectElementFolder implements ObjectElementVisitor<List<ObjectElement>> {
+public final class ObjectElementFolder implements ObjectElementVisitor<List<ObjectElement>> {
     private final TemplateExpressionFolder folder;
 
     @Override

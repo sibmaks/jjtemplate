@@ -44,7 +44,7 @@ import java.util.Map;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class RootTemplateExpressionFactory {
+public final class RootTemplateExpressionFactory {
     private final TemplateTypeInferenceVisitor typeInferenceVisitor;
     private final TemplateExpressionFactory expressionFactory;
     private final ExpressionParser expressionParser;

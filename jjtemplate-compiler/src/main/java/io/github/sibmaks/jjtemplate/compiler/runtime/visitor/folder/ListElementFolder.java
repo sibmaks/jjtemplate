@@ -15,7 +15,7 @@ import java.util.List;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class ListElementFolder implements ListElementVisitor<List<ListElement>> {
+public final class ListElementFolder implements ListElementVisitor<List<ListElement>> {
     private final TemplateExpressionFolder folder;
 
     @Override

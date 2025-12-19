@@ -24,7 +24,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ConstantSwitchCase implements SwitchCase {
+public final class ConstantSwitchCase implements SwitchCase {
     private final Object constant;
     private final TemplateExpression value;
 

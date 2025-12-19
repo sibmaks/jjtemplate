@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class SwitchCaseVariableInliner implements SwitchCaseVisitor<SwitchCase> {
+public final class SwitchCaseVariableInliner implements SwitchCaseVisitor<SwitchCase> {
     private final TemplateExpressionVariableInliner inliner;
 
     @Override

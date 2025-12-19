@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class ListElementVariableInliner implements ListElementVisitor<ListElement> {
+public final class ListElementVariableInliner implements ListElementVisitor<ListElement> {
     private final TemplateExpressionVariableInliner inliner;
 
     @Override

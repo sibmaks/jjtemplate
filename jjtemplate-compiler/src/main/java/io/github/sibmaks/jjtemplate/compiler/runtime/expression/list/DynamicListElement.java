@@ -27,7 +27,7 @@ import java.util.List;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class DynamicListElement implements ListElement {
+public final class DynamicListElement implements ListElement {
     private final TemplateExpression value;
 
     @Override

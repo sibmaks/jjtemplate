@@ -32,7 +32,7 @@ import java.util.List;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class SpreadListElement implements ListElement {
+public final class SpreadListElement implements ListElement {
     private final TemplateExpression source;
 
     @Override

@@ -24,7 +24,7 @@ import java.util.Map;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ObjectStaticFieldElement implements ObjectElement {
+public final class ObjectStaticFieldElement implements ObjectElement {
     private final String key;
     private final Object value;
 

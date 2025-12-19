@@ -26,7 +26,7 @@ import java.util.Objects;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ExpressionSwitchCase implements SwitchCase {
+public final class ExpressionSwitchCase implements SwitchCase {
     private final TemplateExpression key;
     private final TemplateExpression value;
 

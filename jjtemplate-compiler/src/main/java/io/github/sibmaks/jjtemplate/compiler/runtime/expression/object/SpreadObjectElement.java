@@ -29,7 +29,7 @@ import java.util.Map;
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
-public class SpreadObjectElement implements ObjectElement {
+public final class SpreadObjectElement implements ObjectElement {
     private final TemplateExpression source;
 
     @Override

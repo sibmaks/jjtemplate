@@ -28,7 +28,7 @@ import java.util.List;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ConditionListElement implements ListElement {
+public final class ConditionListElement implements ListElement {
     private final TemplateExpression source;
 
     @Override

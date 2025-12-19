@@ -26,7 +26,7 @@ import java.util.Map;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class ObjectFieldElement implements ObjectElement {
+public final class ObjectFieldElement implements ObjectElement {
     private final TemplateExpression key;
     private final TemplateExpression value;
 

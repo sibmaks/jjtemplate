@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
-public class SwitchCaseFolder implements SwitchCaseVisitor<SwitchCase> {
+public final class SwitchCaseFolder implements SwitchCaseVisitor<SwitchCase> {
     private final TemplateExpressionFolder folder;
 
     @Override
