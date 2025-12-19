@@ -140,35 +140,63 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
 
     @Override
     public TemplateExpression visit(VariableTemplateExpression variable) {
+        var folding = true;
         var rootName = variable.getRootName();
         var value = values.get(rootName);
-        if (value == null && !values.containsKey(rootName)) {
-            return variable;
-        }
         if (value == null) {
-            return new ConstantTemplateExpression(null);
-        }
-
-        var callChain = variable.getCallChain();
-        for (var chain : callChain) {
-            if (chain instanceof VariableTemplateExpression.CallMethodChain) {
-                var callMethodChain = (VariableTemplateExpression.CallMethodChain) chain;
-                for (var argsExpression : callMethodChain.getArgsExpressions()) {
-                    var inlined = argsExpression.visit(this);
-                    if (!(inlined instanceof ConstantTemplateExpression)) {
-                        return inlined;
-                    }
-                }
-                value = callMethodChain.apply(Context.empty(), value);
-            } else if (chain instanceof VariableTemplateExpression.GetPropertyChain) {
-                var propertyChain = (VariableTemplateExpression.GetPropertyChain) chain;
-                value = propertyChain.apply(Context.empty(), value);
+            if (!values.containsKey(rootName)) {
+                folding = false;
             } else {
-                return variable;
+                return new ConstantTemplateExpression(null);
             }
         }
 
-        return new ConstantTemplateExpression(value);
+        var callChain = variable.getCallChain();
+        var newCallChain = new ArrayList<VariableTemplateExpression.Chain>();
+        var anyArgInlined = false;
+        for (var chain : callChain) {
+            if (chain instanceof VariableTemplateExpression.CallMethodChain) {
+                var callMethodChain = (VariableTemplateExpression.CallMethodChain) chain;
+                var localAnyArgInlined = false;
+                var argsExpressions = callMethodChain.getArgsExpressions();
+                var inlinedArguments = new ArrayList<TemplateExpression>(argsExpressions.size());
+                for (var argsExpression : argsExpressions) {
+                    var inlined = argsExpression.visit(this);
+                    localAnyArgInlined |= argsExpression != inlined;
+                    inlinedArguments.add(inlined);
+                    if (!(inlined instanceof ConstantTemplateExpression)) {
+                        folding = false;
+                    }
+                }
+                anyArgInlined |= localAnyArgInlined;
+                if (localAnyArgInlined) {
+                    callMethodChain = new VariableTemplateExpression.CallMethodChain(
+                            callMethodChain.getMethodName(),
+                            inlinedArguments
+                    );
+                }
+                if (folding) {
+                    value = callMethodChain.apply(Context.empty(), value);
+                }
+                newCallChain.add(callMethodChain);
+            } else {
+                var propertyChain = (VariableTemplateExpression.GetPropertyChain) chain;
+                if (folding) {
+                    value = propertyChain.apply(Context.empty(), value);
+                }
+                newCallChain.add(chain);
+            }
+        }
+
+        if (folding) {
+            return new ConstantTemplateExpression(value);
+        }
+
+        if (anyArgInlined) {
+            return new VariableTemplateExpression(rootName, newCallChain);
+        }
+
+        return variable;
     }
 
     @Override

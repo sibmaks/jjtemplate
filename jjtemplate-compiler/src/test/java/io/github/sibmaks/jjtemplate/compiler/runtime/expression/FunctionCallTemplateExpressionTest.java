@@ -18,10 +18,10 @@ class FunctionCallTemplateExpressionTest {
 
     @Test
     void applyShouldInvokeFunctionWithEvaluatedArguments() {
-        var context = Context.empty();
+        Context context = mock();
 
-        var arg1 = mock(TemplateExpression.class);
-        var arg2 = mock(TemplateExpression.class);
+        TemplateExpression arg1 = mock("firstArg");
+        TemplateExpression arg2 = mock("secondArg");
 
         when(arg1.apply(context))
                 .thenReturn("A");
@@ -49,10 +49,10 @@ class FunctionCallTemplateExpressionTest {
 
     @Test
     void applyWithPipeShouldInvokeFunctionPassingPipeValue() {
-        var context = Context.empty();
+        Context context = mock();
 
-        var arg1 = mock(TemplateExpression.class);
-        var arg2 = mock(TemplateExpression.class);
+        TemplateExpression arg1 = mock("firstArg");
+        TemplateExpression arg2 = mock("secondArg");
 
         when(arg1.apply(context))
                 .thenReturn(10);

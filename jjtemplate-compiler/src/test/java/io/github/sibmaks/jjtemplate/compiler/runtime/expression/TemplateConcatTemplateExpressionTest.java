@@ -17,10 +17,10 @@ class TemplateConcatTemplateExpressionTest {
 
     @Test
     void applyShouldConcatenateEvaluatedChildExpressions() {
-        var context = Context.empty();
+        Context context = mock();
 
-        var expr1 = mock(TemplateExpression.class);
-        var expr2 = mock(TemplateExpression.class);
+        TemplateExpression expr1 = mock("firstExpression");
+        TemplateExpression expr2 = mock("secondExpression");
         var expr3 = mock(TemplateExpression.class);
 
         when(expr1.apply(context))
@@ -43,10 +43,10 @@ class TemplateConcatTemplateExpressionTest {
 
     @Test
     void applyShouldConvertNullResultsToStringLiteralNull() {
-        var context = Context.empty();
+        Context context = mock();
 
-        var expr1 = mock(TemplateExpression.class);
-        var expr2 = mock(TemplateExpression.class);
+        TemplateExpression expr1 = mock("firstExpression");
+        TemplateExpression expr2 = mock("secondExpression");
 
         when(expr1.apply(context))
                 .thenReturn(null);
@@ -79,8 +79,8 @@ class TemplateConcatTemplateExpressionTest {
 
     @Test
     void equalsAndHashCodeShouldDependOnExpressions() {
-        var expr1 = mock(TemplateExpression.class);
-        var expr2 = mock(TemplateExpression.class);
+        TemplateExpression expr1 = mock("firstExpression");
+        TemplateExpression expr2 = mock("secondExpression");
 
         var a = new TemplateConcatTemplateExpression(List.of(expr1, expr2));
         var b = new TemplateConcatTemplateExpression(List.of(expr1, expr2));

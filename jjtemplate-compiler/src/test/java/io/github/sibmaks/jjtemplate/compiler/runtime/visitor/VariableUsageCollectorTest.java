@@ -48,8 +48,8 @@ class VariableUsageCollectorTest {
 
     @Test
     void visitFunctionCallTemplateExpression_collectsArgs() {
-        var arg1 = mock(TemplateExpression.class);
-        var arg2 = mock(TemplateExpression.class);
+        TemplateExpression arg1 = mock("firstArg");
+        TemplateExpression arg2 = mock("secondArg");
 
         var func = mock(FunctionCallTemplateExpression.class);
         when(func.getArgExpressions())
@@ -67,8 +67,8 @@ class VariableUsageCollectorTest {
     void visitPipeChainTemplateExpression_collectsRootAndArgs() {
         var root = mock(TemplateExpression.class);
 
-        var arg1 = mock(TemplateExpression.class);
-        var arg2 = mock(TemplateExpression.class);
+        TemplateExpression arg1 = mock("firstArg");
+        TemplateExpression arg2 = mock("secondArg");
         var chainCall = mock(FunctionCallTemplateExpression.class);
         when(chainCall.getArgExpressions())
                 .thenReturn(List.of(arg1, arg2));

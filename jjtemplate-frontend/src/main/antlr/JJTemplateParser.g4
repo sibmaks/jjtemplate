@@ -83,6 +83,7 @@ argList
 
 rangeExpression
     : name=IDENT KEYWORD_RANGE item=IDENT COMMA index=IDENT KEYWORD_OF collection=expression
+    | rangeName=primary KEYWORD_RANGE item=IDENT COMMA index=IDENT KEYWORD_OF collection=expression
     ;
 
 switchExpression

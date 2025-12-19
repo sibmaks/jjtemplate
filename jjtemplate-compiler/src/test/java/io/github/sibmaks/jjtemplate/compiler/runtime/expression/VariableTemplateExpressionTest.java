@@ -111,7 +111,7 @@ class VariableTemplateExpressionTest {
     @Test
     void applyShouldFollowCallMethodChain() {
         var rootValue = new Object();
-        var argExpression = mock(TemplateExpression.class);
+        TemplateExpression argExpression = mock("expression");
         var argValue = 123;
         var resultValue = 456;
 

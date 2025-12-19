@@ -107,15 +107,24 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
 
     @Override
     public TemplateExpression visitRangeExpression(JJTemplateParser.RangeExpressionContext context) {
+        var name = getRangeName(context);
         var rangeSourceExpression = context.expression();
         var rangeSource = rangeSourceExpression.accept(this);
 
         return RangeTemplateExpression.builder()
-                .name(new ConstantTemplateExpression(context.name.getText()))
+                .name(name)
                 .itemVariableName(context.item.getText())
                 .indexVariableName(context.index.getText())
                 .source(rangeSource)
                 .build();
+    }
+
+    private TemplateExpression getRangeName(JJTemplateParser.RangeExpressionContext context) {
+        if (context.name != null) {
+            return new ConstantTemplateExpression(context.name.getText());
+        }
+        var rangeName = context.rangeName;
+        return rangeName.accept(this);
     }
 
     @Override

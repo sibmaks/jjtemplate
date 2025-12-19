@@ -15,7 +15,7 @@ class TernaryTemplateExpressionTest {
 
     @Test
     void shouldEvaluateThenTrueBranchWhenConditionIsTrue() {
-        var context = Context.empty();
+        Context context = mock();
 
         var conditionExpression = mock(TemplateExpression.class);
         when(conditionExpression.apply(context))
@@ -45,7 +45,7 @@ class TernaryTemplateExpressionTest {
 
     @Test
     void shouldEvaluateThenFalseBranchWhenConditionIsFalse() {
-        var context = Context.empty();
+        Context context = mock();
 
         var conditionExpression = mock(TemplateExpression.class);
         when(conditionExpression.apply(context))
@@ -74,7 +74,7 @@ class TernaryTemplateExpressionTest {
 
     @Test
     void shouldThrowWhenConditionIsNotBoolean() {
-        var context = Context.empty();
+        Context context = mock();
 
         var conditionExpression = mock(TemplateExpression.class);
         when(conditionExpression.apply(context))

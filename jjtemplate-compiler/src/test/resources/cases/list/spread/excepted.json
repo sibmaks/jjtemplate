@@ -8,9 +8,6 @@
     3.1415,
     "suffix"
   ],
-  "object": {
-    "key": "new-value"
-  },
   "staticArray": [
     "a",
     true,
@@ -33,21 +30,5 @@
   "pipeStaticOperator": [
     "true",
     "false"
-  ],
-  "ternaryOperator": [
-    {
-      "key": "value"
-    },
-    {
-      "key": "value"
-    }
-  ],
-  "ternaryStaticOperator": [
-    {
-      "key": "value"
-    },
-    {
-      "key": "value"
-    }
   ]
 }

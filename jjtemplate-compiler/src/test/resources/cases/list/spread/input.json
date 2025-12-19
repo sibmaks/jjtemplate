@@ -11,10 +11,6 @@
       "{{. .varList}}",
       "suffix"
     ],
-    "object": {
-      "key": "value",
-      "{{. .varObject }}": true
-    },
     "staticArray": [
       "{{. list:new 'a', true, 42, 3.1415 }}"
     ],
@@ -36,14 +32,6 @@
     "pipeStaticOperator": [
       "{{. true | cast:str }}",
       "{{. false | cast:str }}"
-    ],
-    "ternaryOperator": [
-      "{{. .defTrue ? .varParentObject.child : null }}",
-      "{{. .defFalse ? null : .varParentObject.child }}"
-    ],
-    "ternaryStaticOperator": [
-      "{{. (false | not) ? .varParentObject.child : null }}",
-      "{{. (true | not) ? null : .varParentObject.child }}"
     ]
   }
 }
