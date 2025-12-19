@@ -73,7 +73,7 @@ public final class RootTemplateExpressionFactory {
         }
 
         if (object instanceof Map<?, ?>) {
-            var rawExpression = (Map<String, Object>) object;
+            var rawExpression = (Map<?, ?>) object;
             return compileObject(rawExpression);
         }
 
@@ -159,12 +159,21 @@ public final class RootTemplateExpressionFactory {
         }
     }
 
-    public ObjectTemplateExpression compileObject(Map<String, Object> rawExpression) {
+    /**
+     * Compiles the given template object into a {@link ObjectTemplateExpression}.
+     * <p>
+     * The input object represent a structured template. The method parses and
+     * transforms it into an executable expression tree.
+     *
+     * @param rawExpression value map to compile
+     * @return compiled template expression
+     */
+    public ObjectTemplateExpression compileObject(Map<?, ?> rawExpression) {
         var elements = new ArrayList<ObjectElement>(rawExpression.size());
 
         for (var entry : rawExpression.entrySet()) {
             var rawKey = entry.getKey();
-            var keyContext = parseObjectKey(rawKey);
+            var keyContext = parseObjectKey(String.valueOf(rawKey));
             var keyType = keyContext.accept(typeInferenceVisitor);
             switch (keyType) {
                 case CONSTANT:
@@ -180,7 +189,7 @@ public final class RootTemplateExpressionFactory {
                     break;
                 }
                 case SWITCH: {
-                    var switchRawValue = (Map<String, Object>) entry.getValue();
+                    var switchRawValue = (Map<?, ?>) entry.getValue();
                     var element = compileSwitch(keyContext, switchRawValue);
                     elements.add(element);
                     break;
@@ -214,21 +223,21 @@ public final class RootTemplateExpressionFactory {
 
     private ObjectFieldElement compileSwitch(
             JJTemplateParser.TemplateContext keyContext,
-            Map<String, Object> rawValue
+            Map<?, ?> rawValue
     ) {
         var expressionKey = (SwitchTemplateExpression) keyContext.accept(expressionFactory);
         var switchCases = new ArrayList<SwitchCase>(rawValue.size());
 
         for (var entry : rawValue.entrySet()) {
             var caseKeyRaw = entry.getKey();
-            var caseKeyContext = parseObjectKey(caseKeyRaw);
+            var caseKeyContext = parseObjectKey(String.valueOf(caseKeyRaw));
             var caseKeyType = caseKeyContext.accept(typeInferenceVisitor);
             var caseValueRaw = entry.getValue();
             if (caseKeyType == TemplateType.SWITCH) {
                 if (!(caseValueRaw instanceof Map<?, ?>)) {
                     throw new IllegalArgumentException(String.format("Expected a map entry for '%s'", caseKeyRaw));
                 }
-                var objectValue = compileSwitch(caseKeyContext, (Map<String, Object>) caseValueRaw);
+                var objectValue = compileSwitch(caseKeyContext, (Map<?, ?>) caseValueRaw);
                 var switchCase = new ExpressionSwitchCase(objectValue.getKey(), objectValue.getValue());
                 switchCases.add(switchCase);
             } else if (caseKeyType == TemplateType.SWITCH_ELSE) {
