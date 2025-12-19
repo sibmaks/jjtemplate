@@ -1,0 +1,8 @@
+{
+  "definitions": [
+    {
+      "key": "key"
+    }
+  ],
+  "template": "{{ .object.get(.key).subKey }}"
+}

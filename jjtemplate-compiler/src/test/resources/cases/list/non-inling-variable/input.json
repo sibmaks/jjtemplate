@@ -1,10 +1,10 @@
 {
   "definitions": [
     {
-      "var": "ok"
+      "var": "hello"
     }
   ],
   "template": [
-    "{{ .var }}"
+    "{{ .var.indexOf(.value) }}"
   ]
 }

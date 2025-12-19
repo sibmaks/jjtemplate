@@ -81,6 +81,18 @@ public final class VariableUsageCollector implements
     public Void visit(VariableTemplateExpression expression) {
         var rootName = expression.getRootName();
         variables.add(rootName);
+
+        var callChain = expression.getCallChain();
+        for (var chain : callChain) {
+            if (chain instanceof VariableTemplateExpression.CallMethodChain) {
+                var callMethodChain = (VariableTemplateExpression.CallMethodChain) chain;
+                var argsExpressions = callMethodChain.getArgsExpressions();
+                for (var argsExpression : argsExpressions) {
+                    argsExpression.visit(this);
+                }
+            }
+        }
+
         return null;
     }
 

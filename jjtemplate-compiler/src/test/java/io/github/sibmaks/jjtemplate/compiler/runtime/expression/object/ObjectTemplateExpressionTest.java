@@ -30,7 +30,7 @@ class ObjectTemplateExpressionTest {
 
         var result = expression.apply(context);
 
-        var map = assertInstanceOf(Map.class, result);
+        Map<String, Object> map = assertInstanceOf(Map.class, result);
 
         verify(el1)
                 .apply(context, map);

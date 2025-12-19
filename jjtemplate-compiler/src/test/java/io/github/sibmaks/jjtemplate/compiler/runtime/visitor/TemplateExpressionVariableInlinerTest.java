@@ -94,32 +94,6 @@ final class TemplateExpressionVariableInlinerTest {
     }
 
     @Test
-    void variableWithMethodChainStopsIfArgIsNotValueExpression() {
-        var values = new HashMap<String, Object>();
-        var variableName = UUID.randomUUID().toString();
-        var variableValue = UUID.randomUUID().hashCode();
-        values.put(variableName, variableValue);
-        var inliner = new TemplateExpressionVariableInliner(values);
-
-        var arg = mock(TemplateExpression.class);
-        var inlined = mock(TemplateExpression.class);
-        when(arg.visit(any()))
-                .thenReturn(inlined);
-
-        List<VariableTemplateExpression.Chain> chain = List.of(
-                new VariableTemplateExpression.CallMethodChain(
-                        "substring",
-                        List.of(arg)
-                )
-        );
-
-        var expression = new VariableTemplateExpression(variableName, chain);
-
-        var result = expression.visit(inliner);
-        assertSame(inlined, result);
-    }
-
-    @Test
     void methodChainIsAppliedWhenAllArgsInlineToValues() {
         var values = new HashMap<String, Object>();
         var variableName = UUID.randomUUID().toString();

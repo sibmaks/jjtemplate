@@ -1,0 +1,12 @@
+{
+  "definitions": [
+    {
+      "object": {
+        "key": {
+          "subKey": "ok"
+        }
+      }
+    }
+  ],
+  "template": "{{ .object.get('key').subKey }}"
+}
