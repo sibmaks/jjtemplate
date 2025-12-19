@@ -9,7 +9,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectEle
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectStaticFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ConstantSwitchCase;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseSwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage.VariableUsageCollector;
@@ -378,19 +378,6 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
     }
 
     @Override
-    public TemplateExpression visit(ElseTemplateExpression expression) {
-        var value = expression.getValue();
-        var foldedValue = value.visit(this);
-        var anyFolded = value != foldedValue;
-
-        if (anyFolded) {
-            return new ElseTemplateExpression(foldedValue);
-        }
-
-        return expression;
-    }
-
-    @Override
     public TemplateExpression visit(ObjectTemplateExpression expression) {
         var elements = expression.getElements();
         var foldedElements = new ArrayList<ObjectElement>(elements.size());
@@ -439,7 +426,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         var tryFold = foldedCondition instanceof ConstantTemplateExpression;
         Object value = null;
         if (tryFold) {
-            var constantCondition = (ConstantTemplateExpression) condition;
+            var constantCondition = (ConstantTemplateExpression) foldedCondition;
             value = constantCondition.getValue();
         }
         for (var switchCase : cases) {
@@ -453,8 +440,8 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                     if (Objects.equals(caseValue, value)) {
                         return constantSwitchCase.getValue();
                     }
-                } else if (foldedCase instanceof ElseTemplateExpression) {
-                    var elseCase = (ElseTemplateExpression) foldedCase;
+                } else if (foldedCase instanceof ElseSwitchCase) {
+                    var elseCase = (ElseSwitchCase) foldedCase;
                     return elseCase.getValue();
                 } else {
                     tryFold = false;

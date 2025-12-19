@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 
 /**
@@ -100,13 +99,5 @@ public interface TemplateExpressionVisitor<R> {
      * @return visitor-defined result
      */
     R visit(RangeTemplateExpression expression);
-
-    /**
-     * Visits an {@code else} template expression.
-     *
-     * @param expression else template expression
-     * @return visitor-defined result
-     */
-    R visit(ElseTemplateExpression expression);
 
 }

@@ -49,7 +49,7 @@ public final class RangeTemplateExpression implements TemplateExpression {
         if (sourceObject.getClass().isArray()) {
             return evaluateArray(context, sourceObject);
         }
-        throw new IllegalArgumentException("Unsupported range source: " + sourceObject);
+        throw new IllegalArgumentException("Unsupported range source: " + sourceObject + ", " + sourceObject.getClass());
     }
 
     private ArrayList<Object> evaluateArray(Context context, Object sourceObject) {

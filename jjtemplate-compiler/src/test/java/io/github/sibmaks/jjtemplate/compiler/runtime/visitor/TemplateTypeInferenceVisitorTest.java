@@ -90,7 +90,7 @@ class TemplateTypeInferenceVisitorTest {
 
     @Test
     void visitText() {
-        assertEquals(TemplateType.STATIC, visitor.visitText(null));
+        assertEquals(TemplateType.CONSTANT, visitor.visitText(null));
     }
 
     @Test

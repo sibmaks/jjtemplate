@@ -14,22 +14,70 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor;
  */
 public enum TemplateType {
     /**
-     * Plain literal text
+     * Constant literal template.
+     * <p>
+     * Represents a static value embedded directly into the template
+     * and returned as-is during evaluation.
+     * </p>
      */
-    STATIC,
+    CONSTANT,
+
     /**
-     * Value interpolation or general expression
+     * Value interpolation or general expression template.
+     * <p>
+     * Represents an arbitrary expression whose value is evaluated
+     * at runtime and inserted into the result.
+     * </p>
      */
     EXPRESSION,
+
     /**
-     * Conditional interpolation such as {@code {{? expr }}}
+     * Conditional interpolation template.
+     * <p>
+     * Evaluates the underlying expression and includes its result
+     * only if the condition is satisfied.
+     * </p>
+     *
+     * <p>
+     * Typically corresponds to conditional constructs such as
+     * {@code {{? expr }}}.
+     * </p>
      */
     CONDITION,
+
     /**
-     * Spread operation used to merge objects or lists
+     * Spread operation template.
+     * <p>
+     * Expands the contents of another object or list into the
+     * surrounding structure during evaluation.
+     * </p>
      */
     SPREAD,
+
+    /**
+     * Switch template.
+     * <p>
+     * Selects one of several alternative branches based on the
+     * evaluated switch condition.
+     * </p>
+     */
     SWITCH,
+
+    /**
+     * Switch {@code else} template.
+     * <p>
+     * Represents an unconditional fallback branch of a switch
+     * expression, evaluated when no other case matches.
+     * </p>
+     */
     SWITCH_ELSE,
+
+    /**
+     * Range template.
+     * <p>
+     * Iterates over a collection or array and produces a sequence
+     * of values by evaluating a body expression for each element.
+     * </p>
+     */
     RANGE
 }

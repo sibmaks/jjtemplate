@@ -45,15 +45,15 @@ public final class SwitchCaseVariableInliner implements SwitchCaseVisitor<Switch
     }
 
     @Override
-    public SwitchCase visit(ElseTemplateExpression elseTemplateExpression) {
-        var value = elseTemplateExpression.getValue();
+    public SwitchCase visit(ElseSwitchCase elseSwitchCase) {
+        var value = elseSwitchCase.getValue();
         var inlinedValue = value.visit(inliner);
         var anyInlined = value != inlinedValue;
 
         if (anyInlined) {
-            return new ElseTemplateExpression(inlinedValue);
+            return new ElseSwitchCase(inlinedValue);
         }
 
-        return elseTemplateExpression;
+        return elseSwitchCase;
     }
 }

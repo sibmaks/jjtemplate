@@ -17,4 +17,14 @@ public class TemplateParseException extends ParseCancellationException {
     public TemplateParseException(String message) {
         super(message);
     }
+
+    /**
+     * Creates a new instance with the specified message and cause.
+     *
+     * @param message error message
+     * @param cause   error cause
+     */
+    public TemplateParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

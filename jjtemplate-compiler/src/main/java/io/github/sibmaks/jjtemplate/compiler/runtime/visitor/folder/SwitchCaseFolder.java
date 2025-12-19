@@ -52,15 +52,15 @@ public final class SwitchCaseFolder implements SwitchCaseVisitor<SwitchCase> {
     }
 
     @Override
-    public SwitchCase visit(ElseTemplateExpression elseTemplateExpression) {
-        var value = elseTemplateExpression.getValue();
+    public SwitchCase visit(ElseSwitchCase elseSwitchCase) {
+        var value = elseSwitchCase.getValue();
         var foldedValue = value.visit(folder);
         var anyFolded = value != foldedValue;
 
         if (anyFolded) {
-            return new ElseTemplateExpression(foldedValue);
+            return new ElseSwitchCase(foldedValue);
         }
 
-        return elseTemplateExpression;
+        return elseSwitchCase;
     }
 }

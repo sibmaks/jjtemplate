@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 import io.github.sibmaks.jjtemplate.frontend.antlr.JJTemplateParser;
 import io.github.sibmaks.jjtemplate.frontend.antlr.JJTemplateParserBaseVisitor;
@@ -270,10 +269,6 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
     @Override
     public TemplateExpression visitElseSwitchCaseExpression(JJTemplateParser.ElseSwitchCaseExpressionContext context) {
         var switchExpression = context.expression();
-
-        if (switchExpression == null) {
-            return new ElseTemplateExpression(null);
-        }
 
         var condition = switchExpression.accept(this);
 

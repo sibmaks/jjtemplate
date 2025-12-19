@@ -8,13 +8,15 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectEle
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.SpreadObjectElement;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseSwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ExpressionSwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.TemplateType;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.TemplateTypeInferenceVisitor;
 import io.github.sibmaks.jjtemplate.frontend.ExpressionParser;
 import io.github.sibmaks.jjtemplate.frontend.antlr.JJTemplateParser;
+import io.github.sibmaks.jjtemplate.frontend.exception.TemplateParseException;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Array;
@@ -104,11 +106,11 @@ public final class RootTemplateExpressionFactory {
             return;
         }
         var rawItem = (String) item;
-        var templateContext = expressionParser.parse(rawItem);
+        var templateContext = parseCollectionItem(rawItem);
         var expressionItem = templateContext.accept(expressionFactory);
         var keyType = templateContext.accept(typeInferenceVisitor);
         switch (keyType) {
-            case STATIC:
+            case CONSTANT:
             case EXPRESSION: {
                 var listElement = new DynamicListElement(expressionItem);
                 items.add(listElement);
@@ -129,6 +131,14 @@ public final class RootTemplateExpressionFactory {
         }
     }
 
+    private JJTemplateParser.TemplateContext parseCollectionItem(String rawItem) {
+        try {
+            return expressionParser.parse(rawItem);
+        } catch (TemplateParseException e) {
+            throw new TemplateParseException(String.format("Parse collection item: '%s' failed", rawItem), e);
+        }
+    }
+
     private TemplateExpression compileArray(Object rawExpression) {
         var length = Array.getLength(rawExpression);
         var items = new ArrayList<ListElement>(length);
@@ -141,19 +151,23 @@ public final class RootTemplateExpressionFactory {
     }
 
     private TemplateExpression compileString(String rawExpression) {
-        var templateContext = expressionParser.parse(rawExpression);
-        return templateContext.accept(expressionFactory);
+        try {
+            var templateContext = expressionParser.parse(rawExpression);
+            return templateContext.accept(expressionFactory);
+        } catch (TemplateParseException e) {
+            throw new TemplateParseException(String.format("Parse string: '%s' failed", rawExpression), e);
+        }
     }
 
-    private TemplateExpression compileObject(Map<String, Object> rawExpression) {
+    public ObjectTemplateExpression compileObject(Map<String, Object> rawExpression) {
         var elements = new ArrayList<ObjectElement>(rawExpression.size());
 
         for (var entry : rawExpression.entrySet()) {
             var rawKey = entry.getKey();
-            var keyContext = expressionParser.parse(rawKey);
+            var keyContext = parseObjectKey(rawKey);
             var keyType = keyContext.accept(typeInferenceVisitor);
             switch (keyType) {
-                case STATIC:
+                case CONSTANT:
                 case EXPRESSION:
                 case CONDITION: {
                     var expressionKey = keyContext.accept(expressionFactory);
@@ -168,17 +182,6 @@ public final class RootTemplateExpressionFactory {
                 case SWITCH: {
                     var switchRawValue = (Map<String, Object>) entry.getValue();
                     var element = compileSwitch(keyContext, switchRawValue);
-                    elements.add(element);
-                    break;
-                }
-                case SWITCH_ELSE: {
-                    var expression = (ElseTemplateExpression) keyContext.accept(expressionFactory);
-                    var rawValue = entry.getValue();
-                    expression = new ElseTemplateExpression(compile(rawValue));
-                    var element = new ObjectFieldElement(
-                            expression,
-                            expression
-                    );
                     elements.add(element);
                     break;
                 }
@@ -201,6 +204,14 @@ public final class RootTemplateExpressionFactory {
         return new ObjectTemplateExpression(elements);
     }
 
+    private JJTemplateParser.TemplateContext parseObjectKey(String rawKey) {
+        try {
+            return expressionParser.parse(rawKey);
+        } catch (TemplateParseException e) {
+            throw new TemplateParseException(String.format("Parse object field: '%s' failed", rawKey), e);
+        }
+    }
+
     private ObjectFieldElement compileSwitch(
             JJTemplateParser.TemplateContext keyContext,
             Map<String, Object> rawValue
@@ -211,23 +222,29 @@ public final class RootTemplateExpressionFactory {
                 .switchKey(expressionKey.getSwitchKey())
                 .condition(expressionKey.getCondition());
 
-        var compiledCases = (ObjectTemplateExpression) compileObject(rawValue);
-        var elements = compiledCases.getElements();
-        var switchCases = new ArrayList<SwitchCase>(elements.size());
-        for (var element : elements) {
-            if (element instanceof ObjectFieldElement) {
-                var objectElement = (ObjectFieldElement) element;
-                var objectKey = objectElement.getKey();
-                if (objectKey instanceof ElseTemplateExpression) {
-                    var elseTemplate = (ElseTemplateExpression) objectKey;
-                    switchCases.add(elseTemplate);
-                } else {
-                    var objectValue = objectElement.getValue();
-                    var switchCase = new ExpressionSwitchCase(objectKey, objectValue);
-                    switchCases.add(switchCase);
+        var switchCases = new ArrayList<SwitchCase>(rawValue.size());
+
+        for (var entry : rawValue.entrySet()) {
+            var caseKeyRaw = entry.getKey();
+            var caseKeyContext = parseObjectKey(caseKeyRaw);
+            var caseKeyType = caseKeyContext.accept(typeInferenceVisitor);
+            var caseValueRaw = entry.getValue();
+            if (caseKeyType == TemplateType.SWITCH) {
+                if (!(caseValueRaw instanceof Map<?, ?>)) {
+                    throw new IllegalArgumentException(String.format("Expected a map entry for '%s'", caseKeyRaw));
                 }
+                var objectValue = compileSwitch(caseKeyContext, (Map<String, Object>) caseValueRaw);
+                var switchCase = new ExpressionSwitchCase(objectValue.getKey(), objectValue.getValue());
+                switchCases.add(switchCase);
+            } else if (caseKeyType == TemplateType.SWITCH_ELSE) {
+                var objectValue = compile(caseValueRaw);
+                var switchCase = new ElseSwitchCase(objectValue);
+                switchCases.add(switchCase);
             } else {
-                throw new IllegalArgumentException("Unknown key type: " + element.getClass());
+                var objectKey = caseKeyContext.accept(expressionFactory);
+                var objectValue = compile(caseValueRaw);
+                var switchCase = new ExpressionSwitchCase(objectKey, objectValue);
+                switchCases.add(switchCase);
             }
         }
 

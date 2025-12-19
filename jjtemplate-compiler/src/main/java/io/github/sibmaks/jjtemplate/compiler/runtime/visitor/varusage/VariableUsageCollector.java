@@ -119,7 +119,7 @@ public final class VariableUsageCollector implements
     }
 
     @Override
-    public Void visit(ElseTemplateExpression expression) {
+    public Void visit(ElseSwitchCase expression) {
         var value = expression.getValue();
         value.visit(this);
         return null;

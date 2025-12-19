@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.impl;
 
 import io.github.sibmaks.jjtemplate.compiler.api.*;
+import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
 import io.github.sibmaks.jjtemplate.compiler.optimizer.CompiledTemplateFolder;
 import io.github.sibmaks.jjtemplate.compiler.optimizer.TemplateOptimizer;
 import io.github.sibmaks.jjtemplate.compiler.optimizer.UnusedVariableNodeEliminator;
@@ -70,32 +71,43 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
                 .orElseGet(List::of);
         var template = script.getTemplate();
         if (template == null) {
-            throw new IllegalArgumentException("'template' field required");
+            throw new TemplateCompilationException("'template' field required");
         }
 
         var internalVariables = compileInternalVariables(defs);
 
-        var templateNode = rootTemplateExpressionFactory.compile(template);
-        var compiledTemplate = new CompiledTemplateImpl(internalVariables, templateNode);
+        var templateExpression = compileTemplate(template);
+        var compiledTemplate = new CompiledTemplateImpl(internalVariables, templateExpression);
         var repeat = false;
         do {
             repeat = false;
             for (var optimizer : optimizers) {
                 var was = compiledTemplate;
-                compiledTemplate = optimizer.optimize(compiledTemplate);
+                try {
+                    compiledTemplate = optimizer.optimize(compiledTemplate);
+                } catch (Exception e) {
+                    throw new TemplateCompilationException("Error optimizing template", e);
+                }
                 if (was != compiledTemplate) {
                     repeat = true;
                 }
             }
         } while (repeat);
-        return buildCompiledTemplate(compiledTemplate.getCompiledTemplate(), compiledTemplate.getInternalVariables());
+        return buildCompiledTemplate(compiledTemplate);
+    }
+
+    private TemplateExpression compileTemplate(Object template) {
+        try {
+            return rootTemplateExpressionFactory.compile(template);
+        } catch (Exception e) {
+            throw new TemplateCompilationException("Error compiling template", e);
+        }
     }
 
     private List<InternalVariable> compileInternalVariables(List<Definition> defs) {
         var internalVariables = new ArrayList<InternalVariable>();
         for (var def : defs) {
-            var compiled = rootTemplateExpressionFactory.compile(def);
-            var objectVariables = (ObjectTemplateExpression) compiled;
+            var objectVariables = compileInternalVariable(def);
             for (var element : objectVariables.getElements()) {
                 if (element instanceof ObjectFieldElement) {
                     var objectFieldElement = (ObjectFieldElement) element;
@@ -112,15 +124,23 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         return internalVariables;
     }
 
+    private ObjectTemplateExpression compileInternalVariable(Definition definition) {
+        try {
+            return rootTemplateExpressionFactory.compileObject(definition);
+        } catch (Exception e) {
+            throw new TemplateCompilationException("Error compiling definition", e);
+        }
+    }
+
     private CompiledTemplate buildCompiledTemplate(
-            TemplateExpression compiledTemplate,
-            List<InternalVariable> internalVariables
+            CompiledTemplateImpl compiledTemplateImpl
     ) {
-        if (compiledTemplate instanceof ConstantTemplateExpression) {
-            var constantExpression = (ConstantTemplateExpression) compiledTemplate;
+        var templateExpression = compiledTemplateImpl.getCompiledTemplate();
+        if (templateExpression instanceof ConstantTemplateExpression) {
+            var constantExpression = (ConstantTemplateExpression) templateExpression;
             var value = constantExpression.getValue();
             return new StaticCompiledTemplateImpl(value);
         }
-        return new CompiledTemplateImpl(internalVariables, compiledTemplate);
+        return compiledTemplateImpl;
     }
 }

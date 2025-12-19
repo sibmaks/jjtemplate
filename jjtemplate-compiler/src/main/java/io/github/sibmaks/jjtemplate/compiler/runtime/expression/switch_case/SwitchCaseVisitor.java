@@ -30,8 +30,8 @@ public interface SwitchCaseVisitor<T> {
     /**
      * Visits an unconditional {@code else} switch case.
      *
-     * @param elseTemplateExpression else switch case
+     * @param elseSwitchCase else switch case
      * @return visitor-defined result
      */
-    T visit(ElseTemplateExpression elseTemplateExpression);
+    T visit(ElseSwitchCase elseSwitchCase);
 }

@@ -6,7 +6,6 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchCase;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 
@@ -240,16 +239,6 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
                     .build();
         }
 
-        return expression;
-    }
-
-    @Override
-    public TemplateExpression visit(ElseTemplateExpression expression) {
-        var value = expression.getValue();
-        var inlined = value.visit(this);
-        if (value != inlined) {
-            return new ElseTemplateExpression(inlined);
-        }
         return expression;
     }
 

@@ -15,7 +15,7 @@ import java.util.ArrayList;
  *
  * <p>Type inference rules:</p>
  * <ul>
- *   <li>Plain text → {@link TemplateType#STATIC}</li>
+ *   <li>Plain text → {@link TemplateType#CONSTANT}</li>
  *   <li>{{ expr }} → {@link TemplateType#EXPRESSION}</li>
  *   <li>{{? expr }} → {@link TemplateType#CONDITION}</li>
  *   <li>{{... expr }} → {@link TemplateType#SPREAD}</li>
@@ -53,7 +53,7 @@ public final class TemplateTypeInferenceVisitor extends JJTemplateParserBaseVisi
 
     @Override
     public TemplateType visitText(JJTemplateParser.TextContext context) {
-        return TemplateType.STATIC;
+        return TemplateType.CONSTANT;
     }
 
     @Override

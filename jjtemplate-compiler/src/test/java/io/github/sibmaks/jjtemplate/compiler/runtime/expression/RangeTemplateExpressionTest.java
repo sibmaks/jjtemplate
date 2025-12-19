@@ -169,7 +169,7 @@ class RangeTemplateExpressionTest {
                 () -> expression.apply(context)
         );
 
-        assertEquals("Unsupported range source: " + value, exception.getMessage());
+        assertEquals("Unsupported range source: " + value + ", " + value.getClass(), exception.getMessage());
     }
 
     @Test
