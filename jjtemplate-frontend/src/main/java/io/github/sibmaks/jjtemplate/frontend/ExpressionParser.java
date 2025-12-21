@@ -30,7 +30,6 @@ public class ExpressionParser {
     public JJTemplateParser.TemplateContext parse(String input) {
         var lexer = new JJTemplateLexer(CharStreams.fromString(input));
         var tokens = new CommonTokenStream(lexer);
-        tokens.fill();
 
         var parser = new JJTemplateParser(tokens);
 
