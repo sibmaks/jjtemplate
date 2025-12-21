@@ -261,13 +261,9 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
 
     @Override
     public TemplateExpression visit(SwitchTemplateExpression expression) {
-        var switchKey = expression.getSwitchKey();
-        var inlinedSwitchKey = switchKey.visit(this);
-        var anyInlined = switchKey != inlinedSwitchKey;
-
         var condition = expression.getCondition();
         var inlinedCondition = condition.visit(this);
-        anyInlined |= condition != inlinedCondition;
+        var anyInlined = condition != inlinedCondition;
 
         var cases = expression.getCases();
         var inlinedCases = new ArrayList<SwitchCase>(cases.size());
@@ -280,7 +276,6 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
 
         if (anyInlined) {
             return SwitchTemplateExpression.builder()
-                    .switchKey(inlinedSwitchKey)
                     .condition(inlinedCondition)
                     .cases(inlinedCases)
                     .build();

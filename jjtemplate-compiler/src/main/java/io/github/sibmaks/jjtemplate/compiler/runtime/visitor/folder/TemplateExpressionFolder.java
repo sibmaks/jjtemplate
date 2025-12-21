@@ -412,13 +412,9 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
 
     @Override
     public TemplateExpression visit(SwitchTemplateExpression expression) {
-        var switchKey = expression.getSwitchKey();
-        var foldedSwitchKey = switchKey.visit(this);
-        var anyFolded = switchKey != foldedSwitchKey;
-
         var condition = expression.getCondition();
         var foldedCondition = condition.visit(this);
-        anyFolded |= condition != foldedCondition;
+        var anyFolded = condition != foldedCondition;
 
         var cases = expression.getCases();
         var foldedCases = new ArrayList<SwitchCase>(cases.size());
@@ -454,7 +450,6 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
 
         if (anyFolded) {
             return SwitchTemplateExpression.builder()
-                    .switchKey(foldedSwitchKey)
                     .condition(foldedCondition)
                     .cases(foldedCases)
                     .build();

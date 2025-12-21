@@ -24,7 +24,6 @@ class SwitchTemplateExpressionTest {
         var conditionValue = UUID.randomUUID().toString();
         var resultValue = UUID.randomUUID().toString();
 
-        TemplateExpression switchKey = mock("switchKey");
         TemplateExpression condition = mock("condition");
         when(condition.apply(context))
                 .thenReturn(conditionValue);
@@ -40,7 +39,6 @@ class SwitchTemplateExpressionTest {
                 .thenReturn(resultValue);
 
         var expression = new SwitchTemplateExpression(
-                switchKey,
                 condition,
                 List.of(case1, case2)
         );
@@ -63,7 +61,6 @@ class SwitchTemplateExpressionTest {
 
         var conditionValue = UUID.randomUUID().toString();
 
-        TemplateExpression switchKey = mock("switchKey");
         TemplateExpression condition = mock("condition");
         when(condition.apply(context))
                 .thenReturn(conditionValue);
@@ -77,7 +74,6 @@ class SwitchTemplateExpressionTest {
                 .thenReturn(false);
 
         var expression = new SwitchTemplateExpression(
-                switchKey,
                 condition,
                 List.of(case1, case2)
         );
@@ -91,14 +87,12 @@ class SwitchTemplateExpressionTest {
     void applyShouldThrowExceptionIfCaseIsNull() {
         Context context = mock();
 
-        TemplateExpression switchKey = mock("switchKey");
         TemplateExpression condition = mock("condition");
 
         var cases = new java.util.ArrayList<SwitchCase>();
         cases.add(null);
 
         var expression = new SwitchTemplateExpression(
-                switchKey,
                 condition,
                 cases
         );
@@ -114,11 +108,9 @@ class SwitchTemplateExpressionTest {
     void visitShouldDelegateToVisitor() {
         TemplateExpressionVisitor<String> visitor = mock();
 
-        TemplateExpression switchKey = mock("switchKey");
         TemplateExpression condition = mock("condition");
 
         var expression = new SwitchTemplateExpression(
-                switchKey,
                 condition,
                 List.of()
         );
@@ -138,15 +130,14 @@ class SwitchTemplateExpressionTest {
 
     @Test
     void equalsAndHashCodeShouldWorkBasedOnConditionAndCases() {
-        TemplateExpression switchKey = mock("switchKey");
         TemplateExpression condition = mock("condition");
 
         SwitchCase case1 = mock("firstCase");
         SwitchCase case2 = mock("secondCase");
 
-        var expr1 = new SwitchTemplateExpression(switchKey, condition, List.of(case1, case2));
-        var expr2 = new SwitchTemplateExpression(switchKey, condition, List.of(case1, case2));
-        var expr3 = new SwitchTemplateExpression(switchKey, condition, List.of(case1));
+        var expr1 = new SwitchTemplateExpression(condition, List.of(case1, case2));
+        var expr2 = new SwitchTemplateExpression(condition, List.of(case1, case2));
+        var expr3 = new SwitchTemplateExpression(condition, List.of(case1));
 
         assertEquals(expr1, expr2);
         assertEquals(expr1.hashCode(), expr2.hashCode());

@@ -200,9 +200,6 @@ public final class VariableUsageCollector implements
 
     @Override
     public Void visit(SwitchTemplateExpression expression) {
-        var switchKey = expression.getSwitchKey();
-        switchKey.visit(this);
-
         var condition = expression.getCondition();
         condition.visit(this);
 

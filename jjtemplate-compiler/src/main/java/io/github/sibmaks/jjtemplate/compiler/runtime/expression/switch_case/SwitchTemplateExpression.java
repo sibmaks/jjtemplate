@@ -28,7 +28,6 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 public final class SwitchTemplateExpression implements TemplateExpression {
-    private final TemplateExpression switchKey;
     private final TemplateExpression condition;
     private final List<SwitchCase> cases;
 

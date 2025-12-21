@@ -8,10 +8,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectEle
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.SpreadObjectElement;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ElseSwitchCase;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.ExpressionSwitchCase;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchCase;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.TemplateType;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.TemplateTypeInferenceVisitor;
 import io.github.sibmaks.jjtemplate.frontend.ExpressionParser;
@@ -225,7 +222,6 @@ public final class RootTemplateExpressionFactory {
             JJTemplateParser.TemplateContext keyContext,
             Map<?, ?> rawValue
     ) {
-        var expressionKey = (SwitchTemplateExpression) keyContext.accept(expressionFactory);
         var switchCases = new ArrayList<SwitchCase>(rawValue.size());
 
         for (var entry : rawValue.entrySet()) {
@@ -252,14 +248,16 @@ public final class RootTemplateExpressionFactory {
             }
         }
 
+        var expressionKey = (SwitchDefinitionTemplateExpression) keyContext.accept(expressionFactory);
+        var switchKey = expressionKey.getKey();
+        var condition = expressionKey.getCondition();
         var switchExpression = SwitchTemplateExpression.builder()
-                .switchKey(expressionKey.getSwitchKey())
-                .condition(expressionKey.getCondition())
+                .condition(condition)
                 .cases(switchCases)
                 .build();
 
         return new ObjectFieldElement(
-                expressionKey.getSwitchKey(),
+                switchKey,
                 switchExpression
         );
     }

@@ -1,7 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
-import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchDefinitionTemplateExpression;
 import io.github.sibmaks.jjtemplate.frontend.antlr.JJTemplateParser;
 import io.github.sibmaks.jjtemplate.frontend.antlr.JJTemplateParserBaseVisitor;
 import org.antlr.v4.runtime.Token;
@@ -91,18 +91,18 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
         var switchExpression = context.expression();
         var condition = switchExpression.accept(this);
 
-        var switchTemplateExpressionBuilder = SwitchTemplateExpression.builder()
+        var switchTemplateExpressionBuilder = SwitchDefinitionTemplateExpression.builder()
                 .condition(condition);
 
         var name = context.name;
         if (name != null) {
             switchTemplateExpressionBuilder
-                    .switchKey(new ConstantTemplateExpression(name.getText()));
+                    .key(new ConstantTemplateExpression(name.getText()));
         } else {
             var switchCase = context.switchCase;
             var switchKey = switchCase.accept(this);
             switchTemplateExpressionBuilder
-                    .switchKey(switchKey);
+                    .key(switchKey);
         }
 
         return switchTemplateExpressionBuilder.build();
@@ -264,8 +264,8 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
 
         var condition = switchExpression.accept(this);
 
-        return SwitchTemplateExpression.builder()
-                .switchKey(new ConstantTemplateExpression(true))
+        return SwitchDefinitionTemplateExpression.builder()
+                .key(new ConstantTemplateExpression(true))
                 .condition(condition)
                 .build();
     }
@@ -276,8 +276,8 @@ public final class TemplateExpressionFactory extends JJTemplateParserBaseVisitor
 
         var condition = switchExpression.accept(this);
 
-        return SwitchTemplateExpression.builder()
-                .switchKey(new ConstantTemplateExpression(false))
+        return SwitchDefinitionTemplateExpression.builder()
+                .key(new ConstantTemplateExpression(false))
                 .condition(condition)
                 .build();
     }
