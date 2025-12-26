@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "varTrue": true,
+      "varFalse": false
+    },
+    {
+      "{{ defResult switch .varTrue }}": {
+        "{{ .varTrue }}": "ok",
+        "{{ .varFalse }}": "fail"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

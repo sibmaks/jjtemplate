@@ -136,7 +136,7 @@ Templates may contain:
         2,
         3
       ],
-      "objects range item,index of .listVar": {
+      "{{ objects range item,index of .listVar }}": {
         "key-{{ .index }}": "{{ .item }}"
       }
     }
@@ -171,10 +171,10 @@ Templates may contain:
 {
   "definitions": [
     {
-      "message switch .status": {
-        "'ok'": "All good",
-        "'fail'": "Something went wrong",
-        "else": "Unknown"
+      "{{ message switch .status }}": {
+        "ok": "All good",
+        "fail": "Something went wrong",
+        "{{ else }}": "Unknown"
       }
     }
   ],
@@ -212,11 +212,11 @@ var context = Map.of("status", "fail");
       "anotherBooleanVar": true
     },
     {
-      "defResult switch .booleanVar": {
-        "true": "fail-out",
-        "false switch .anotherBooleanVar": {
-          "true": "ok",
-          "false": "fail-in"
+      "{{ defResult switch .booleanVar }}": {
+        "{{ true }}": "fail-out",
+        "{{ false switch .anotherBooleanVar }}": {
+          "{{ true }}": "ok",
+          "{{ false }}": "fail-in"
         }
       }
     }
@@ -371,7 +371,7 @@ Parses a **string with date and time** into a `java.time.LocalDateTime`.
         2,
         3
       ],
-      "objects range item,index of .listVar": {
+      "{{ objects range item,index of .listVar }}": {
         "key-{{ .index }}": "{{ .item }}"
       }
     }

@@ -117,8 +117,7 @@ var context = Map.of(
         "booleanFalse", false,
         "string", "text",
         "integer", 42,
-        "float", 3.1415,
-        "nullVar", null
+        "float", 3.1415
 );
 ```
 
@@ -205,8 +204,7 @@ var context = Map.of(
         "booleanFalse", false,
         "string", "text",
         "integer", 42,
-        "float", 3.1415,
-        "nullVar", null
+        "float", 3.1415
 );
 ```
 
@@ -1032,7 +1030,7 @@ var context = Map.of("var1", List.of(true));
 import java.util.List;
 import java.util.Map;
 
-var context = Map.of("var1", null, "var2", "text");
+var context = Map.of("var2", "text");
 ```
 
 ### Ожидаемый вывод

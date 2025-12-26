@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "listOfNodes": null
+    },
+    {
+      "{{ varObject range item,index of .listOfNodes }}": {
+        "key-{{ .index }}": "{{ .item }}"
+      }
+    }
+  ],
+  "template": "{{. .varObject }}"
+}

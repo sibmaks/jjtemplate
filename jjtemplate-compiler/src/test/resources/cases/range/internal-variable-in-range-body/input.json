@@ -1,0 +1,18 @@
+{
+  "definitions": [
+    {
+      "var": "hello",
+      "listOfNodes": [
+        true,
+        false,
+        42,
+        3.1415,
+        "text"
+      ]
+    },
+    {
+      "{{ defList range item,index of .listOfNodes }}": "{{ .item }}-{{ .var }}"
+    }
+  ],
+  "template": "{{ .defList }}"
+}

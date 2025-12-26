@@ -4,12 +4,12 @@
       "testIntVariable": 42
     },
     {
-      "varResult switch .testIntVariable": {
-        "42": "is number",
-        "true": "is boolean",
-        "'text'": "is string",
-        ".varString": "is some variable",
-        "else": "else case"
+      "{{ varResult switch .testIntVariable }}": {
+        "{{ 42 }}": "is number",
+        "{{ true }}": "is boolean",
+        "text": "is string",
+        "{{ .varString }}": "is some variable",
+        "{{ else }}": "else case"
       }
     }
   ],

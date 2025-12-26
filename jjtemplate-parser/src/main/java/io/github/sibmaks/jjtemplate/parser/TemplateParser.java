@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.parser;
 
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
+import io.github.sibmaks.jjtemplate.lexer.api.Keyword;
 import io.github.sibmaks.jjtemplate.lexer.api.Token;
 import io.github.sibmaks.jjtemplate.lexer.api.TokenType;
 import io.github.sibmaks.jjtemplate.parser.api.*;
@@ -48,7 +49,33 @@ public final class TemplateParser {
      * @return parsed expression
      */
     public Expression parseExpression() {
+        if (matchKeyword(Keyword.THEN)) {
+            return parseThenSwitchCaseExpression();
+        }
+        if (matchKeyword(Keyword.ELSE)) {
+            return parseElseSwitchCaseExpression();
+        }
+        if (check(TokenType.IDENT) && checkNextKeyword(Keyword.SWITCH)) {
+            var nameToken = advance();
+            expectKeyword(Keyword.SWITCH, "switch");
+            var condition = parseExpression();
+            return new SwitchExpression(new LiteralExpression(nameToken.lexeme), condition);
+        }
+        if (check(TokenType.IDENT) && checkNextKeyword(Keyword.RANGE)) {
+            var nameToken = advance();
+            expectKeyword(Keyword.RANGE, "range");
+            return parseRangeExpression(new LiteralExpression(nameToken.lexeme));
+        }
+
         var expr = parsePrimary();
+
+        if (matchKeyword(Keyword.SWITCH)) {
+            var condition = parseExpression();
+            return new SwitchExpression(expr, condition);
+        }
+        if (matchKeyword(Keyword.RANGE)) {
+            return parseRangeExpression(expr);
+        }
         if (match(TokenType.PIPE)) {
             var chain = new ArrayList<FunctionCallExpression>();
             do {
@@ -67,58 +94,18 @@ public final class TemplateParser {
     }
 
     /**
-     * Parses an entire template, consisting of text literals and embedded expressions.
-     * <p>
-     * When multiple parts are found, they are combined into a
-     * {@code string:concat(...)} expression.
+     * Ensures the parser has consumed all tokens.
      *
-     * @return a composite {@link Expression} representing the parsed template
-     * @throws TemplateParserException if the template structure is invalid or incomplete
+     * @throws TemplateParserException when unexpected tokens remain
      */
-    public Expression parseTemplate() {
-        var parts = new ArrayList<Expression>();
-
-        while (pos < tokens.size()) {
-            var t = peek();
-
-            if (t == null) {
-                throw error("Unexpected end of template");
+    public void expectEnd() {
+        if (pos < tokens.size()) {
+            var token = peek();
+            if (token == null) {
+                throw error("Excepted end of expression");
             }
-
-            switch (t.type) {
-                case TEXT:
-                    advance();
-                    parts.add(new LiteralExpression(t.lexeme));
-                    break;
-
-                case OPEN_EXPR:
-                case OPEN_COND:
-                case OPEN_SPREAD:
-                    advance();
-                    var expr = parseExpression();
-                    expect(TokenType.CLOSE, "}}");
-                    parts.add(expr);
-                    break;
-
-                default:
-                    throw error("Unexpected token outside expression: " + t.type);
-            }
+            throw error("Unexpected token: " + token.type);
         }
-
-        if (parts.isEmpty()) {
-            throw error("Expected expression inside {{...}}, but template is empty");
-        }
-
-        if (parts.size() == 1) {
-            return parts.get(0); // single literal or expression
-        }
-
-        // Build string:concat(...)
-        return new FunctionCallExpression(
-                "string",
-                "concat",
-                parts
-        );
     }
 
     /**
@@ -165,6 +152,31 @@ public final class TemplateParser {
             default:
                 throw error("Unexpected token: " + t.type);
         }
+    }
+
+    private Expression parseThenSwitchCaseExpression() {
+        if (matchKeyword(Keyword.SWITCH)) {
+            var condition = parseExpression();
+            return new ThenSwitchCaseExpression(condition);
+        }
+        return new ThenSwitchCaseExpression(null);
+    }
+
+    private Expression parseElseSwitchCaseExpression() {
+        if (matchKeyword(Keyword.SWITCH)) {
+            var condition = parseExpression();
+            return new ElseSwitchCaseExpression(condition);
+        }
+        return new ElseSwitchCaseExpression(null);
+    }
+
+    private Expression parseRangeExpression(Expression nameExpression) {
+        var item = expect(TokenType.IDENT, "range item name");
+        expect(TokenType.COMMA, ",");
+        var index = expect(TokenType.IDENT, "range index name");
+        expectKeyword(Keyword.OF, "of");
+        var source = parseExpression();
+        return new RangeExpression(nameExpression, item.lexeme, index.lexeme, source);
     }
 
     /**
@@ -286,6 +298,36 @@ public final class TemplateParser {
             default:
                 return false;
         }
+    }
+
+    private boolean checkNextKeyword(Keyword keyword) {
+        var next = peekNext();
+        return next != null && next.type == TokenType.KEYWORD && keyword.eq(next.lexeme);
+    }
+
+    private Token peekNext() {
+        return pos + 1 < tokens.size() ? tokens.get(pos + 1) : null;
+    }
+
+    private boolean checkKeyword(Keyword keyword) {
+        var token = peek();
+        return token != null && token.type == TokenType.KEYWORD && keyword.eq(token.lexeme);
+    }
+
+    private boolean matchKeyword(Keyword keyword) {
+        if (checkKeyword(keyword)) {
+            advance();
+            return true;
+        }
+        return false;
+    }
+
+    private void expectKeyword(Keyword keyword, String expected) {
+        if (checkKeyword(keyword)) {
+            advance();
+            return;
+        }
+        throw error("Expected keyword '" + expected + "'");
     }
 
     /**

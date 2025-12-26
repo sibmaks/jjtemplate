@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "keyName": true
+    }
+  ],
+  "template": {
+    "key": "value",
+    "{{. .parent.get( (.keyName | cast:str) ) }}": true
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "cases": {
+    "condition": true,
+    "onTrue": "ok",
+    "onFalse": "fail"
+  }
+}

@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.api;
 
-import io.github.sibmaks.jjtemplate.evaluator.TemplateEvaluationOptions;
+import io.github.sibmaks.jjtemplate.compiler.runtime.TemplateEvaluationOptions;
 import lombok.*;
 
 import java.util.Locale;

@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "variable": "variable",
+      "source": "source",
+      "value": "value"
+    },
+    {
+      "{{ ( .cases.get( (.variable | cast:str) ) ) range item,index of ( .cases.get( (.source | cast:str) )) }}": "{{ .item }}"
+    }
+  ],
+  "template": "{{ .result }}"
+}

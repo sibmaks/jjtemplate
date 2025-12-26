@@ -1,0 +1,23 @@
+{
+  "template": {
+    "booleanTrue": "{{ .booleanTrue }}",
+    "booleanFalse": "{{ .booleanFalse }}",
+    "string": "{{ .string }}",
+    "integer": "{{ .integer }}",
+    "float": "{{ .float }}",
+    "null": "{{ .nullVar }}",
+    "array": [
+      "{{ .booleanTrue }}",
+      "{{ .booleanFalse }}",
+      "{{ .string }}",
+      "{{ .integer }}",
+      "{{ .float }}",
+      "{{ .nullVar }}"
+    ],
+    "fun": "{{ (math:neg .integer) | cast:str | string:concat (.booleanTrue | cast:str)}}",
+    "nullDot": "{{ .notExisted.child }}",
+    "methodCall_get": "{{ .object.get('key') }}",
+    "methodCall_isEmpty": "{{ .object.isEmpty() }}",
+    "methodCall_size": "{{ .object.size() }}"
+  }
+}

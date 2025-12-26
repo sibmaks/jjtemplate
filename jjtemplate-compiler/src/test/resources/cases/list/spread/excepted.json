@@ -1,0 +1,34 @@
+{
+  "array": [
+    "prefix",
+    true,
+    false,
+    "text",
+    42,
+    3.1415,
+    "suffix"
+  ],
+  "staticArray": [
+    "a",
+    true,
+    42,
+    3.1415
+  ],
+  "nullSpread": [],
+  "funcOperator": [
+    "true",
+    "false"
+  ],
+  "funcStaticOperator": [
+    "true",
+    "false"
+  ],
+  "pipeOperator": [
+    "true",
+    "false"
+  ],
+  "pipeStaticOperator": [
+    "true",
+    "false"
+  ]
+}

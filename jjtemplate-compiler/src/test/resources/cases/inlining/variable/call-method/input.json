@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "var": "hello",
+      "value": "he"
+    }
+  ],
+  "template": [
+    "{{ .var.indexOf(.value) }}"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "definitions": [
+    {
+      "defTrue": true,
+      "defFalse": false
+    }
+  ],
+  "template": {
+    "ternaryOperator": [
+      "{{. .defTrue ? .varParentObject.child : null }}",
+      "{{. .defFalse ? null : .varParentObject.child }}"
+    ],
+    "ternaryStaticOperator": [
+      "{{. (false | not) ? .varParentObject.child : null }}",
+      "{{. (true | not) ? null : .varParentObject.child }}"
+    ]
+  }
+}

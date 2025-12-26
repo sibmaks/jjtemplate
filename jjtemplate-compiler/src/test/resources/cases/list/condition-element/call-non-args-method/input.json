@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "var": "hello"
+    }
+  ],
+  "template": [
+    "{{? .var.length() }}"
+  ]
+}
