@@ -1,9 +1,15 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.DynamicListElement;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.SpreadListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchDefinitionTemplateExpression;
-import io.github.sibmaks.jjtemplate.parser.parser.JJTemplateParser;
 import io.github.sibmaks.jjtemplate.parser.api.*;
+import io.github.sibmaks.jjtemplate.parser.parser.JJTemplateParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,11 +111,21 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
     @Override
     public TemplateExpression visitFunction(FunctionCallExpression expr) {
         var function = functionRegistry.getFunction(expr.namespace, expr.name);
-        var argExpressions = new ArrayList<TemplateExpression>(expr.args.size());
+        var listTemplateExpression = getArguments(expr);
+        return new DynamicFunctionCallTemplateExpression(function, listTemplateExpression);
+    }
+
+    private ListTemplateExpression getArguments(FunctionCallExpression expr) {
+        var argExpressions = new ArrayList<ListElement>(expr.args.size());
         for (var argExpr : expr.args) {
-            argExpressions.add(compile(argExpr));
+            var itemExpression = compile(argExpr);
+            if (argExpr instanceof SpreadExpression) {
+                argExpressions.add(new SpreadListElement(itemExpression));
+            } else {
+                argExpressions.add(new DynamicListElement(itemExpression));
+            }
         }
-        return new FunctionCallTemplateExpression(function, argExpressions);
+        return new ListTemplateExpression(argExpressions);
     }
 
     @Override
@@ -117,11 +133,8 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         var pipes = new ArrayList<FunctionCallTemplateExpression>(expr.chain.size());
         for (var functionCall : expr.chain) {
             var function = functionRegistry.getFunction(functionCall.namespace, functionCall.name);
-            var argExpressions = new ArrayList<TemplateExpression>(functionCall.args.size());
-            for (var argExpr : functionCall.args) {
-                argExpressions.add(compile(argExpr));
-            }
-            pipes.add(new FunctionCallTemplateExpression(function, argExpressions));
+            var listTemplateExpression = getArguments(functionCall);
+            pipes.add(new DynamicFunctionCallTemplateExpression(function, listTemplateExpression));
         }
 
         var previous = compile(expr.left);
@@ -179,5 +192,10 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
                 .key(new ConstantTemplateExpression(false))
                 .condition(condition)
                 .build();
+    }
+
+    @Override
+    public TemplateExpression visitSpread(SpreadExpression spreadExpression) {
+        return compile(spreadExpression.source);
     }
 }

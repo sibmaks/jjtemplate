@@ -1,5 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
@@ -18,12 +20,20 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.Swit
  */
 public interface TemplateExpressionVisitor<R> {
     /**
-     * Visits a function call expression and performs a visitor-defined operation.
+     * Visits a dynamic function call expression and performs a visitor-defined operation.
      *
      * @param expression the function call expression to visit
      * @return visitor-defined result
      */
-    R visit(FunctionCallTemplateExpression expression);
+    R visit(DynamicFunctionCallTemplateExpression expression);
+
+    /**
+     * Visits a static function call expression and performs a visitor-defined operation.
+     *
+     * @param expression the function call expression to visit
+     * @return visitor-defined result
+     */
+    R visit(ConstantFunctionCallTemplateExpression expression);
 
     /**
      * Visits a pipe-chain expression consisting of a root expression and a sequence
@@ -99,5 +109,4 @@ public interface TemplateExpressionVisitor<R> {
      * @return visitor-defined result
      */
     R visit(RangeTemplateExpression expression);
-
 }

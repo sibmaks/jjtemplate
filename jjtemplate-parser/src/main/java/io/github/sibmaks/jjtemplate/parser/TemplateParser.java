@@ -276,7 +276,20 @@ public final class TemplateParser {
             return args; // no args
         }
         do {
-            args.add(parsePrimary());
+            if (check(TokenType.DOT)) {
+                if (checkNext(1, TokenType.DOT)) {
+                    if (checkNext(2, TokenType.DOT)) {
+                        advance();
+                        advance();
+                        advance();
+                        var argExpression = parsePrimary();
+                        args.add(new SpreadExpression(argExpression));
+                        continue;
+                    }
+                }
+            }
+            var argExpression = parsePrimary();
+            args.add(argExpression);
         } while (match(TokenType.COMMA));
         return args;
     }
@@ -301,12 +314,12 @@ public final class TemplateParser {
     }
 
     private boolean checkNextKeyword(Keyword keyword) {
-        var next = peekNext();
+        var next = peekNext(1);
         return next != null && next.type == TokenType.KEYWORD && keyword.eq(next.lexeme);
     }
 
-    private Token peekNext() {
-        return pos + 1 < tokens.size() ? tokens.get(pos + 1) : null;
+    private Token peekNext(int offset) {
+        return pos + offset < tokens.size() ? tokens.get(pos + offset) : null;
     }
 
     private boolean checkKeyword(Keyword keyword) {
@@ -369,6 +382,11 @@ public final class TemplateParser {
      */
     private boolean check(TokenType type) {
         var t = peek();
+        return t != null && t.type == type;
+    }
+
+    private boolean checkNext(int offset, TokenType type) {
+        var t = peekNext(offset);
         return t != null && t.type == type;
     }
 

@@ -1,6 +1,8 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -21,8 +23,8 @@ class PipeChainTemplateExpressionTest {
         var context = mock(Context.class);
 
         var root = mock(TemplateExpression.class);
-        var pipe1 = mock(FunctionCallTemplateExpression.class);
-        var pipe2 = mock(FunctionCallTemplateExpression.class);
+        DynamicFunctionCallTemplateExpression pipe1 = mock("pipe1");
+        DynamicFunctionCallTemplateExpression pipe2 = mock("pipe2");
 
         when(root.apply(context))
                 .thenReturn("start");
@@ -33,7 +35,7 @@ class PipeChainTemplateExpressionTest {
         when(pipe2.apply(context, "middle"))
                 .thenReturn("end");
 
-        var chain = List.of(pipe1, pipe2);
+        var chain = List.<FunctionCallTemplateExpression>of(pipe1, pipe2);
         var expression = new PipeChainTemplateExpression(root, chain);
 
         var result = expression.apply(context);
@@ -82,7 +84,7 @@ class PipeChainTemplateExpressionTest {
     void equalsAndHashCodeShouldMatchForIdenticalExpressions() {
         var root = mock(TemplateExpression.class);
 
-        var pipe = mock(FunctionCallTemplateExpression.class);
+        DynamicFunctionCallTemplateExpression pipe = mock();
 
         var exp1 = new PipeChainTemplateExpression(root, List.of(pipe));
         var exp2 = new PipeChainTemplateExpression(root, List.of(pipe));

@@ -2,6 +2,9 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectElement;
@@ -47,20 +50,18 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
     }
 
     @Override
-    public TemplateExpression visit(FunctionCallTemplateExpression function) {
-        var args = new ArrayList<TemplateExpression>();
-        var anyInlined = false;
-        for (var argExpression : function.getArgExpressions()) {
-            var inlined = argExpression.visit(this);
-            args.add(inlined);
-            if (argExpression != inlined) {
-                anyInlined = true;
-            }
-        }
-        if (!anyInlined) {
+    public TemplateExpression visit(DynamicFunctionCallTemplateExpression function) {
+        var argExpression = function.getArgExpression();
+        var foldedArgExpression = argExpression.visit(this);
+        if (argExpression == foldedArgExpression) {
             return function;
         }
-        return new FunctionCallTemplateExpression(function.getFunction(), args);
+        return new DynamicFunctionCallTemplateExpression(function.getFunction(), (ListTemplateExpression) foldedArgExpression);
+    }
+
+    @Override
+    public TemplateExpression visit(ConstantFunctionCallTemplateExpression expression) {
+        return expression;
     }
 
     @Override
@@ -70,24 +71,9 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         var chain = new ArrayList<FunctionCallTemplateExpression>();
         var anyChainInlined = false;
         for (var pipeChainFunction : pipe.getChain()) {
-            var args = new ArrayList<TemplateExpression>();
-            var anyInlined = false;
-            for (var argExpression : pipeChainFunction.getArgExpressions()) {
-                var inlined = argExpression.visit(this);
-                args.add(inlined);
-                if (argExpression != inlined) {
-                    anyInlined = true;
-                }
-            }
-            if (!anyInlined) {
-                chain.add(pipeChainFunction);
-            } else {
-                anyChainInlined = true;
-                chain.add(new FunctionCallTemplateExpression(
-                        pipeChainFunction.getFunction(),
-                        args
-                ));
-            }
+            var inlined = pipeChainFunction.visit(this);
+            anyChainInlined |= pipeChainFunction != inlined;
+            chain.add((FunctionCallTemplateExpression) inlined);
         }
 
         if (root == inlinedRoot && !anyChainInlined) {

@@ -1,6 +1,9 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner.TemplateExpressionVariableInliner;
 import org.junit.jupiter.api.Test;
@@ -12,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author sibmaks
@@ -124,15 +128,18 @@ final class TemplateExpressionVariableInlinerTest {
         values.put(variableName, variableValue);
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var arg = new VariableTemplateExpression(variableName, List.of());
-        var expression = new FunctionCallTemplateExpression(null, List.of(arg));
+        ListTemplateExpression args = mock("args");
+        ListTemplateExpression inlinedArg = mock("inlinedArg");
+        when(args.visit(inliner))
+                .thenReturn(inlinedArg);
+        var expression = new DynamicFunctionCallTemplateExpression(null, args);
 
         var result = expression.visit(inliner);
 
         assertNotSame(expression, result);
-        var inlined = assertInstanceOf(FunctionCallTemplateExpression.class, result);
-        var inlinedArg = inlined.getArgExpressions().get(0);
-        assertEquals(new ConstantTemplateExpression(variableValue), inlinedArg);
+        var inlined = assertInstanceOf(DynamicFunctionCallTemplateExpression.class, result);
+        var actualInlinedArg = inlined.getArgExpression();
+        assertEquals(inlinedArg, actualInlinedArg);
     }
 
     @Test
@@ -144,7 +151,12 @@ final class TemplateExpressionVariableInlinerTest {
         var inliner = new TemplateExpressionVariableInliner(values);
 
         var root = new VariableTemplateExpression(variableName, List.of());
-        var fcall = new FunctionCallTemplateExpression(null, List.of(new ConstantTemplateExpression(1)));
+
+        ListTemplateExpression args = mock("args");
+        ListTemplateExpression inlinedArg = mock("inlinedArg");
+        when(args.visit(inliner))
+                .thenReturn(inlinedArg);
+        var fcall = new DynamicFunctionCallTemplateExpression(null, args);
 
         var expression = new PipeChainTemplateExpression(root, List.of(fcall));
 
@@ -218,44 +230,17 @@ final class TemplateExpressionVariableInlinerTest {
     }
 
     @Test
-    void pipeChainMarksAnyChainInlinedWhenArgIsInlined() {
-        var values = new HashMap<String, Object>();
-        var variableName = UUID.randomUUID().toString();
-        var variableValue = UUID.randomUUID().hashCode();
-        values.put(variableName, variableValue);
-        var inliner = new TemplateExpressionVariableInliner(values);
-
-        var arg = new VariableTemplateExpression(variableName, List.of());
-        var functionCall = new FunctionCallTemplateExpression(
-                mock(TemplateFunction.class),
-                List.of(arg)
-        );
-
-        var root = new ConstantTemplateExpression("root");
-
-        var expression = new PipeChainTemplateExpression(root, List.of(functionCall));
-
-        var result = expression.visit(inliner);
-        assertNotSame(expression, result);
-
-        var chain = assertInstanceOf(PipeChainTemplateExpression.class, result).getChain();
-        assertNotNull(chain.get(0));
-
-        var inlinedArg = chain.get(0).getArgExpressions().get(0);
-        assertEquals(new ConstantTemplateExpression(variableValue), inlinedArg);
-    }
-
-    @Test
     void functionCallReturnsSameWhenNoArgInlined() {
         var values = new HashMap<String, Object>();
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var arg1 = new ConstantTemplateExpression(1);
-        var arg2 = new ConstantTemplateExpression(2);
+        ListTemplateExpression args = mock();
+        when(args.visit(inliner))
+                .thenReturn(args);
 
-        var functionCall = new FunctionCallTemplateExpression(
+        var functionCall = new DynamicFunctionCallTemplateExpression(
                 mock(TemplateFunction.class),
-                List.of(arg1, arg2)
+                args
         );
 
         var result = functionCall.visit(inliner);
@@ -270,12 +255,9 @@ final class TemplateExpressionVariableInlinerTest {
 
         var root = new ConstantTemplateExpression("root");
 
-        var arg1 = new ConstantTemplateExpression(1);
-        var arg2 = new ConstantTemplateExpression(2);
-
-        var functionCall = new FunctionCallTemplateExpression(
-                mock(TemplateFunction.class),
-                List.of(arg1, arg2)
+        var functionCall = new ConstantFunctionCallTemplateExpression(
+                mock(),
+                List.of()
         );
 
         var pipe = new PipeChainTemplateExpression(root, List.of(functionCall));

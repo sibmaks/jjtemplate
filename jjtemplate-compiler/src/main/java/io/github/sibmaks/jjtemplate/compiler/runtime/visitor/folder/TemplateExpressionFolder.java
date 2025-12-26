@@ -2,6 +2,8 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListStaticItemElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
@@ -15,6 +17,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.Swit
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage.VariableUsageCollector;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -59,44 +62,38 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
     }
 
     @Override
-    public TemplateExpression visit(FunctionCallTemplateExpression expression) {
-        var folded = fold(expression);
-        var function = folded.getFunction();
-        if (function.isDynamic()) {
-            return folded;
-        }
-        var argExpressions = folded.getArgExpressions();
-        var args = argExpressions
-                .stream()
-                .filter(ConstantTemplateExpression.class::isInstance)
-                .map(ConstantTemplateExpression.class::cast)
-                .map(ConstantTemplateExpression::getValue)
-                .collect(Collectors.toList());
-
-        if (args.size() != argExpressions.size()) {
-            return folded;
-        }
-
-        var value = function.invoke(args);
-        return new ConstantTemplateExpression(value);
-    }
-
-    private FunctionCallTemplateExpression fold(FunctionCallTemplateExpression expression) {
+    public TemplateExpression visit(DynamicFunctionCallTemplateExpression expression) {
         var function = expression.getFunction();
-        var argExpressions = expression.getArgExpressions();
-        var args = new ArrayList<TemplateExpression>(argExpressions.size());
-        var anyFolded = false;
-        for (var argExpression : argExpressions) {
-            var folded = argExpression.visit(this);
-            if (folded != argExpression) {
-                anyFolded = true;
-            }
-            args.add(folded);
-        }
+        var argExpression = expression.getArgExpression();
+        var foldedArgs = argExpression.visit(this);
+        var anyFolded = argExpression != foldedArgs;
         if (!anyFolded) {
             return expression;
         }
-        return new FunctionCallTemplateExpression(function, args);
+        if (!(foldedArgs instanceof ConstantTemplateExpression)) {
+            return new DynamicFunctionCallTemplateExpression(function, (ListTemplateExpression) foldedArgs);
+        }
+        var constantArgs = (ConstantTemplateExpression) foldedArgs;
+        var args = constantArgs.getValue();
+        if (!(args instanceof List<?>)) {
+            throw new IllegalArgumentException("Not a list of function arguments: " + args);
+        }
+        var argList = (List<Object>) args;
+        var constantFunctionExpression = new ConstantFunctionCallTemplateExpression(function, argList);
+        if (function.isDynamic()) {
+            return constantFunctionExpression;
+        }
+        var objectFunction = constantFunctionExpression.apply(Context.empty());
+        return new ConstantTemplateExpression(objectFunction);
+    }
+
+    @Override
+    public TemplateExpression visit(ConstantFunctionCallTemplateExpression expression) {
+        var function = expression.getFunction();
+        if (function.isDynamic()) {
+            return expression;
+        }
+        return new ConstantTemplateExpression(expression.apply(Context.empty()));
     }
 
     @Override
@@ -127,33 +124,42 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         var chain = base.getChain();
         for (int i = 0; i < chain.size(); i++) {
             var callExpression = chain.get(i);
-            var folded = fold(callExpression);
-            var function = folded.getFunction();
-            if (function.isDynamic()) {
-                return new PipeChainTemplateExpression(
-                        new ConstantTemplateExpression(value),
-                        chain.subList(i, chain.size())
-                );
-            }
-            var argExpressions = folded.getArgExpressions();
-            var args = argExpressions
-                    .stream()
-                    .filter(ConstantTemplateExpression.class::isInstance)
-                    .map(ConstantTemplateExpression.class::cast)
-                    .map(ConstantTemplateExpression::getValue)
-                    .collect(Collectors.toList());
-
-            if (args.size() != argExpressions.size()) {
-                if (i == 0 && folded == callExpression) {
-                    return base;
+            if (callExpression instanceof ConstantFunctionCallTemplateExpression) {
+                var constantFunctionCall = (ConstantFunctionCallTemplateExpression) callExpression;
+                var function = constantFunctionCall.getFunction();
+                if (function.isDynamic()) {
+                    return new PipeChainTemplateExpression(
+                            new ConstantTemplateExpression(value),
+                            chain.subList(i, chain.size())
+                    );
                 }
+                value = constantFunctionCall.apply(Context.empty(), value);
+                continue;
+            }
+            var dynamicFunctionCall = (DynamicFunctionCallTemplateExpression) callExpression;
+            var function = dynamicFunctionCall.getFunction();
+            var argExpression = dynamicFunctionCall.getArgExpression();
+            var foldedArgs = argExpression.visit(this);
+            if (!(foldedArgs instanceof ConstantTemplateExpression)) {
                 return new PipeChainTemplateExpression(
                         new ConstantTemplateExpression(value),
                         chain.subList(i, chain.size())
                 );
             }
-
-            value = function.invoke(args, value);
+            var constantArgs = (ConstantTemplateExpression) foldedArgs;
+            var args = constantArgs.getValue();
+            if (!(args instanceof List<?>)) {
+                throw new IllegalArgumentException("Not a list of function arguments: " + args);
+            }
+            var argList = (List<Object>) args;
+            if (function.isDynamic()) {
+                chain.set(i, new ConstantFunctionCallTemplateExpression(function, argList));
+                return new PipeChainTemplateExpression(
+                        new ConstantTemplateExpression(value),
+                        chain.subList(i, chain.size())
+                );
+            }
+            value = function.invoke(argList, value);
         }
         return new ConstantTemplateExpression(value);
     }

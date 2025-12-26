@@ -1,6 +1,9 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder.TemplateExpressionFolder;
 import org.junit.jupiter.api.Test;
@@ -34,9 +37,16 @@ class TemplateExpressionFolderTest {
         when(function.invoke(List.of(arg1, arg2)))
                 .thenReturn(value);
 
-        var expr = new FunctionCallTemplateExpression(
+        ListTemplateExpression baseArgsExpression = mock();
+        ConstantTemplateExpression constantArgsExpression = mock();
+        when(baseArgsExpression.visit(folder))
+                .thenReturn(constantArgsExpression);
+        when(constantArgsExpression.getValue())
+                .thenReturn(List.of(arg1, arg2));
+
+        var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                List.of(new ConstantTemplateExpression(arg1), new ConstantTemplateExpression(arg2))
+                baseArgsExpression
         );
 
         var folded = folder.visit(expr);
@@ -49,34 +59,36 @@ class TemplateExpressionFolderTest {
     void foldStaticFunction_oneConstantArg() {
         TemplateFunction<String> function = mock();
 
-        var arg1 = UUID.randomUUID().toString();
-        var arg2 = UUID.randomUUID().toString();
+        ListTemplateExpression baseArgsExpression = mock("baseArgs");
+        ListTemplateExpression foldedArgsExpression = mock("foldedArgs");
+        when(baseArgsExpression.visit(folder))
+                .thenReturn(foldedArgsExpression);
 
-        var expr = new FunctionCallTemplateExpression(
+        var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                List.of(
-                        new VariableTemplateExpression(arg1, List.of()),
-                        new TemplateConcatTemplateExpression(List.of(new ConstantTemplateExpression(arg2)))
-                )
+                baseArgsExpression
         );
 
         var folded = folder.visit(expr);
 
-        var foldedFunction = assertInstanceOf(FunctionCallTemplateExpression.class, folded);
+        var foldedFunction = assertInstanceOf(DynamicFunctionCallTemplateExpression.class, folded);
         assertNotSame(expr, folded);
 
-        var argExpressions = foldedFunction.getArgExpressions();
-        var foldedArg2 = assertInstanceOf(ConstantTemplateExpression.class, argExpressions.get(1));
-        assertEquals(arg2, foldedArg2.getValue());
+        var argExpression = foldedFunction.getArgExpression();
+        assertSame(argExpression, foldedArgsExpression);
     }
 
     @Test
     void doNotFoldStaticFunctionWhenArgsNotConstant() {
         TemplateFunction<String> function = mock();
 
-        var expr = new FunctionCallTemplateExpression(
+        ListTemplateExpression argsExpression = mock();
+        when(argsExpression.visit(folder))
+                .thenReturn(argsExpression);
+
+        var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                List.of(new VariableTemplateExpression("x", List.of()))
+                argsExpression
         );
 
         var folded = folder.visit(expr);
@@ -90,9 +102,9 @@ class TemplateExpressionFolderTest {
         when(function.isDynamic())
                 .thenReturn(true);
 
-        var expr = new FunctionCallTemplateExpression(
+        var expr = new ConstantFunctionCallTemplateExpression(
                 function,
-                List.of(new ConstantTemplateExpression(1))
+                List.of()
         );
 
         var folded = folder.visit(expr);
@@ -113,9 +125,9 @@ class TemplateExpressionFolderTest {
         var pipe = new PipeChainTemplateExpression(
                 new ConstantTemplateExpression(pipeArg),
                 List.of(
-                        new FunctionCallTemplateExpression(
+                        new ConstantFunctionCallTemplateExpression(
                                 function,
-                                List.of(new ConstantTemplateExpression(arg))
+                                List.of(arg)
                         )
                 )
         );
@@ -132,13 +144,16 @@ class TemplateExpressionFolderTest {
         var arg1 = UUID.randomUUID().toString();
         var arg2 = UUID.randomUUID().toString();
 
+
+        ListTemplateExpression baseArgsExpression = mock("baseArgs");
+        ListTemplateExpression foldedArgsExpression = mock("foldedArgs");
+        when(baseArgsExpression.visit(folder))
+                .thenReturn(foldedArgsExpression);
+
         var expr = new PipeChainTemplateExpression(
-                new FunctionCallTemplateExpression(
+                new DynamicFunctionCallTemplateExpression(
                         function,
-                        List.of(
-                                new VariableTemplateExpression(arg1, List.of()),
-                                new TemplateConcatTemplateExpression(List.of(new ConstantTemplateExpression(arg2)))
-                        )
+                        baseArgsExpression
                 ),
                 List.of()
         );
@@ -148,25 +163,22 @@ class TemplateExpressionFolderTest {
         var foldedPipe = assertInstanceOf(PipeChainTemplateExpression.class, folded);
         assertNotSame(expr, folded);
 
-        var foldedPipeRoot = assertInstanceOf(FunctionCallTemplateExpression.class, foldedPipe.getRoot());
+        var foldedPipeRoot = assertInstanceOf(DynamicFunctionCallTemplateExpression.class, foldedPipe.getRoot());
 
-        var argExpressions = foldedPipeRoot.getArgExpressions();
-        var foldedArg2 = assertInstanceOf(ConstantTemplateExpression.class, argExpressions.get(1));
-        assertEquals(arg2, foldedArg2.getValue());
+        var argExpression = foldedPipeRoot.getArgExpression();
+        assertSame(argExpression, foldedArgsExpression);
     }
 
     @Test
     void doNotFoldPipe() {
         TemplateFunction<String> function = mock();
-
-        var arg1 = UUID.randomUUID().toString();
+        when(function.isDynamic())
+                .thenReturn(true);
 
         var expr = new PipeChainTemplateExpression(
-                new FunctionCallTemplateExpression(
+                new ConstantFunctionCallTemplateExpression(
                         function,
-                        List.of(
-                                new VariableTemplateExpression(arg1, List.of())
-                        )
+                        List.of()
                 ),
                 List.of()
         );
@@ -192,8 +204,8 @@ class TemplateExpressionFolderTest {
         var pipe = new PipeChainTemplateExpression(
                 new ConstantTemplateExpression(pipeArg),
                 List.of(
-                        new FunctionCallTemplateExpression(staticked, List.of(new ConstantTemplateExpression(arg))),
-                        new FunctionCallTemplateExpression(dynamicked, List.of(new ConstantTemplateExpression(2)))
+                        new ConstantFunctionCallTemplateExpression(staticked, List.of(arg)),
+                        new ConstantFunctionCallTemplateExpression(dynamicked, List.of(2))
                 )
         );
 
@@ -212,19 +224,21 @@ class TemplateExpressionFolderTest {
     void pipeStopsWhenArgsNotConstant() {
         TemplateFunction<String> firstFunction = mock();
 
-        var pipeArg = UUID.randomUUID().toString();
-        var arg = UUID.randomUUID().toString();
-        var value = UUID.randomUUID().toString();
+        var pipeArg = "baseRoot:" + UUID.randomUUID();
+        var arg = "arg:" + UUID.randomUUID();
+        var value = "newRoot:" + UUID.randomUUID();
         when(firstFunction.invoke(List.of(arg), pipeArg))
                 .thenReturn(value);
 
         TemplateFunction<String> secondFunction = mock();
 
+        ListTemplateExpression args2Expression = mock("args2Expression");
+
         var pipe = new PipeChainTemplateExpression(
                 new ConstantTemplateExpression(pipeArg),
                 List.of(
-                        new FunctionCallTemplateExpression(firstFunction, List.of(new ConstantTemplateExpression(arg))),
-                        new FunctionCallTemplateExpression(secondFunction, List.of(new VariableTemplateExpression("x", List.of())))
+                        new ConstantFunctionCallTemplateExpression(firstFunction, List.of(arg)),
+                        new DynamicFunctionCallTemplateExpression(secondFunction, args2Expression)
                 )
         );
 
@@ -301,7 +315,7 @@ class TemplateExpressionFolderTest {
         var concat = new TemplateConcatTemplateExpression(
                 List.of(
                         new VariableTemplateExpression("x", List.of()),
-                        new FunctionCallTemplateExpression(staticked, List.of())
+                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()))
                 )
         );
 
@@ -415,7 +429,7 @@ class TemplateExpressionFolderTest {
                 "m",
                 List.of(
                         staticArg,
-                        new FunctionCallTemplateExpression(staticked, List.of())
+                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()))
                 )
         );
 

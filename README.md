@@ -71,7 +71,7 @@ Templates are written in pure JSON with embedded expressions using double curly 
 
 - `{{. expression }}` — spread values into arrays or objects
 
-Supports expressions, pipe calls, and ternary operators (`?`, `:`).
+Supports expressions, pipe calls (`|`), and ternary operators (`?`, `:`), function argument spread (`...`).
 
 ## Core Concepts
 

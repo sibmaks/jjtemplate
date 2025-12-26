@@ -1,6 +1,9 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage.VariableUsageCollector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -47,31 +49,35 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitFunctionCallTemplateExpression_collectsArgs() {
-        TemplateExpression arg1 = mock("firstArg");
-        TemplateExpression arg2 = mock("secondArg");
+    void visitDynamicFunctionCallTemplateExpression_collectsArgs() {
+        ListTemplateExpression argsExpression = mock();
 
-        var func = mock(FunctionCallTemplateExpression.class);
-        when(func.getArgExpressions())
-                .thenReturn(List.of(arg1, arg2));
+        var func = mock(DynamicFunctionCallTemplateExpression.class);
+        when(func.getArgExpression())
+                .thenReturn(argsExpression);
 
         collector.visit(func);
 
-        verify(arg1)
+        verify(argsExpression)
                 .visit(collector);
-        verify(arg2)
-                .visit(collector);
+    }
+
+    @Test
+    void visitConstantFunctionCallTemplateExpression_collectsArgs() {
+        var func = mock(ConstantFunctionCallTemplateExpression.class);
+
+        try {
+            collector.visit(func);
+        } catch (Exception e) {
+            fail(e);
+        }
     }
 
     @Test
     void visitPipeChainTemplateExpression_collectsRootAndArgs() {
         var root = mock(TemplateExpression.class);
 
-        TemplateExpression arg1 = mock("firstArg");
-        TemplateExpression arg2 = mock("secondArg");
-        var chainCall = mock(FunctionCallTemplateExpression.class);
-        when(chainCall.getArgExpressions())
-                .thenReturn(List.of(arg1, arg2));
+        var chainCall = mock(DynamicFunctionCallTemplateExpression.class);
 
         var pipe = mock(PipeChainTemplateExpression.class);
         when(pipe.getRoot())
@@ -83,9 +89,7 @@ class VariableUsageCollectorTest {
 
         verify(root)
                 .visit(collector);
-        verify(arg1)
-                .visit(collector);
-        verify(arg2)
+        verify(chainCall)
                 .visit(collector);
     }
 

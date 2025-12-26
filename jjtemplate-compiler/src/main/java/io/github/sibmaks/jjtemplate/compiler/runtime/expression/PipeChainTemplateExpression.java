@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

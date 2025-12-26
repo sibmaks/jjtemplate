@@ -142,5 +142,10 @@ class ExpressionVisitorTest {
         public ExpressionType visitElseSwitchCase(ElseSwitchCaseExpression expr) {
             return ExpressionType.ELSE_SWITCH;
         }
+
+        @Override
+        public ExpressionType visitSpread(SpreadExpression spreadExpression) {
+            return spreadExpression.source.accept(this);
+        }
     }
 }

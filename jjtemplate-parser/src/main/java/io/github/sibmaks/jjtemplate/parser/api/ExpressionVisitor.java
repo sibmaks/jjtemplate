@@ -80,4 +80,11 @@ public interface ExpressionVisitor<R> {
      */
     R visitElseSwitchCase(ElseSwitchCaseExpression expr);
 
+    /**
+     * Visits a {@link SpreadExpression}.
+     *
+     * @param spreadExpression the spread expression to visit
+     * @return the result of visiting the spread switch expression
+     */
+    R visitSpread(SpreadExpression spreadExpression);
 }

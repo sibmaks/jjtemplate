@@ -1,6 +1,8 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.*;
@@ -31,10 +33,14 @@ public final class VariableUsageCollector implements
     private final Set<String> variables = new HashSet<>();
 
     @Override
-    public Void visit(FunctionCallTemplateExpression expression) {
-        for (var argExpression : expression.getArgExpressions()) {
-            argExpression.visit(this);
-        }
+    public Void visit(ConstantFunctionCallTemplateExpression expression) {
+        return null;
+    }
+
+    @Override
+    public Void visit(DynamicFunctionCallTemplateExpression expression) {
+        var argExpression = expression.getArgExpression();
+        argExpression.visit(this);
         return null;
     }
 
@@ -43,9 +49,7 @@ public final class VariableUsageCollector implements
         var root = expression.getRoot();
         root.visit(this);
         for (var pipeChainFunction : expression.getChain()) {
-            for (var argExpression : pipeChainFunction.getArgExpressions()) {
-                argExpression.visit(this);
-            }
+            pipeChainFunction.visit(this);
         }
         return null;
     }
