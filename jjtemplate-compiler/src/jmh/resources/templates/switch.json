@@ -1,9 +1,9 @@
 {
   "definitions": [
     {
-      "switched switch .extTrue": {
-        "then": "foo",
-        "else": "bar"
+      "{{ switched switch .extTrue }}": {
+        "{{ then }}": "foo",
+        "{{ else }}": "bar"
       }
     }
   ],

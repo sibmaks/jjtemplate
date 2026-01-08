@@ -20,7 +20,7 @@ valid JSON results.
 <dependency>
     <groupId>io.github.sibmaks.jjtemplate</groupId>
     <artifactId>jjtemplate</artifactId>
-    <version>0.3.0</version>
+    <version>0.5.0</version>
     <type>pom</type>
 </dependency>
 ```
@@ -28,7 +28,7 @@ valid JSON results.
 ### Gradle
 
 ```kotlin
-implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.3.0")
+implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.5.0")
 ```
 
 ## Example Workflow
@@ -71,7 +71,7 @@ Templates are written in pure JSON with embedded expressions using double curly 
 
 - `{{. expression }}` — spread values into arrays or objects
 
-Supports expressions, pipe calls, and ternary operators (`?`, `:`).
+Supports expressions, pipe calls (`|`), and ternary operators (`?`, `:`), function argument spread (`...`).
 
 ## Core Concepts
 
@@ -291,7 +291,7 @@ JJTemplate is built with a modular architecture:
 - **Parser** - Constructs AST from tokens
 - **Compiler** - Generates executable node trees
     - **Optimizer** - Applies performance optimizations
-- **Evaluator** - Executes templates and produces output
+    - **Runtime** - Executes templates and produces output
 
 ## Goals
 

@@ -48,4 +48,43 @@ public interface ExpressionVisitor<R> {
      */
     R visitTernary(TernaryExpression expr);
 
+    /**
+     * Visits a {@link SwitchExpression}.
+     *
+     * @param expr the switch expression to visit
+     * @return the result of visiting the switch expression
+     */
+    R visitSwitch(SwitchExpression expr);
+
+    /**
+     * Visits a {@link RangeExpression}.
+     *
+     * @param expr the range expression to visit
+     * @return the result of visiting the range expression
+     */
+    R visitRange(RangeExpression expr);
+
+    /**
+     * Visits a {@link ThenSwitchCaseExpression}.
+     *
+     * @param expr the then-case switch expression to visit
+     * @return the result of visiting the then-case switch expression
+     */
+    R visitThenSwitchCase(ThenSwitchCaseExpression expr);
+
+    /**
+     * Visits a {@link ElseSwitchCaseExpression}.
+     *
+     * @param expr the else-case switch expression to visit
+     * @return the result of visiting the else-case switch expression
+     */
+    R visitElseSwitchCase(ElseSwitchCaseExpression expr);
+
+    /**
+     * Visits a {@link SpreadExpression}.
+     *
+     * @param spreadExpression the spread expression to visit
+     * @return the result of visiting the spread switch expression
+     */
+    R visitSpread(SpreadExpression spreadExpression);
 }

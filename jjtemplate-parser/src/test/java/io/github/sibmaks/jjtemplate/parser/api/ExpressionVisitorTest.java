@@ -45,6 +45,38 @@ class ExpressionVisitorTest {
     }
 
     @Test
+    void testVisitSwitch() {
+        var visitor = new StubVisitor();
+        var expression = new SwitchExpression(null, null);
+        var actual = expression.accept(visitor);
+        assertEquals(ExpressionType.SWITCH, actual);
+    }
+
+    @Test
+    void testVisitRange() {
+        var visitor = new StubVisitor();
+        var expression = new RangeExpression(null, "item", "index", null);
+        var actual = expression.accept(visitor);
+        assertEquals(ExpressionType.RANGE, actual);
+    }
+
+    @Test
+    void testVisitThenSwitchCase() {
+        var visitor = new StubVisitor();
+        var expression = new ThenSwitchCaseExpression(null);
+        var actual = expression.accept(visitor);
+        assertEquals(ExpressionType.THEN_SWITCH, actual);
+    }
+
+    @Test
+    void testVisitElseSwitchCase() {
+        var visitor = new StubVisitor();
+        var expression = new ElseSwitchCaseExpression(null);
+        var actual = expression.accept(visitor);
+        assertEquals(ExpressionType.ELSE_SWITCH, actual);
+    }
+
+    @Test
     void testVisitVariable() {
         var visitor = new StubVisitor();
         var expression = new VariableExpression(List.of());
@@ -57,7 +89,11 @@ class ExpressionVisitorTest {
         VARIABLE,
         FUNCTION,
         PIPE,
-        TERNARY
+        TERNARY,
+        SWITCH,
+        RANGE,
+        THEN_SWITCH,
+        ELSE_SWITCH
     }
 
     static class StubVisitor implements ExpressionVisitor<ExpressionType> {
@@ -85,6 +121,31 @@ class ExpressionVisitorTest {
         @Override
         public ExpressionType visitTernary(TernaryExpression expr) {
             return ExpressionType.TERNARY;
+        }
+
+        @Override
+        public ExpressionType visitSwitch(SwitchExpression expr) {
+            return ExpressionType.SWITCH;
+        }
+
+        @Override
+        public ExpressionType visitRange(RangeExpression expr) {
+            return ExpressionType.RANGE;
+        }
+
+        @Override
+        public ExpressionType visitThenSwitchCase(ThenSwitchCaseExpression expr) {
+            return ExpressionType.THEN_SWITCH;
+        }
+
+        @Override
+        public ExpressionType visitElseSwitchCase(ElseSwitchCaseExpression expr) {
+            return ExpressionType.ELSE_SWITCH;
+        }
+
+        @Override
+        public ExpressionType visitSpread(SpreadExpression spreadExpression) {
+            return spreadExpression.source.accept(this);
         }
     }
 }

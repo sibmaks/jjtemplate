@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "condition": "condition",
+      "onTrue": "onTrue",
+      "onFalse": "onFalse"
+    }
+  ],
+  "template": "{{ ( .cases.get( (.condition | cast:str) ) ) ? ( .cases.get( (.onTrue | cast:str) )) : ( .cases.get( (.onFalse | cast:str) )) }}"
+}

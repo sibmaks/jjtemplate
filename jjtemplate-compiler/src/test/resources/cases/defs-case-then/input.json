@@ -1,9 +1,9 @@
 {
   "definitions": [
     {
-      "varResult switch true": {
-        "then": "then case",
-        "else": "else case"
+      "{{ varResult switch true }}": {
+        "{{ then }}": "then case",
+        "{{ else }}": "else case"
       }
     }
   ],

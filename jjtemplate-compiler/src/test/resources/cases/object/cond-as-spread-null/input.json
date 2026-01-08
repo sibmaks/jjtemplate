@@ -1,0 +1,6 @@
+{
+  "template": {
+    "key": "value",
+    "{{? .varObject }}": true
+  }
+}

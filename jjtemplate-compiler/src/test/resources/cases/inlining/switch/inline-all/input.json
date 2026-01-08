@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "keyName": true
+    },
+    {
+      "{{ (.keyName ? 'result' : 'failed') switch ( .keyName | cast:str ) }}": {
+        "{{ .keyName | cast:str }}": [
+          "{{ (.keyName | cast:str) }}"
+        ]
+      }
+    }
+  ],
+  "template": "{{ .result }}"
+}

@@ -1,0 +1,19 @@
+{
+  "definitions": [
+    {
+      "someList": [
+        42,
+        3.1415,
+        true,
+        "text"
+      ]
+    },
+    {
+      "{{ defResult range item,index of .someList }}": {
+        "index": "{{ .index }}",
+        "value": "{{ .item }}"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

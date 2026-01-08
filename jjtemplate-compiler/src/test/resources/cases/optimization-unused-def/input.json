@@ -2,11 +2,11 @@
   "definitions": [
     {
       "unused": "to-remove",
-      "unusedCase switch .someExpression": {
-        "then": "dead-code",
-        "else": "dead-code"
+      "{{ unusedCase switch .someExpression }}": {
+        "{{ then }}": "dead-code",
+        "{{ else }}": "dead-code"
       },
-      "unusedRange range item,index of .someExpression": "deadCode"
+      "{{ unusedRange range item,index of .someExpression }}": "deadCode"
     }
   ],
   "template": "ok"

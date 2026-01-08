@@ -7,6 +7,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.Definition;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,8 +24,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author sibmaks
@@ -96,51 +96,9 @@ class TemplateCompilerImplIntegrationTest {
         return Boolean.parseBoolean(property);
     }
 
-    public static Stream<Arguments> cases() {
-        var resourcesDir = Paths.get("src", "test", "resources", "cases");
-
-        var cases = getCases(resourcesDir);
-
-        return cases
-                .stream()
-                .sorted()
-                .map(it -> buildArguments(resourcesDir, it));
-    }
-
-    /**
-     * Рекурсивно заменяет все List на массивы.
-     * Работает с Map, List и примитивными значениями.
-     */
     @SuppressWarnings("unchecked")
-    public static Object listsToArrays(Object value) {
-        if (value instanceof Map<?, ?>) {
-            var map = (Map<String, Object>) value;
-            Map<Object, Object> newMap = new LinkedHashMap<>();
-            for (var entry : map.entrySet()) {
-                newMap.put(entry.getKey(), listsToArrays(entry.getValue()));
-            }
-            return newMap;
-        }
-
-        if (value instanceof List<?>) {
-            var list = (List<Object>) value;
-            Object[] arr = new Object[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                arr[i] = listsToArrays(list.get(i));
-            }
-            return arr;
-        }
-
-        if (value != null && value.getClass().isArray()) {
-            int len = Array.getLength(value);
-            Object[] arr = new Object[len];
-            for (int i = 0; i < len; i++) {
-                arr[i] = listsToArrays(Array.get(value, i));
-            }
-            return arr;
-        }
-
-        return value;
+    private static <T> Class<T> getClassOf(T[] array) {
+        return (Class<T>) array.getClass().getComponentType();
     }
 
     @ParameterizedTest
@@ -160,6 +118,31 @@ class TemplateCompilerImplIntegrationTest {
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
         assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("inliningCases")
+    void testInliningScenario(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var compiler = TemplateCompiler.getInstance();
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+        assertInstanceOf(StaticCompiledTemplateImpl.class, compiled);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -221,7 +204,7 @@ class TemplateCompilerImplIntegrationTest {
         var compiled = compiler.compile(modifiedTemplateScript);
         var compiledAt = System.nanoTime();
         assertNotNull(compiled);
-        var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
+        var rendered = compiled.render(listsToArrays(context));
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
         assertEquals(excepted, renderedJson);
@@ -261,7 +244,7 @@ class TemplateCompilerImplIntegrationTest {
         var compiled = compiler.compile(modifiedTemplateScript);
         var compiledAt = System.nanoTime();
         assertNotNull(compiled);
-        var rendered = compiled.render((Map<String, Object>) listsToArrays(context));
+        var rendered = compiled.render(listsToArrays(context));
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
         assertEquals(excepted, renderedJson);
@@ -350,5 +333,71 @@ class TemplateCompilerImplIntegrationTest {
                 renderStats.getMax(),
                 compileStats.getSum() + renderStats.getSum()
         );
+    }
+
+    public static Stream<Arguments> cases() {
+        var resourcesDir = Paths.get("src", "test", "resources", "cases");
+
+        var cases = getCases(resourcesDir);
+
+        return cases
+                .stream()
+                .sorted()
+                .map(it -> buildArguments(resourcesDir, it));
+    }
+
+    public static Stream<Arguments> inliningCases() {
+        var resourcesDir = Paths.get("src", "test", "resources", "cases", "inlining");
+
+        var cases = getCases(resourcesDir);
+
+        return cases
+                .stream()
+                .sorted()
+                .map(it -> buildArguments(resourcesDir, it));
+    }
+
+    /**
+     * Рекурсивно заменяет все List на массивы.
+     * Работает с Map, List и примитивными значениями.
+     *
+     * @param value   значение для конвертации
+     * @param reified определение целевого типа
+     * @param <T>     результирующий тип
+     * @return результат преобразования
+     */
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public static <T> T listsToArrays(Object value, T... reified) {
+        var type = getClassOf(reified);
+
+        if (value instanceof Map<?, ?>) {
+            var map = (Map<String, Object>) value;
+            var newMap = new LinkedHashMap<String, Object>();
+            for (var entry : map.entrySet()) {
+                newMap.put(entry.getKey(), listsToArrays(entry.getValue()));
+            }
+            return type.cast(newMap);
+        }
+
+        if (value instanceof List<?>) {
+            var list = (List<Object>) value;
+            var arr = new Object[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                arr[i] = listsToArrays(list.get(i));
+            }
+            return type.cast(arr);
+        }
+
+        if (value != null && value.getClass().isArray()) {
+            int len = Array.getLength(value);
+            var arr = new Object[len];
+            for (int i = 0; i < len; i++) {
+                arr[i] = listsToArrays(Array.get(value, i));
+            }
+            return type.cast(arr);
+        }
+
+        return type.cast(value);
     }
 }

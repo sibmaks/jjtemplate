@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "variable": "variable",
+      "condition": "condition",
+      "value": "value"
+    },
+    {
+      "{{ (.cases.get( (.variable | cast:str) )) switch (.cases.get( (.condition | cast:str) )) }}": {
+        "{{ else }}":  "{{ .cases.get( (.value | cast:str) ) }}"
+      }
+    }
+  ],
+  "template": "{{ .result }}"
+}

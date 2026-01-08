@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "name": true
+    },
+    {
+      "{{ .name | cast:str | string:concat 'var' }}": "ok"
+    }
+  ],
+  "template": "{{ .vartrue }}"
+}

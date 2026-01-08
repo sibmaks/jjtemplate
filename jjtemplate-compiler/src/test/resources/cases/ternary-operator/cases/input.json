@@ -1,0 +1,22 @@
+{
+  "definitions": [
+    {
+      "defTrue": true,
+      "defFalse": false
+    }
+  ],
+  "template": {
+    "alwaysTrue": "{{ true ? 'ok' : 'fail' }}",
+    "alwaysFalse": "{{ false ? 'fail' : 'ok' }}",
+    "variableTrue": "{{ .booleanTrue ? 'ok' : 'fail' }}",
+    "variableFalse": "{{ .booleanFalse ? 'fail' : 'ok' }}",
+    "variableNestingTrue": "{{ .booleanTrue ? (.booleanTrue | not ? 'fail' : 'ok') : 'fail' }}",
+    "variableNestingFalse": "{{ .booleanFalse ? 'fail' : (.booleanFalse | not ? 'ok' : 'fail') }}",
+    "defTrue": "{{ .defTrue ? 'ok' : 'fail' }}",
+    "defFalse": "{{ .defFalse ? 'fail' : 'ok' }}",
+    "staticConditionTrue": "{{ true ? .ok : .fail }}",
+    "staticConditionFalse": "{{ false ? .fail : .ok }}",
+    "staticDefConditionTrue": "{{ .defTrue ? .ok : .fail }}",
+    "staticDefConditionFalse": "{{ .defFalse ? .fail : .ok }}"
+  }
+}

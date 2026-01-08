@@ -7,9 +7,11 @@ plugins {
 
 jmh {
     val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
+    val date = formatter.format(Date())
 
     resultFormat.set("json")
-    resultsFile.set(layout.buildDirectory.file("reports/jmh/results-$version-${formatter.format(Date())}.json"))
+    resultsFile.set(layout.buildDirectory.file("reports/jmh/results-$version-$date.json"))
+    humanOutputFile.set(layout.buildDirectory.file("reports/jmh/human-$version-$date.txt"))
 }
 
 dependencies {
@@ -18,17 +20,18 @@ dependencies {
     annotationProcessor(libs.lombok)
 
     implementation(libs.slf4j.api)
-    implementation(project(":jjtemplate-lexer"))
     implementation(project(":jjtemplate-parser"))
-    implementation(project(":jjtemplate-evaluator"))
 
     testImplementation(libs.bundles.jackson)
 
     testImplementation(libs.slf4j.simple)
     testImplementation(platform(libs.junit.bom))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(libs.bundles.mockito)
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     jmh("org.openjdk.jmh:jmh-core:1.37")
     jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
+    jmhRuntimeOnly(libs.slf4j.simple)
 }

@@ -1,0 +1,10 @@
+{
+  "definitions": [
+    {
+      "object": {
+        "key": "ok"
+      }
+    }
+  ],
+  "template": "{{ .object.key }}"
+}
