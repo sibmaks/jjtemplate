@@ -227,13 +227,17 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         var foldedCondition = condition.visit(this);
 
         if (foldedCondition instanceof ConstantTemplateExpression) {
-            var valueExpression = (ConstantTemplateExpression) foldedCondition;
-            var conditionValue = (Boolean) valueExpression.getValue();
+            var thenTrue = expression.getThenTrue();
+            var thenFalse = expression.getThenFalse();
+            var constantTernary = new TernaryTemplateExpression(
+                    foldedCondition,
+                    thenTrue,
+                    thenFalse
+            );
+            var conditionValue = constantTernary.evaluateCondition(Context.empty());
             if (conditionValue) {
-                var thenTrue = expression.getThenTrue();
                 return thenTrue.visit(this);
             }
-            var thenFalse = expression.getThenFalse();
             return thenFalse.visit(this);
         }
 
