@@ -276,17 +276,15 @@ public final class TemplateParser {
             return args; // no args
         }
         do {
-            if (check(TokenType.DOT)) {
-                if (checkNext(1, TokenType.DOT)) {
-                    if (checkNext(2, TokenType.DOT)) {
-                        advance();
-                        advance();
-                        advance();
-                        var argExpression = parsePrimary();
-                        args.add(new SpreadExpression(argExpression));
-                        continue;
-                    }
-                }
+            if (check(TokenType.DOT) &&
+                    checkNext(1, TokenType.DOT) &&
+                    checkNext(2, TokenType.DOT)) {
+                advance();
+                advance();
+                advance();
+                var argExpression = parsePrimary();
+                args.add(new SpreadExpression(argExpression));
+                continue;
             }
             var argExpression = parsePrimary();
             args.add(argExpression);

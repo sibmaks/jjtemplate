@@ -182,6 +182,58 @@ public final class ReflectionUtils {
         return bestConverted;
     }
 
+    private static String getStringChar(CharSequence seq, int idx) {
+        if (idx < 0 || idx >= seq.length()) {
+            throw new TemplateEvalException("String index out of range: " + idx);
+        }
+        return Character.toString(seq.charAt(idx));
+    }
+
+    private static Object getListItem(List<?> list, int idx) {
+        if (idx < 0 || idx >= list.size()) {
+            throw new TemplateEvalException("List index out of range: " + idx);
+        }
+        return list.get(idx);
+    }
+
+    private static Object getArrayItem(Object obj, int idx) {
+        var len = Array.getLength(obj);
+        if (idx < 0 || idx >= len) {
+            throw new TemplateEvalException("Array index out of range: " + idx);
+        }
+        return Array.get(obj, idx);
+    }
+
+    private static Object getProperty(Object obj, String name, Class<?> type) {
+        var map = PROPERTY_CACHE.computeIfAbsent(type, c -> new ConcurrentHashMap<>());
+        var desc = map.computeIfAbsent(name, n -> buildDescriptor(type, n));
+        try {
+            return desc.get(obj);
+        } catch (Throwable e) {
+            throw new TemplateEvalException("Failed to access property '" + name + "' of " + type, e);
+        }
+    }
+
+    @AllArgsConstructor
+    private static final class AccessDescriptor {
+        private String name;
+        private MethodHandle getter;
+
+        Object get(Object target) throws Throwable {
+            return getter == null ? null : getter.invoke(target);
+        }
+    }
+
+    private static final class ConversionResult {
+        final Object[] values;
+        final int score;
+
+        ConversionResult(Object[] values, int score) {
+            this.values = values;
+            this.score = score;
+        }
+    }
+
     public static Map<String, Object> getAllProperties(Object obj) {
         if (obj == null) {
             return Collections.emptyMap();
@@ -235,35 +287,17 @@ public final class ReflectionUtils {
         if (isInt(name)) {
             var idx = Integer.parseInt(name);
             if (obj.getClass().isArray()) {
-                var len = Array.getLength(obj);
-                if (idx < 0 || idx >= len) {
-                    throw new TemplateEvalException("Array index out of range: " + idx);
-                }
-                return Array.get(obj, idx);
+                return getArrayItem(obj, idx);
             }
             if (obj instanceof List<?>) {
-                var list = (List<?>) obj;
-                if (idx < 0 || idx >= list.size()) {
-                    throw new TemplateEvalException("List index out of range: " + idx);
-                }
-                return list.get(idx);
+                return getListItem((List<?>) obj, idx);
             }
             if (obj instanceof CharSequence) {
-                var seq = (CharSequence) obj;
-                if (idx < 0 || idx >= seq.length()) {
-                    throw new TemplateEvalException("String index out of range: " + idx);
-                }
-                return Character.toString(seq.charAt(idx));
+                return getStringChar((CharSequence) obj, idx);
             }
         }
 
-        var map = PROPERTY_CACHE.computeIfAbsent(type, c -> new ConcurrentHashMap<>());
-        var desc = map.computeIfAbsent(name, n -> buildDescriptor(type, n));
-        try {
-            return desc.get(obj);
-        } catch (Throwable e) {
-            throw new TemplateEvalException("Failed to access property '" + name + "' of " + type, e);
-        }
+        return getProperty(obj, name, type);
     }
 
     public static Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
@@ -321,26 +355,6 @@ public final class ReflectionUtils {
             return bestMatch.invoke(target, bestConverted);
         } catch (ReflectiveOperationException e) {
             throw new TemplateEvalException("Error invoking method " + methodName + ": " + e.getMessage(), e);
-        }
-    }
-
-    @AllArgsConstructor
-    private static final class AccessDescriptor {
-        private String name;
-        private MethodHandle getter;
-
-        Object get(Object target) throws Throwable {
-            return getter == null ? null : getter.invoke(target);
-        }
-    }
-
-    private static final class ConversionResult {
-        final Object[] values;
-        final int score;
-
-        ConversionResult(Object[] values, int score) {
-            this.values = values;
-            this.score = score;
         }
     }
 }

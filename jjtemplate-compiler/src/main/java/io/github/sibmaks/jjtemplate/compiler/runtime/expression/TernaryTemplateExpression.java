@@ -29,12 +29,12 @@ public final class TernaryTemplateExpression implements TemplateExpression {
 
     @Override
     public Object apply(final Context context) {
-        var evaluate = condition.apply(context);
-        if (!(evaluate instanceof Boolean)) {
-            throw new IllegalStateException("Cannot evaluate expression: " + this + ", condition is not boolean: " + evaluate);
+        var evaluatedCondition = condition.apply(context);
+        if (!(evaluatedCondition instanceof Boolean)) {
+            throw new IllegalStateException("Cannot evaluate expression: " + this + ", condition is not boolean: " + evaluatedCondition);
         }
-        var condition = (Boolean) evaluate;
-        if (condition) {
+        var booleanEvaluatedCondition = (boolean) evaluatedCondition;
+        if (booleanEvaluatedCondition) {
             return thenTrue.apply(context);
         }
         return thenFalse.apply(context);

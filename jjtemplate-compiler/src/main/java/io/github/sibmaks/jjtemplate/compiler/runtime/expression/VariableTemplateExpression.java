@@ -68,7 +68,7 @@ public final class VariableTemplateExpression implements TemplateExpression {
      */
     @AllArgsConstructor
     @ToString
-    public final static class GetPropertyChain implements Chain {
+    public static final class GetPropertyChain implements Chain {
         private final String propertyName;
 
         @Override
@@ -87,7 +87,7 @@ public final class VariableTemplateExpression implements TemplateExpression {
     @Getter
     @AllArgsConstructor
     @ToString
-    public final static class CallMethodChain implements Chain {
+    public static final class CallMethodChain implements Chain {
         private final String methodName;
         private final List<TemplateExpression> argsExpressions;
 

@@ -141,10 +141,6 @@ class TemplateExpressionFolderTest {
     void foldPipe_oneConstantArg() {
         TemplateFunction<String> function = mock();
 
-        var arg1 = UUID.randomUUID().toString();
-        var arg2 = UUID.randomUUID().toString();
-
-
         ListTemplateExpression baseArgsExpression = mock("baseArgs");
         ListTemplateExpression foldedArgsExpression = mock("foldedArgs");
         when(baseArgsExpression.visit(folder))

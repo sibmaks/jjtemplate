@@ -16,9 +16,10 @@ public interface FunctionCallTemplateExpression extends TemplateExpression {
     /**
      * Function to call on template evaluation
      *
+     * @param <T> function return type
      * @return template function instance
      */
-    TemplateFunction<?> getFunction();
+    <T> TemplateFunction<T> getFunction();
 
     /**
      * Evaluate function arguments
