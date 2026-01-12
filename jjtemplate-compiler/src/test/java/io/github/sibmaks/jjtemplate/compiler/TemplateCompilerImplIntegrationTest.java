@@ -8,7 +8,6 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -217,40 +216,49 @@ class TemplateCompilerImplIntegrationTest {
         );
     }
 
-    @Test
-    void testDefinitionKeyFallbackWithoutExpressions() {
-        var definition = new Definition();
-        definition.put("bad key", "value");
-        var templateScript = TemplateScript.builder()
-                .definitions(List.of(definition))
-                .template("{{ map:contains . 'bad key' }}")
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithDefinitionKeysWithoutBraces(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var compiler = TemplateCompiler.getInstance();
+        var modifiedDefinitions = new ArrayList<Definition>();
+        for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
+            var modifiedDefinition = new Definition();
+            for (var entry : definition.entrySet()) {
+                modifiedDefinition.put(stripInterpolation(entry.getKey()), entry.getValue());
+            }
+            modifiedDefinitions.add(modifiedDefinition);
+        }
+        var modifiedTemplateScript = TemplateScript.builder()
+                .template(templateScript.getTemplate())
+                .definitions(modifiedDefinitions)
                 .build();
-        var options = TemplateCompileOptions.builder()
-                .definitionKeyExpressionFallback(true)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
-        var compiled = compiler.compile(templateScript);
-        var rendered = compiled.render(Map.of());
+        var compiled = compiler.compile(modifiedTemplateScript);
+        var rendered = compiled.render(context);
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(true, renderedJson);
+        assertEquals(excepted, renderedJson);
     }
 
-    @Test
-    void testDefinitionKeyExpressionsWithFallbackEnabled() {
-        var definition = new Definition();
-        definition.put("{{ 'goodKey' }}", "value");
-        var templateScript = TemplateScript.builder()
-                .definitions(List.of(definition))
-                .template("{{ map:contains . 'goodKey' }}")
-                .build();
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithDefinitionKeysAndFallback(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
         var options = TemplateCompileOptions.builder()
                 .definitionKeyExpressionFallback(true)
                 .build();
         var compiler = TemplateCompiler.getInstance(options);
         var compiled = compiler.compile(templateScript);
-        var rendered = compiled.render(Map.of());
+        var rendered = compiled.render(context);
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(true, renderedJson);
+        assertEquals(excepted, renderedJson);
     }
 
     @ParameterizedTest
@@ -436,5 +444,16 @@ class TemplateCompilerImplIntegrationTest {
         }
 
         return type.cast(value);
+    }
+
+    private static String stripInterpolation(Object key) {
+        if (key == null) {
+            return null;
+        }
+        var raw = String.valueOf(key).trim();
+        if (raw.startsWith("{{") && raw.endsWith("}}")) {
+            return raw.substring(2, raw.length() - 2).trim();
+        }
+        return raw;
     }
 }
