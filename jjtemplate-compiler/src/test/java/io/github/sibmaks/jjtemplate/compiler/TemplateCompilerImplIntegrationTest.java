@@ -8,6 +8,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -214,6 +215,42 @@ class TemplateCompilerImplIntegrationTest {
                 (compiledAt - begin) / 1000000.0,
                 (renderedAt - compiledAt) / 1000000.0
         );
+    }
+
+    @Test
+    void testDefinitionKeyFallbackWithoutExpressions() {
+        var definition = new Definition();
+        definition.put("bad key", "value");
+        var templateScript = TemplateScript.builder()
+                .definitions(List.of(definition))
+                .template("{{ map:contains . 'bad key' }}")
+                .build();
+        var options = TemplateCompileOptions.builder()
+                .definitionKeyExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var compiled = compiler.compile(templateScript);
+        var rendered = compiled.render(Map.of());
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(true, renderedJson);
+    }
+
+    @Test
+    void testDefinitionKeyExpressionsWithFallbackEnabled() {
+        var definition = new Definition();
+        definition.put("{{ 'goodKey' }}", "value");
+        var templateScript = TemplateScript.builder()
+                .definitions(List.of(definition))
+                .template("{{ map:contains . 'goodKey' }}")
+                .build();
+        var options = TemplateCompileOptions.builder()
+                .definitionKeyExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var compiled = compiler.compile(templateScript);
+        var rendered = compiled.render(Map.of());
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(true, renderedJson);
     }
 
     @ParameterizedTest
