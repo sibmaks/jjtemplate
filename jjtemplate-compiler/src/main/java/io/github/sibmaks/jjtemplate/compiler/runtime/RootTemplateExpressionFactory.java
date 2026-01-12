@@ -15,6 +15,7 @@ import io.github.sibmaks.jjtemplate.parser.ExpressionParser;
 import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import io.github.sibmaks.jjtemplate.parser.parser.JJTemplateParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -44,10 +45,12 @@ import java.util.Map;
  * @since 0.5.0
  */
 @RequiredArgsConstructor
+@Slf4j
 public final class RootTemplateExpressionFactory {
     private final TemplateTypeInferenceVisitor typeInferenceVisitor;
     private final TemplateExpressionFactory expressionFactory;
     private final ExpressionParser expressionParser;
+    private final boolean definitionKeyExpressionFallback;
 
     /**
      * Compiles the given template object into a {@link TemplateExpression}.
@@ -167,11 +170,32 @@ public final class RootTemplateExpressionFactory {
      * @return compiled template expression
      */
     public ObjectTemplateExpression compileObject(Map<?, ?> rawExpression) {
+        return compileObject(rawExpression, false);
+    }
+
+    public ObjectTemplateExpression compileDefinitionObject(Map<?, ?> rawExpression) {
+        return compileObject(rawExpression, definitionKeyExpressionFallback);
+    }
+
+    private ObjectTemplateExpression compileObject(
+            Map<?, ?> rawExpression,
+            boolean allowKeyFallback
+    ) {
         var elements = new ArrayList<ObjectElement>(rawExpression.size());
 
         for (var entry : rawExpression.entrySet()) {
             var rawKey = entry.getKey();
-            var keyContext = parseObjectKey(String.valueOf(rawKey));
+            var rawKeyString = String.valueOf(rawKey);
+            var keyContext = parseObjectKey(rawKeyString, allowKeyFallback);
+            if (keyContext == null) {
+                var rawValue = entry.getValue();
+                var element = new ObjectFieldElement(
+                        new ConstantTemplateExpression(rawKeyString),
+                        compile(rawValue)
+                );
+                elements.add(element);
+                continue;
+            }
             var keyType = typeInferenceVisitor.infer(keyContext);
             switch (keyType) {
                 case CONSTANT:
@@ -211,12 +235,23 @@ public final class RootTemplateExpressionFactory {
         return new ObjectTemplateExpression(elements);
     }
 
-    private JJTemplateParser.TemplateContext parseObjectKey(String rawKey) {
+    private JJTemplateParser.TemplateContext parseObjectKey(
+            String rawKey,
+            boolean allowFallback
+    ) {
         try {
             return expressionParser.parse(rawKey);
         } catch (TemplateParseException e) {
+            if (allowFallback && !containsExpression(rawKey)) {
+                log.warn("Failed to parse definition key '{}' as expression; using raw key as constant.", rawKey);
+                return null;
+            }
             throw new TemplateParseException(String.format("Parse object field: '%s' failed", rawKey), e);
         }
+    }
+
+    private boolean containsExpression(String rawKey) {
+        return rawKey.contains("{{");
     }
 
     private ObjectFieldElement compileSwitch(
@@ -227,7 +262,7 @@ public final class RootTemplateExpressionFactory {
 
         for (var entry : rawValue.entrySet()) {
             var caseKeyRaw = entry.getKey();
-            var caseKeyContext = parseObjectKey(String.valueOf(caseKeyRaw));
+            var caseKeyContext = parseObjectKey(String.valueOf(caseKeyRaw), false);
             var caseKeyType = typeInferenceVisitor.infer(caseKeyContext);
             var caseValueRaw = entry.getValue();
             if (caseKeyType == TemplateType.SWITCH) {
