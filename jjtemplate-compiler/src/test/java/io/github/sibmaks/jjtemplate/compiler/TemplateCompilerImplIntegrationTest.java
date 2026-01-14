@@ -218,6 +218,57 @@ class TemplateCompilerImplIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("cases")
+    void testScenarioWithDefinitionKeysWithoutBraces(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .definitionKeyExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var modifiedDefinitions = new ArrayList<Definition>();
+        for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
+            var modifiedDefinition = new Definition();
+            for (var entry : definition.entrySet()) {
+                modifiedDefinition.put(
+                        stripInterpolation(entry.getKey()),
+                        stripDefinitionValue(entry.getValue(), isSwitchKey(entry.getKey()))
+                );
+            }
+            modifiedDefinitions.add(modifiedDefinition);
+        }
+        var modifiedTemplateScript = TemplateScript.builder()
+                .template(templateScript.getTemplate())
+                .definitions(modifiedDefinitions)
+                .build();
+        var compiled = compiler.compile(modifiedTemplateScript);
+        var rendered = compiled.render(context);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithDefinitionKeysAndFallback(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .definitionKeyExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var compiled = compiler.compile(templateScript);
+        var rendered = compiled.render(context);
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
     void testScenarioWithArraysAndWithoutOptimization(
             String caseName,
             TemplateScript templateScript,
@@ -399,5 +450,72 @@ class TemplateCompilerImplIntegrationTest {
         }
 
         return type.cast(value);
+    }
+
+    private static String stripInterpolation(Object key) {
+        return stripInterpolation(key, false);
+    }
+
+    private static String stripInterpolation(Object key, boolean switchCaseKey) {
+        if (key == null) {
+            return null;
+        }
+        var raw = String.valueOf(key).trim();
+        if (raw.startsWith("{{") && raw.endsWith("}}")) {
+            var inner = raw.substring(2, raw.length() - 2).trim();
+            if (switchCaseKey || isSwitchOrRangeKey(inner)) {
+                return inner;
+            }
+            return raw;
+        }
+        return raw;
+    }
+
+    private static boolean isSwitchOrRangeKey(String rawKey) {
+        var lower = rawKey.toLowerCase();
+        return lower.contains(" switch ") || lower.contains(" range ");
+    }
+
+    private static Object stripDefinitionValue(Object value, boolean switchCases) {
+        if (value instanceof Map<?, ?>) {
+            var map = (Map<?, ?>) value;
+            var newMap = new LinkedHashMap<String, Object>();
+            for (var entry : map.entrySet()) {
+                var nextSwitchCases = switchCases || isSwitchKey(entry.getKey());
+                newMap.put(
+                        stripInterpolation(entry.getKey(), switchCases),
+                        stripDefinitionValue(entry.getValue(), nextSwitchCases)
+                );
+            }
+            return newMap;
+        }
+        if (value instanceof List<?>) {
+            var list = (List<?>) value;
+            var newList = new ArrayList<>(list.size());
+            for (var item : list) {
+                newList.add(stripDefinitionValue(item, switchCases));
+            }
+            return newList;
+        }
+        if (value != null && value.getClass().isArray()) {
+            int len = Array.getLength(value);
+            var arr = new Object[len];
+            for (int i = 0; i < len; i++) {
+                arr[i] = stripDefinitionValue(Array.get(value, i), switchCases);
+            }
+            return arr;
+        }
+        return value;
+    }
+
+    private static boolean isSwitchKey(Object key) {
+        if (key == null) {
+            return false;
+        }
+        var raw = String.valueOf(key).trim();
+        if (raw.startsWith("{{") && raw.endsWith("}}")) {
+            raw = raw.substring(2, raw.length() - 2).trim();
+        }
+        return raw.toLowerCase().contains(" switch ");
     }
 }
