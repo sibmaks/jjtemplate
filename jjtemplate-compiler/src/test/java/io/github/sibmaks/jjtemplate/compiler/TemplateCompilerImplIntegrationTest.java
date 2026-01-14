@@ -234,7 +234,7 @@ class TemplateCompilerImplIntegrationTest {
             for (var entry : definition.entrySet()) {
                 modifiedDefinition.put(
                         stripInterpolation(entry.getKey()),
-                        stripDefinitionValue(entry.getValue())
+                        stripDefinitionValue(entry.getValue(), isSwitchKey(entry.getKey()))
                 );
             }
             modifiedDefinitions.add(modifiedDefinition);
@@ -453,13 +453,17 @@ class TemplateCompilerImplIntegrationTest {
     }
 
     private static String stripInterpolation(Object key) {
+        return stripInterpolation(key, false);
+    }
+
+    private static String stripInterpolation(Object key, boolean switchCaseKey) {
         if (key == null) {
             return null;
         }
         var raw = String.valueOf(key).trim();
         if (raw.startsWith("{{") && raw.endsWith("}}")) {
             var inner = raw.substring(2, raw.length() - 2).trim();
-            if (isSwitchOrRangeKey(inner)) {
+            if (switchCaseKey || isSwitchOrRangeKey(inner)) {
                 return inner;
             }
             return raw;
@@ -472,12 +476,16 @@ class TemplateCompilerImplIntegrationTest {
         return lower.contains(" switch ") || lower.contains(" range ");
     }
 
-    private static Object stripDefinitionValue(Object value) {
+    private static Object stripDefinitionValue(Object value, boolean switchCases) {
         if (value instanceof Map<?, ?>) {
             var map = (Map<?, ?>) value;
             var newMap = new LinkedHashMap<String, Object>();
             for (var entry : map.entrySet()) {
-                newMap.put(stripInterpolation(entry.getKey()), stripDefinitionValue(entry.getValue()));
+                var nextSwitchCases = switchCases || isSwitchKey(entry.getKey());
+                newMap.put(
+                        stripInterpolation(entry.getKey(), switchCases),
+                        stripDefinitionValue(entry.getValue(), nextSwitchCases)
+                );
             }
             return newMap;
         }
@@ -485,7 +493,7 @@ class TemplateCompilerImplIntegrationTest {
             var list = (List<?>) value;
             var newList = new ArrayList<>(list.size());
             for (var item : list) {
-                newList.add(stripDefinitionValue(item));
+                newList.add(stripDefinitionValue(item, switchCases));
             }
             return newList;
         }
@@ -493,10 +501,21 @@ class TemplateCompilerImplIntegrationTest {
             int len = Array.getLength(value);
             var arr = new Object[len];
             for (int i = 0; i < len; i++) {
-                arr[i] = stripDefinitionValue(Array.get(value, i));
+                arr[i] = stripDefinitionValue(Array.get(value, i), switchCases);
             }
             return arr;
         }
         return value;
+    }
+
+    private static boolean isSwitchKey(Object key) {
+        if (key == null) {
+            return false;
+        }
+        var raw = String.valueOf(key).trim();
+        if (raw.startsWith("{{") && raw.endsWith("}}")) {
+            raw = raw.substring(2, raw.length() - 2).trim();
+        }
+        return raw.toLowerCase().contains(" switch ");
     }
 }
