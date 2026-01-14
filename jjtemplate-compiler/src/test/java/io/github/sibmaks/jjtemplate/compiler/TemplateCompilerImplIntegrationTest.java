@@ -237,10 +237,19 @@ class TemplateCompilerImplIntegrationTest {
                 .template(templateScript.getTemplate())
                 .definitions(modifiedDefinitions)
                 .build();
+        var begin = System.nanoTime();
         var compiled = compiler.compile(modifiedTemplateScript);
+        var compiledAt = System.nanoTime();
         var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
         assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
     }
 
     @ParameterizedTest
@@ -255,10 +264,19 @@ class TemplateCompilerImplIntegrationTest {
                 .definitionKeyExpressionFallback(true)
                 .build();
         var compiler = TemplateCompiler.getInstance(options);
+        var begin = System.nanoTime();
         var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
         var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
         assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
     }
 
     @ParameterizedTest
