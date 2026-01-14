@@ -218,6 +218,69 @@ class TemplateCompilerImplIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("cases")
+    void testScenarioWithDefinitionKeysWithoutBraces(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var compiler = TemplateCompiler.getInstance();
+        var modifiedDefinitions = new ArrayList<Definition>();
+        for (var definition : Optional.ofNullable(templateScript.getDefinitions()).orElseGet(Collections::emptyList)) {
+            var modifiedDefinition = new Definition();
+            for (var entry : definition.entrySet()) {
+                modifiedDefinition.put(stripInterpolation(entry.getKey()), entry.getValue());
+            }
+            modifiedDefinitions.add(modifiedDefinition);
+        }
+        var modifiedTemplateScript = TemplateScript.builder()
+                .template(templateScript.getTemplate())
+                .definitions(modifiedDefinitions)
+                .build();
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(modifiedTemplateScript);
+        var compiledAt = System.nanoTime();
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithDefinitionKeysAndFallback(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .definitionKeyExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(templateScript);
+        var compiledAt = System.nanoTime();
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
     void testScenarioWithArraysAndWithoutOptimization(
             String caseName,
             TemplateScript templateScript,
@@ -399,5 +462,16 @@ class TemplateCompilerImplIntegrationTest {
         }
 
         return type.cast(value);
+    }
+
+    private static String stripInterpolation(Object key) {
+        if (key == null) {
+            return null;
+        }
+        var raw = String.valueOf(key).trim();
+        if (raw.startsWith("{{") && raw.endsWith("}}")) {
+            return raw.substring(2, raw.length() - 2).trim();
+        }
+        return raw;
     }
 }
