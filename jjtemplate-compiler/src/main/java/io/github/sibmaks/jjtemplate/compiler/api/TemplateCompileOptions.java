@@ -41,6 +41,13 @@ public final class TemplateCompileOptions {
     @Builder.Default
     private final boolean optimize = true;
     /**
+     * When enabled, definition keys are parsed as expressions. If parsing fails,
+     * the compiler logs a warning and falls back to using the raw key string as
+     * a constant.
+     */
+    @Builder.Default
+    private final boolean definitionKeyExpressionFallback = false;
+    /**
      * Evaluation-specific configuration options,
      * such as locale and custom function behavior.
      * <p>
