@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtils {
     private static final List<String> GET_METHOD_PREFIX = List.of("get", "is");
+    private static final Object PROPERTY_NOT_FOUND = new Object();
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final Map<Class<?>, Map<String, AccessDescriptor>> PROPERTY_CACHE = new ConcurrentHashMap<>();
     private static final Map<Class<?>, List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ConcurrentHashMap<>();
@@ -84,6 +85,20 @@ public final class ReflectionUtils {
         return !s.isEmpty();
     }
 
+    private static Object resolveEnumConstant(Class<?> enumType, String enumValue) {
+        var enumConstants = enumType.getEnumConstants();
+        if (enumConstants == null) {
+            throw new IllegalArgumentException(enumType + " is not an enum type");
+        }
+        for (var constant : enumConstants) {
+            var enumConstant = (Enum<?>) constant;
+            if (enumConstant.name().equals(enumValue)) {
+                return enumConstant;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant " + enumType.getCanonicalName() + "." + enumValue);
+    }
+
     private static ConversionResult tryConvertArgs(Class<?>[] params, List<Object> args) {
         var converted = new Object[params.length];
         var score = 0;
@@ -101,7 +116,7 @@ public final class ReflectionUtils {
             if (paramType.equals(argType)) {
                 converted[i] = arg;
             } else if (paramType.isEnum() && arg instanceof String) {
-                converted[i] = Enum.valueOf((Class<Enum>) paramType, (String) arg);
+                converted[i] = resolveEnumConstant(paramType, (String) arg);
             } else if (paramType == Optional.class && !(arg instanceof Optional)) {
                 converted[i] = Optional.of(arg);
             } else if (paramType.isAssignableFrom(argType)) {
@@ -278,31 +293,62 @@ public final class ReflectionUtils {
             return null;
         }
 
-        if (obj instanceof Map<?, ?>) {
-            var map = (Map<?, ?>) obj;
-            return map.get(name);
+        if (obj instanceof FieldResolver) {
+            var resolver = (FieldResolver) obj;
+            return resolver.resolve(name);
         }
 
+        if (obj instanceof Map<?, ?>) {
+            var map = (Map<?, ?>) obj;
+            if (map.containsKey(name)) {
+                return map.get(name);
+            }
+            if (obj instanceof FieldFallbackResolver) {
+                var fallbackResolver = (FieldFallbackResolver) obj;
+                return fallbackResolver.resolve(name);
+            }
+            return null;
+        }
+
+        Object property = PROPERTY_NOT_FOUND;
         var type = obj.getClass();
         if (isInt(name)) {
             var idx = Integer.parseInt(name);
             if (obj.getClass().isArray()) {
-                return getArrayItem(obj, idx);
-            }
-            if (obj instanceof List<?>) {
-                return getListItem((List<?>) obj, idx);
-            }
-            if (obj instanceof CharSequence) {
-                return getStringChar((CharSequence) obj, idx);
+                property = getArrayItem(obj, idx);
+            } else if (obj instanceof List<?>) {
+                property = getListItem((List<?>) obj, idx);
+            } else if (obj instanceof CharSequence) {
+                property = getStringChar((CharSequence) obj, idx);
             }
         }
+        if (property != PROPERTY_NOT_FOUND) {
+            return property;
+        }
 
-        return getProperty(obj, name, type);
+        try {
+            return getProperty(obj, name, type);
+        } catch (TemplateEvalException e) {
+            var unknownPropertyMessage = "Unknown property '" + name + "' of " + type;
+            if (!unknownPropertyMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            if (obj instanceof FieldFallbackResolver) {
+                var fallbackResolver = (FieldFallbackResolver) obj;
+                return fallbackResolver.resolve(name);
+            }
+            throw e;
+        }
     }
 
     public static Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
         if (target == null) {
             throw new TemplateEvalException("Cannot call method on null target");
+        }
+
+        if (target instanceof MethodResolver) {
+            var resolver = (MethodResolver) target;
+            return resolver.resolve(methodName, args.toArray());
         }
 
         var type = target.getClass();
@@ -343,6 +389,10 @@ public final class ReflectionUtils {
 
 
         if (bestMatch == null) {
+            if (target instanceof MethodFallbackResolver) {
+                var fallbackResolver = (MethodFallbackResolver) target;
+                return fallbackResolver.resolve(methodName, args.toArray());
+            }
             throw new TemplateEvalException("No matching method " + methodName + " found for args " + args);
         }
 
@@ -358,4 +408,3 @@ public final class ReflectionUtils {
         }
     }
 }
-
