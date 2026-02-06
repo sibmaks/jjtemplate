@@ -277,6 +277,7 @@ public final class RootTemplateExpressionFactory {
             boolean definitionMode
     ) {
         var switchCases = new ArrayList<SwitchCase>(rawValue.size());
+        var elseSwitchCases = new ArrayList<SwitchCase>(1);
 
         for (var entry : rawValue.entrySet()) {
             var caseKeyRaw = entry.getKey();
@@ -293,7 +294,7 @@ public final class RootTemplateExpressionFactory {
             } else if (caseKeyType == TemplateType.SWITCH_ELSE) {
                 var objectValue = compile(caseValueRaw, definitionMode);
                 var switchCase = new ElseSwitchCase(objectValue);
-                switchCases.add(switchCase);
+                elseSwitchCases.add(switchCase);
             } else {
                 var objectKey = expressionFactory.compile(caseKeyContext);
                 var objectValue = compile(caseValueRaw, definitionMode);
@@ -301,6 +302,7 @@ public final class RootTemplateExpressionFactory {
                 switchCases.add(switchCase);
             }
         }
+        switchCases.addAll(elseSwitchCases);
 
         var expressionKey = (SwitchDefinitionTemplateExpression) expressionFactory.compile(keyContext);
         var switchKey = expressionKey.getKey();

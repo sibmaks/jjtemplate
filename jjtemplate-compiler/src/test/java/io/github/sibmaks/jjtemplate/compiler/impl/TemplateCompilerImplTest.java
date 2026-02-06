@@ -217,4 +217,32 @@ class TemplateCompilerImplTest {
                 rendered
         );
     }
+
+    @Test
+    void compileTemplateWithDefinitionFallbackEnabledElseCaseShouldBeProcessedLast() {
+        var options = TemplateCompileOptions.builder()
+                .definitionExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+
+        var source = new Definition();
+        source.put("value", "text");
+
+        var switchCases = new java.util.LinkedHashMap<String, Object>();
+        switchCases.put("else", "fallback");
+        switchCases.put("'text'", "matched");
+
+        var switchDefinition = new Definition();
+        switchDefinition.put("result switch .value", switchCases);
+
+        var script = TemplateScript.builder()
+                .definitions(List.of(source, switchDefinition))
+                .template("{{ .result }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+        var rendered = compiled.render(Map.of());
+
+        assertEquals("matched", rendered);
+    }
 }
