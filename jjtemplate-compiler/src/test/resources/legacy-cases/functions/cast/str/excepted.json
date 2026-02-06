@@ -1,0 +1,19 @@
+{
+  "booleanTrueKey": "true",
+  "booleanTruePipeKey": "true",
+
+  "booleanFalseKey": "false",
+  "booleanFalsePipeKey": "false",
+
+  "stringKey": "text",
+  "stringPipeKey": "text",
+
+  "integerKey": "42",
+  "integerPipeKey": "42",
+
+  "floatKey": "3.1415",
+  "floatPipeKey": "3.1415",
+
+  "nullVarKey": null,
+  "nullVarPipeKey": null
+}

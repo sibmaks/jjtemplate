@@ -1,0 +1,10 @@
+{
+  "stringKey": "hello",
+  "stringPipeKey": "hello",
+
+  "stringVarKey": "world",
+  "stringVarPipeKey": "world",
+
+  "emptyStringKey": "",
+  "emptyStringPipeKey": ""
+}

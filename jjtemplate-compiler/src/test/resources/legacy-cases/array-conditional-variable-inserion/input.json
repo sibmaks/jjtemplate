@@ -1,0 +1,12 @@
+{
+  "template": {
+    "array": [
+      "{{? .booleanTrue }}",
+      "{{? .booleanFalse }}",
+      "{{? .string }}",
+      "{{? .integer }}",
+      "{{? .float }}",
+      "{{? .nullVar }}"
+    ]
+  }
+}

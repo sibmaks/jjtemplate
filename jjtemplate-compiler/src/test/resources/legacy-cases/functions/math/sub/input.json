@@ -1,0 +1,15 @@
+{
+  "template": {
+    "subInt": "{{ math:sub 42, 38 }}",
+    "subIntKey": "{{ 38 | math:sub 42 }}",
+
+    "subNegativeInt": "{{ math:sub -6, -4 }}",
+    "subNegativeIntKey": "{{ -4 | math:sub -6 }}",
+
+    "subDouble": "{{ math:sub 3.14, 2.12 }}",
+    "subDoubleKey": "{{ 2.12 | math:sub 3.14 }}",
+
+    "subNegativeDouble": "{{ math:sub -1.23, -4.32 }}",
+    "subNegativeDoubleKey": "{{ -4.32 | math:sub -1.23 }}"
+  }
+}

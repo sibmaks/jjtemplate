@@ -11,11 +11,11 @@
           "price": 0
         }
       ],
-      "{{ objects range product,index of .products }}": {
+      "objects range product,index of .products": {
         "category": "{{ .product.category }}",
-        "{{ caption switch .product.price | le 0 }}": {
-          "{{ then }}": "Free",
-          "{{ false }}": "Price: {{ .product.price }}"
+        "caption switch .product.price | le 0": {
+          "then": "Free",
+          "false": "Price: {{ .product.price }}"
         }
       }
     }

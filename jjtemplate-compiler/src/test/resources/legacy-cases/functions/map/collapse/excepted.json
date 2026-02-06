@@ -1,0 +1,38 @@
+{
+  "collapsedKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  },
+  "collapsedPipeKey": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  },
+  "collapsedKeyList1st": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value6"
+  },
+  "collapsedPipeKeyList1st": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value6"
+  },
+  "collapsed1ArgKeyList1st": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  },
+  "collapsed1ArgPipeKeyList1st": {
+    "key": "value",
+    "key2": "value2",
+    "key3": "value4",
+    "key4": "value5"
+  }
+}

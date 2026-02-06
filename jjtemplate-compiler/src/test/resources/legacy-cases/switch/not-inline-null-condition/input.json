@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "defResult switch .notExisted | neq null": {
+        "null": "failed",
+        "else": "ok"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

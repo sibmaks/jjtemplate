@@ -1,0 +1,17 @@
+{
+  "definitions": [
+    {
+      "testBooleanVariable": true
+    },
+    {
+      "varResult switch .testBooleanVariable ": {
+        "42": "is number",
+        "true": "is boolean",
+        "'text'": "is string",
+        ".varString": "is some variable",
+        "else": "else case"
+      }
+    }
+  ],
+  "template": "{{ .varResult }}"
+}

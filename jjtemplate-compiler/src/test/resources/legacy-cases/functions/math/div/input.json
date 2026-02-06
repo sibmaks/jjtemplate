@@ -1,0 +1,15 @@
+{
+  "template": {
+    "divInt": "{{ math:div 4, 6 }}",
+    "divIntKey": "{{ 6 | math:div 4 }}",
+
+    "divNegativeInt": "{{ math:div -6, -4 }}",
+    "divNegativeIntKey": "{{ -4 | math:div -6 }}",
+
+    "divDouble": "{{ math:div 3.14, 2, 'HALF_DOWN' }}",
+    "divDoubleKey": "{{ 3.14 | math:div 2, 'HALF_DOWN' }}",
+
+    "divNegativeDouble": "{{ math:div -2, -3.14, 'HALF_DOWN' }}",
+    "divNegativeDoubleKey": "{{ -2 | math:div -3.14, 'HALF_DOWN' }}"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "template": {
+    "intKey": "{{ math:scale 42, 2, 'UP' }}",
+    "intPipeKey": "{{ 42 | math:scale 2, 'UP' }}",
+
+    "floatKey": "{{ math:scale 3.1415, 2, 'HALF_DOWN' }}",
+    "floatPipeKey": "{{ 3.1415 | math:scale 2, 'HALF_DOWN' }}"
+  }
+}

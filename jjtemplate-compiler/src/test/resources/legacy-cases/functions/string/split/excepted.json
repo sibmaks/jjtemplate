@@ -1,0 +1,20 @@
+{
+  "args": [
+    "a",
+    "b",
+    "c"
+  ],
+  "pipe": [
+    "a",
+    "b",
+    "c"
+  ],
+  "argsWithLimits": [
+    "a",
+    "b,c"
+  ],
+  "pipeWithLimits": [
+    "a",
+    "b,c"
+  ]
+}

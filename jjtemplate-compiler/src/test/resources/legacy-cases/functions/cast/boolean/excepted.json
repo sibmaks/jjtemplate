@@ -1,0 +1,14 @@
+{
+  "booleanTrueKey": true,
+  "booleanTruePipeKey": true,
+  "booleanFalseKey": false,
+  "booleanFalsePipeKey": false,
+  "stringTrueKey": true,
+  "stringTruePipeKey": true,
+  "stringFalseKey": false,
+  "stringFalsePipeKey": false,
+  "nullKey": null,
+  "nullPipeKey": null,
+  "nullVarKey": null,
+  "nullVarPipeKey": null
+}

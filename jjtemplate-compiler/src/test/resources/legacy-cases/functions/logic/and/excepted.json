@@ -1,0 +1,13 @@
+{
+  "trueAndTrueKey": true,
+  "trueAndTruePipeKey": true,
+
+  "trueAndFalseKey": false,
+  "trueAndFalsePipeKey": false,
+
+  "falseAndFalseKey": false,
+  "falseAndFalsePipeKey": false,
+
+  "falseAndTrueKey": false,
+  "falseAndTruePipeKey": false
+}

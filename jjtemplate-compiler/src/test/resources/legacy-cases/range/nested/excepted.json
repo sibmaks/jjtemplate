@@ -1,0 +1,27 @@
+[
+  {
+    "category": "MILK",
+    "tags": [
+      {
+        "name": "ECO"
+      },
+      {
+        "name": "HEALTHY"
+      }
+    ]
+  },
+  {
+    "category": "WATER",
+    "tags": [
+      {
+        "name": "ECO"
+      },
+      {
+        "name": "HEALTHY"
+      },
+      {
+        "name": "PURE"
+      }
+    ]
+  }
+]

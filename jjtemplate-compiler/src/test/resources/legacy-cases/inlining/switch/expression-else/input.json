@@ -1,0 +1,14 @@
+{
+  "definitions": [
+    {
+      "booleanVar": false
+    },
+    {
+      "defResult switch .booleanVar": {
+        "then": "fail",
+        "else": "{{ 'ok' }}"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

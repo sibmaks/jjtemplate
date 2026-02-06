@@ -55,7 +55,8 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
         this.rootTemplateExpressionFactory = new RootTemplateExpressionFactory(
                 new TemplateTypeInferenceVisitor(),
                 expressionFactory,
-                expressionParser
+                expressionParser,
+                options.isDefinitionExpressionFallback()
         );
         this.optimizers = new ArrayList<>();
         if (options.isOptimize()) {
@@ -122,7 +123,7 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
     private ObjectTemplateExpression compileInternalVariable(Definition definition) {
         try {
-            return rootTemplateExpressionFactory.compileObject(definition);
+            return rootTemplateExpressionFactory.compileDefinitionObject(definition);
         } catch (Exception e) {
             throw new TemplateCompilationException("Error compiling definition", e);
         }

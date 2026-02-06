@@ -1,0 +1,19 @@
+{
+  "definitions": [
+    {
+      "defText": "text"
+    }
+  ],
+  "template": {
+    "defObject": {
+      "key-{{ .defText }}": {
+        "subkey-{{ .defText }}": "value-{{ .defText }}"
+      }
+    },
+    "varObject": {
+      "key-{{ .varText }}": {
+        "subkey-{{ .varText }}": "value-{{ .varText }}"
+      }
+    }
+  }
+}

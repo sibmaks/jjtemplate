@@ -357,15 +357,6 @@ class TemplateCompilerImplIntegrationTest {
                 .map(it -> buildArguments(resourcesDir, it));
     }
 
-    /**
-     * Рекурсивно заменяет все List на массивы.
-     * Работает с Map, List и примитивными значениями.
-     *
-     * @param value   значение для конвертации
-     * @param reified определение целевого типа
-     * @param <T>     результирующий тип
-     * @return результат преобразования
-     */
     @SafeVarargs
     @SuppressWarnings("unchecked")
     public static <T> T listsToArrays(Object value, T... reified) {

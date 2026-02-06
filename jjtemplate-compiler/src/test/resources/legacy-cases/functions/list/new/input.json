@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "varList": [
+        42,
+        true,
+        "text"
+      ]
+    }
+  ],
+  "template": {
+    "listKey": "{{ list:new 42, true, 'text', .varList }}",
+    "listPipeKey": "{{ .varList | list:new 42, true, 'text' }}"
+  }
+}

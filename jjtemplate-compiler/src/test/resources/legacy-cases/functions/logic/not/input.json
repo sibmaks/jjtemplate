@@ -1,0 +1,15 @@
+{
+  "definitions": [
+    {
+      "trueVar": true,
+      "falseVar": false
+    }
+  ],
+  "template": {
+    "trueKey": "{{ not .trueVar }}",
+    "truePipeKey": "{{ .trueVar | not }}",
+
+    "falseKey": "{{ not .falseVar }}",
+    "falsePipeKey": "{{ .falseVar | not }}"
+  }
+}

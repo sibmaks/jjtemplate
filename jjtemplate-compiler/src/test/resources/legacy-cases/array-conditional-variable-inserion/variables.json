@@ -1,0 +1,8 @@
+{
+  "booleanTrue": true,
+  "booleanFalse": false,
+  "string": "text",
+  "integer": 42,
+  "float": 3.1415,
+  "nullVar": null
+}

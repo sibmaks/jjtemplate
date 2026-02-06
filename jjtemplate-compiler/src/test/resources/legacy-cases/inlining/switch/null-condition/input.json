@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "defResult switch null": {
+        "null": "ok",
+        "else": "fail"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

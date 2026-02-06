@@ -1,0 +1,19 @@
+{
+  "definitions": [
+    {
+      "varList": [
+        42,
+        true,
+        "text"
+      ],
+      "varEmptyList": [
+      ]
+    }
+  ],
+  "template": {
+    "listKey": "{{ list:empty .varList }}",
+    "listPipeKey": "{{ .varList | list:empty }}",
+    "emptyListKey": "{{ list:empty .varEmptyList }}",
+    "emptyListPipeKey": "{{ .varEmptyList | list:empty }}"
+  }
+}

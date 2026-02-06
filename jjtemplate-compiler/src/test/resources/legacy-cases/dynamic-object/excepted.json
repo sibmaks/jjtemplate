@@ -1,0 +1,12 @@
+{
+  "defObject": {
+    "key-text": {
+      "subkey-text": "value-text"
+    }
+  },
+  "varObject": {
+    "key-varText": {
+      "subkey-varText": "value-varText"
+    }
+  }
+}

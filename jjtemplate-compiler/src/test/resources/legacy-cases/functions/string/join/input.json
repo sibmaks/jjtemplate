@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "strVar": "value"
+    }
+  ],
+  "template": {
+    "args": "{{ string:join ' ', false, .strVar, 42, 3.1415, true }}",
+    "pipe": "{{ false | string:join ' ', .strVar, 42, 3.1415, true }}"
+  }
+}

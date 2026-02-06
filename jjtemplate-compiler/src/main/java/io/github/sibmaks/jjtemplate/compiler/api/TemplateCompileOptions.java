@@ -40,6 +40,19 @@ public final class TemplateCompileOptions {
      */
     @Builder.Default
     private final boolean optimize = true;
+
+    /**
+     * Enables relaxed parsing for definition keys.
+     * <p>
+     * When enabled, definition keys that represent {@code switch} or
+     * {@code range} expressions may be written without {@code {{ }}}
+     * wrappers. In addition, child keys inside definition {@code switch}
+     * cases are interpreted as expressions as well.
+     * </p>
+     */
+    @Builder.Default
+    private final boolean definitionExpressionFallback = false;
+
     /**
      * Evaluation-specific configuration options,
      * such as locale and custom function behavior.

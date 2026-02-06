@@ -1,0 +1,18 @@
+{
+  "booleanTrue": true,
+  "booleanFalse": false,
+  "string": "text",
+  "integer": 42,
+  "float": 3.1415,
+  "null": null,
+  "array": [
+    true,
+    false,
+    "text",
+    42,
+    3.1415,
+    null
+  ],
+  "key-end": "value",
+  "fun": "true-42"
+}

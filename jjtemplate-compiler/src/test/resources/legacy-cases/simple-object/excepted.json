@@ -1,0 +1,46 @@
+{
+  "varObj": {
+    "key": "value",
+    "child": {
+      "childKey": "childValue"
+    },
+    "array": [
+      {
+        "arrayKey": "arrayValue"
+      }
+    ]
+  },
+  "variableObject": {
+    "key": "text",
+    "child": {
+      "childKey": "text"
+    },
+    "array": [
+      {
+        "arrayKey": "text"
+      }
+    ]
+  },
+  "staticObj": {
+    "key": "value",
+    "child": {
+      "childKey": "childValue"
+    },
+    "array": [
+      {
+        "arrayKey": "arrayValue"
+      }
+    ]
+  },
+  "templateVariableObject": {
+    "key": "text",
+    "child": {
+      "childKey": "text"
+    },
+    "array": [
+      {
+        "arrayKey": "text"
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "template": "{{ '28.10.2024 14:00' | datetime:parse 'dd.MM.yyyy HH:mm' | cast:str }}"
+}

@@ -1,0 +1,13 @@
+{
+  "divInt": 0,
+  "divIntKey": 0,
+
+  "divNegativeInt": 1,
+  "divNegativeIntKey": 1,
+
+  "divDouble": 1.57,
+  "divDoubleKey": 0.64,
+
+  "divNegativeDouble": 0.64,
+  "divNegativeDoubleKey": 1.57
+}

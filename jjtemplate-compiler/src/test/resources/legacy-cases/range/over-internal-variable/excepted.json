@@ -1,0 +1,26 @@
+{
+  "arrayOfObjects": [
+    {
+      "key-0": true
+    },
+    {
+      "key-1": false
+    },
+    {
+      "key-2": 42
+    },
+    {
+      "key-3": 3.1415
+    },
+    {
+      "key-4": "text"
+    }
+  ],
+  "arrayOfStrings": [
+    "true",
+    "false",
+    "42",
+    "3.1415",
+    "text"
+  ]
+}

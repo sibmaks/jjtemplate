@@ -1,0 +1,37 @@
+{
+  "definitions": [
+    {
+      "defTrue": true,
+      "defFalse": false
+    }
+  ],
+  "template": {
+    "array": [
+      "prefix",
+      "{{. .varList}}",
+      "suffix"
+    ],
+    "staticArray": [
+      "{{. list:new 'a', true, 42, 3.1415 }}"
+    ],
+    "nullSpread": [
+      "{{. .notExistsVar }}"
+    ],
+    "funcOperator": [
+      "{{. cast:str .defTrue }}",
+      "{{. cast:str .defFalse }}"
+    ],
+    "funcStaticOperator": [
+      "{{. cast:str true  }}",
+      "{{. cast:str false }}"
+    ],
+    "pipeOperator": [
+      "{{. .defTrue | cast:str }}",
+      "{{. .defFalse | cast:str }}"
+    ],
+    "pipeStaticOperator": [
+      "{{. true | cast:str }}",
+      "{{. false | cast:str }}"
+    ]
+  }
+}

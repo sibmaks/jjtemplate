@@ -1,0 +1,13 @@
+{
+  "subInt": 4,
+  "subIntKey": 4,
+
+  "subNegativeInt": -2,
+  "subNegativeIntKey": -2,
+
+  "subDouble": 1.02,
+  "subDoubleKey": 1.02,
+
+  "subNegativeDouble": 3.09,
+  "subNegativeDoubleKey": 3.09
+}

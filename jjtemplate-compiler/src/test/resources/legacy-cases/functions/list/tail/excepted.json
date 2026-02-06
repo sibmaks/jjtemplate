@@ -1,0 +1,12 @@
+{
+  "listKey": [
+    true,
+    "hello"
+  ],
+  "listPipeKey": [
+    true,
+    "hello"
+  ],
+  "emptyListKey": [],
+  "emptyListPipeKey": []
+}

@@ -1,0 +1,22 @@
+{
+  "listKey": [
+    42,
+    true,
+    "text",
+    [
+      42,
+      true,
+      "text"
+    ]
+  ],
+  "listPipeKey": [
+    42,
+    true,
+    "text",
+    [
+      42,
+      true,
+      "text"
+    ]
+  ]
+}

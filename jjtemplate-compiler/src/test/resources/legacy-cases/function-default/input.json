@@ -1,0 +1,14 @@
+{
+  "template": {
+    "key": "{{ default .var1, 'a' }}",
+    "nKey": "{{ default .var2, 'a' }}",
+    "pipe1stArg": "{{ .var1 | default 123 }}",
+    "nPipe1stArg": "{{ .var2 | default 'a' }}",
+    "array": [
+      "{{ default .var1, 'a' }}",
+      "{{ default .var2, 'a' }}",
+      "{{ .var1 | default 123 }}",
+      "{{ .var2 | default 'a' }}"
+    ]
+  }
+}
