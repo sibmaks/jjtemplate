@@ -27,9 +27,6 @@ allprojects {
 
 allprojects {
     afterProject {
-        if (project == rootProject) {
-            return@afterProject
-        }
         if (!plugins.hasPlugin("maven-publish")) {
             return@afterProject
         }
