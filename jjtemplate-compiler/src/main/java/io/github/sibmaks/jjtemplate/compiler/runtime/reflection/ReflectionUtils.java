@@ -249,6 +249,12 @@ public final class ReflectionUtils {
         }
     }
 
+    /**
+     * Returns all readable properties of an object as a map.
+     *
+     * @param obj source object
+     * @return map of property names to values
+     */
     public static Map<String, Object> getAllProperties(Object obj) {
         if (obj == null) {
             return Collections.emptyMap();
@@ -288,6 +294,13 @@ public final class ReflectionUtils {
         return map;
     }
 
+    /**
+     * Resolves a single property from an object, map, list, array, or custom resolver.
+     *
+     * @param obj source object
+     * @param name property name or index
+     * @return resolved property value, or {@code null} when not found by supported fallback paths
+     */
     public static Object getProperty(Object obj, String name) {
         if (obj == null) {
             return null;
@@ -341,6 +354,14 @@ public final class ReflectionUtils {
         }
     }
 
+    /**
+     * Invokes a method on the target using reflective overload resolution and argument conversion.
+     *
+     * @param target invocation target
+     * @param methodName method name
+     * @param args invocation arguments
+     * @return invocation result
+     */
     public static Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
         if (target == null) {
             throw new TemplateEvalException("Cannot call method on null target");

@@ -42,6 +42,11 @@ public final class JJTemplateParser {
     public static final class TemplateContext {
         private final List<TemplatePart> parts;
 
+        /**
+         * Creates a template context from parsed parts.
+         *
+         * @param parts template parts; {@code null} is treated as an empty list
+         */
         public TemplateContext(List<TemplatePart> parts) {
             this.parts = parts == null ? List.of() : List.copyOf(parts);
         }

@@ -26,7 +26,7 @@ class VariableUsageCollectorTest {
     private VariableUsageCollector collector;
 
     @Test
-    void visitValueTemplateExpression_doesNothing() {
+    void visitValueTemplateExpressionWhenDoesNothing() {
         var expr = mock(ConstantTemplateExpression.class);
 
         collector.visit(expr);
@@ -36,7 +36,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitVariableTemplateExpression_addsName() {
+    void visitVariableTemplateExpressionWhenAddsName() {
         var expr = mock(VariableTemplateExpression.class);
         when(expr.getRootName())
                 .thenReturn("x");
@@ -49,7 +49,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitDynamicFunctionCallTemplateExpression_collectsArgs() {
+    void visitDynamicFunctionCallTemplateExpressionWhenCollectsArgs() {
         ListTemplateExpression argsExpression = mock();
 
         var func = mock(DynamicFunctionCallTemplateExpression.class);
@@ -63,7 +63,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitConstantFunctionCallTemplateExpression_collectsArgs() {
+    void visitConstantFunctionCallTemplateExpressionWhenCollectsArgs() {
         var func = mock(ConstantFunctionCallTemplateExpression.class);
 
         try {
@@ -74,7 +74,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitPipeChainTemplateExpression_collectsRootAndArgs() {
+    void visitPipeChainTemplateExpressionWhenCollectsRootAndArgs() {
         var root = mock(TemplateExpression.class);
 
         var chainCall = mock(DynamicFunctionCallTemplateExpression.class);
@@ -94,7 +94,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitTemplateConcatTemplateExpression_collectsAllItems() {
+    void visitTemplateConcatTemplateExpressionWhenCollectsAllItems() {
         var e1 = mock(TemplateExpression.class);
         var e2 = mock(TemplateExpression.class);
         var e3 = mock(TemplateExpression.class);
@@ -114,7 +114,7 @@ class VariableUsageCollectorTest {
     }
 
     @Test
-    void visitTernaryTemplateExpression_collectsAllBranches() {
+    void visitTernaryTemplateExpressionWhenCollectsAllBranches() {
         var cond = mock(TemplateExpression.class);
         var thenTrue = mock(TemplateExpression.class);
         var thenFalse = mock(TemplateExpression.class);

@@ -42,6 +42,11 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
     private final ListElementVariableInliner listElementVariableInliner;
     private final SwitchCaseVariableInliner switchCaseVariableInliner;
 
+    /**
+     * Creates an inliner with values available for static replacement.
+     *
+     * @param values map of variable names to constant values
+     */
     public TemplateExpressionVariableInliner(Map<String, Object> values) {
         this.values = values;
         this.objectElementVariableInliner = new ObjectElementVariableInliner(this);

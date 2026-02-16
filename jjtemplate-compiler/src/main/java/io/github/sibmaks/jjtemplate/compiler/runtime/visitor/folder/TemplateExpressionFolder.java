@@ -55,6 +55,9 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
     private final ListElementFolder listElementFolder;
     private final SwitchCaseFolder switchCaseFolder;
 
+    /**
+     * Creates a folder visitor with helper visitors for object, list, and switch nodes.
+     */
     public TemplateExpressionFolder() {
         this.objectElementFolder = new ObjectElementFolder(this);
         this.listElementFolder = new ListElementFolder(this);

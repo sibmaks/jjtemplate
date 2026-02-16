@@ -56,7 +56,7 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
-    void foldStaticFunction_oneConstantArg() {
+    void foldStaticFunctionWhenOneConstantArg() {
         TemplateFunction<String> function = mock();
 
         ListTemplateExpression baseArgsExpression = mock("baseArgs");
@@ -138,7 +138,7 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
-    void foldPipe_oneConstantArg() {
+    void foldPipeWhenOneConstantArg() {
         TemplateFunction<String> function = mock();
 
         ListTemplateExpression baseArgsExpression = mock("baseArgs");
@@ -413,7 +413,7 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
-    void foldVariableCallMethodArgs_partialFold() {
+    void foldVariableCallMethodArgsPartialFold() {
         TemplateFunction<String> staticked = mock();
 
         var value = UUID.randomUUID().toString();
@@ -452,7 +452,7 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
-    void foldVariableGetProperty_doNothing() {
+    void foldVariableGetPropertyWhenDoNothing() {
         var getPropertyChain = new VariableTemplateExpression.GetPropertyChain(
                 "m"
         );

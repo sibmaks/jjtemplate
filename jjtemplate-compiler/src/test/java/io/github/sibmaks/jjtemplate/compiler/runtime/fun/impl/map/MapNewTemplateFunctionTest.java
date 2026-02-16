@@ -36,7 +36,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithPipeArg_evenArgs() {
+    void testInvokeWithPipeArgWhenEvenArgs() {
         var args = List.<Object>of("a", 1, "b", 2);
         var pipeArg = "ignored";
 
@@ -48,7 +48,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithPipeArg_oddArgs() {
+    void testInvokeWithPipeArgWhenOddArgs() {
         var args = List.<Object>of("a", 1, "b");
         var pipeArg = 99;
 
@@ -60,7 +60,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithPipeArg_emptyArgs() {
+    void testInvokeWithPipeArgWhenEmptyArgs() {
         var args = List.of();
         var pipeArg = 42;
 
@@ -70,7 +70,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithoutPipeArg_evenArgs() {
+    void testInvokeWithoutPipeArgWhenEvenArgs() {
         var args = List.<Object>of("x", 10, "y", 20);
 
         var result = function.invoke(args);
@@ -81,7 +81,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithoutPipeArg_oddArgs() {
+    void testInvokeWithoutPipeArgWhenOddArgs() {
         var args = List.<Object>of("x", 10, "y");
 
         var result = function.invoke(args);
@@ -92,7 +92,7 @@ class MapNewTemplateFunctionTest {
     }
 
     @Test
-    void testInvokeWithoutPipeArg_emptyArgs_shouldThrow() {
+    void testInvokeWithoutPipeArgWhenEmptyArgsShouldThrow() {
         var args = List.of();
 
         var exception = assertThrows(RuntimeException.class, () -> function.invoke(args));

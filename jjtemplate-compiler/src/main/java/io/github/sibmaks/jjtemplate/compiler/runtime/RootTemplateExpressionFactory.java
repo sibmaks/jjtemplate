@@ -48,14 +48,14 @@ public final class RootTemplateExpressionFactory {
     private final ExpressionParser expressionParser;
     private final boolean definitionExpressionFallback;
 
-    public RootTemplateExpressionFactory(
-            TemplateTypeInferenceVisitor typeInferenceVisitor,
-            TemplateExpressionFactory expressionFactory,
-            ExpressionParser expressionParser
-    ) {
-        this(typeInferenceVisitor, expressionFactory, expressionParser, false);
-    }
-
+    /**
+     * Creates a factory with explicit definition-expression fallback mode.
+     *
+     * @param typeInferenceVisitor type inference strategy
+     * @param expressionFactory expression compiler for parsed contexts
+     * @param expressionParser parser for raw template strings
+     * @param definitionExpressionFallback if {@code true}, definition keys can be treated as expressions
+     */
     public RootTemplateExpressionFactory(
             TemplateTypeInferenceVisitor typeInferenceVisitor,
             TemplateExpressionFactory expressionFactory,
@@ -193,6 +193,12 @@ public final class RootTemplateExpressionFactory {
         return compileObject(rawExpression, false);
     }
 
+    /**
+     * Compiles a definitions map using definition-expression fallback settings.
+     *
+     * @param rawExpression definitions source map
+     * @return compiled object template expression
+     */
     public ObjectTemplateExpression compileDefinitionObject(Map<?, ?> rawExpression) {
         return compileObject(rawExpression, definitionExpressionFallback);
     }

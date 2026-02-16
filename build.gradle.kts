@@ -1,5 +1,7 @@
 import java.text.SimpleDateFormat
 import java.util.*
+import org.gradle.api.plugins.quality.Checkstyle
+import org.gradle.api.plugins.quality.CheckstyleExtension
 
 plugins {
     id("maven-publish")
@@ -25,6 +27,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "jacoco")
+    apply(plugin = "checkstyle")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -36,6 +39,24 @@ subprojects {
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release = targetJavaVersion
+    }
+
+    extensions.configure<CheckstyleExtension> {
+        toolVersion = "10.18.2"
+        configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+        isIgnoreFailures = false
+    }
+
+    tasks.withType<Checkstyle>().configureEach {
+        // Exclude JMH benchmark sources from Checkstyle.
+        exclude("**/src/jmh/**")
+        if (name == "checkstyleJmh") {
+            enabled = false
+        }
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
     }
 
     java {
