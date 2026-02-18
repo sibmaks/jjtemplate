@@ -5,11 +5,11 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 
-> ⚠️ Project is under active development. Backwards compatibility is not guaranteed.
-
 **JJTemplate** is a lightweight templating engine designed for **minimal render time** and **JSON-compatible
 input/output**. It compiles templates into optimized abstract syntax trees (ASTs) for fast execution while guaranteeing
 valid JSON results.
+
+IDEA plugin: [here](https://github.com/sibmaks/jjtemplate-plugin).
 
 ## Usage
 
