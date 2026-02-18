@@ -159,7 +159,6 @@ sonarqube {
 
         subprojects.forEach { sub ->
             val subPath = sub.projectDir.toString().substring(projectDir.toString().length + 1)
-            println("Sonar module: $subPath")
             property("${sub.name}.sonar.projectBaseDir", subPath)
             property("${sub.name}.sonar.sources", "src/main/java")
             property("${sub.name}.sonar.tests", "src/test/java")
@@ -170,7 +169,6 @@ sonarqube {
                 "build/reports/jacoco/test/jacocoTestReport.xml"
             )
         }
-        println("Sonar properties: $properties")
     }
 }
 

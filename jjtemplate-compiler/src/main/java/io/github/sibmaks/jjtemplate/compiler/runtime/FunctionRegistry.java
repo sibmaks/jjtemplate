@@ -90,7 +90,7 @@ final class FunctionRegistry {
         var found = new HashSet<String>();
         var basePackage = TemplateFunction.class.getPackageName();
 
-        for (var type : ClasspathScanner.findClasses(basePackage)) {
+        for (var type : ClasspathScanner.findClasses(basePackage, List.of(TemplateFunction.class.getClassLoader()))) {
             if (!TemplateFunction.class.isAssignableFrom(type) ||
                     Modifier.isAbstract(type.getModifiers()) ||
                     Modifier.isInterface(type.getModifiers())) {

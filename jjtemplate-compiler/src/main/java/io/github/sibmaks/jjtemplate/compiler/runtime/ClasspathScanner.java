@@ -5,9 +5,11 @@ import lombok.NoArgsConstructor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.jar.JarEntry;
@@ -38,7 +40,8 @@ final class ClasspathScanner {
     private static void processJarEntry(
             JarEntry entry,
             String path,
-            List<Class<?>> classes
+            List<Class<?>> classes,
+            ClassLoader classLoader
     ) {
         var name = entry.getName();
 
@@ -49,15 +52,16 @@ final class ClasspathScanner {
                 .replace('/', '.')
                 .substring(0, name.length() - CLASS_SUFFIX.length());
 
-        tryLoadClass(className, classes);
+        tryLoadClass(className, classes, classLoader);
     }
 
     private static void tryLoadClass(
             String className,
-            List<Class<?>> classes
+            List<Class<?>> classes,
+            ClassLoader classLoader
     ) {
         try {
-            classes.add(Class.forName(className));
+            classes.add(Class.forName(className, false, classLoader));
         } catch (Throwable ignored) {
             // intentionally ignored
         }
@@ -66,31 +70,46 @@ final class ClasspathScanner {
     /**
      * Finds and loads all classes located under the specified base package.
      *
-     * @param basePackage package name to scan, e.g. {@code com.example.myapp}
+     * @param basePackage  package name to scan, e.g. {@code com.example.myapp}
+     * @param classLoaders class loaders to scan in addition to context class loader
      * @return list of discovered classes (maybe empty)
      * @throws RuntimeException if classpath resources cannot be accessed
      */
-    public static List<Class<?>> findClasses(String basePackage) {
+    public static List<Class<?>> findClasses(String basePackage, List<ClassLoader> classLoaders) {
         var classes = new ArrayList<Class<?>>();
         var path = basePackage.replace('.', '/');
+        var seenResourceUrls = new LinkedHashSet<String>();
+        var allClassLoaders = new LinkedHashSet<ClassLoader>();
+        var contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            allClassLoaders.add(contextClassLoader);
+        }
+        for (var classLoader : classLoaders) {
+            if (classLoader != null) {
+                allClassLoaders.add(classLoader);
+            }
+        }
         try {
-            var resources = Thread.currentThread()
-                    .getContextClassLoader()
-                    .getResources(path);
+            for (var classLoader : allClassLoaders) {
+                var resources = classLoader.getResources(path);
+                while (resources.hasMoreElements()) {
+                    var resource = resources.nextElement();
+                    var resourceId = classLoader + "|" + resource.toString();
+                    if (!seenResourceUrls.add(resourceId)) {
+                        continue;
+                    }
+                    switch (resource.getProtocol()) {
+                        case "jar":
+                            scanJar(resource, path, classes, classLoader);
+                            break;
 
-            while (resources.hasMoreElements()) {
-                var resource = resources.nextElement();
-                switch (resource.getProtocol()) {
-                    case "jar":
-                        scanJar(resource, path, classes);
-                        break;
+                        case "file":
+                            scanDirectory(new File(resource.toURI()), basePackage, classes, classLoader);
+                            break;
 
-                    case "file":
-                        scanDirectory(new File(resource.toURI()), basePackage, classes);
-                        break;
-
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
             }
         } catch (IOException | URISyntaxException e) {
@@ -99,11 +118,9 @@ final class ClasspathScanner {
         return classes;
     }
 
-    private static void scanJar(URL resource, String path, List<Class<?>> classes) {
-        var rawPath = resource.getPath();
-        var jarPath = rawPath.substring(5, rawPath.indexOf("!"));
-
-        var file = new File(jarPath);
+    private static void scanJar(URL resource, String path, List<Class<?>> classes, ClassLoader classLoader) {
+        var file = resolveJarFile(resource);
+        var jarPath = file.getPath();
 
         if (!file.exists()) {
             throw new IllegalStateException("JAR file does not exist: " + jarPath);
@@ -125,7 +142,7 @@ final class ClasspathScanner {
                 }
 
                 var entry = entries.nextElement();
-                processJarEntry(entry, path, classes);
+                processJarEntry(entry, path, classes, classLoader);
             }
 
         } catch (IOException e) {
@@ -133,10 +150,27 @@ final class ClasspathScanner {
         }
     }
 
+    static File resolveJarFile(URL resource) {
+        try {
+            var connection = resource.openConnection();
+            if (connection instanceof JarURLConnection) {
+                var jarURLConnection = (JarURLConnection) connection;
+                return new File(jarURLConnection.getJarFileURL().toURI());
+            }
+
+            var rawPath = resource.getPath();
+            var jarPath = rawPath.substring(5, rawPath.indexOf("!"));
+            return new File(new URL("file", "", jarPath).toURI());
+        } catch (IOException | URISyntaxException e) {
+            throw new IllegalStateException("Unable to resolve JAR file from resource: " + resource, e);
+        }
+    }
+
     private static void scanDirectory(
             File directory,
             String basePackage,
-            List<Class<?>> classes
+            List<Class<?>> classes,
+            ClassLoader classLoader
     ) {
         if (!directory.exists()) {
             return;
@@ -150,13 +184,14 @@ final class ClasspathScanner {
                 scanDirectory(
                         file,
                         basePackage + "." + file.getName(),
-                        classes
+                        classes,
+                        classLoader
                 );
             } else if (file.getName().endsWith(CLASS_SUFFIX)) {
                 var className = basePackage + '.' +
                         file.getName().substring(0, file.getName().length() - CLASS_SUFFIX.length());
 
-                tryLoadClass(className, classes);
+                tryLoadClass(className, classes, classLoader);
             }
         }
     }

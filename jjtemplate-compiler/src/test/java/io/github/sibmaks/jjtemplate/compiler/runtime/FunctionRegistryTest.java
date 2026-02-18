@@ -3,6 +3,8 @@ package io.github.sibmaks.jjtemplate.compiler.runtime;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import org.junit.jupiter.api.Test;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +16,19 @@ import static org.mockito.Mockito.*;
  * @author sibmaks
  */
 class FunctionRegistryTest {
+
+    @Test
+    void shouldLoadBuiltInFunctionsWhenContextClassLoaderDoesNotSeeCompilerClasses() throws Exception {
+        var previous = Thread.currentThread().getContextClassLoader();
+        try (var isolated = new URLClassLoader(new URL[0], null)) {
+            Thread.currentThread().setContextClassLoader(isolated);
+
+            var registry = new FunctionRegistry(TemplateEvaluationOptions.builder().build());
+            assertNotNull(registry.getFunction("cast", "str"));
+        } finally {
+            Thread.currentThread().setContextClassLoader(previous);
+        }
+    }
 
     @Test
     void shouldReturnUserDefinedFunction() {
