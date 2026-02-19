@@ -1,0 +1,17 @@
+{
+  "definitions": [
+    {
+      "usLocale": "{{ locale:new 'en', 'US' }}",
+      "numberSettings": "{{ map:new 'style', 'number', 'groupingUsed', false, 'minimumFractionDigits', 2, 'maximumFractionDigits', 2 }}",
+      "percentSettings": "{{ map:new 'style', 'percent', 'minimumFractionDigits', 1, 'maximumFractionDigits', 1 }}",
+      "numberFormat": "{{ numberFormat:new .usLocale, .numberSettings }}",
+      "numberFormatPipe": "{{ .numberSettings | numberFormat:new .usLocale }}",
+      "percentFormat": "{{ numberFormat:new .usLocale, .percentSettings }}"
+    }
+  ],
+  "template": {
+    "numberDirect": "{{ .numberFormat.format(1234.5) }}",
+    "numberPipe": "{{ .numberFormatPipe.format(1234.5) }}",
+    "percent": "{{ .percentFormat.format(0.256) }}"
+  }
+}

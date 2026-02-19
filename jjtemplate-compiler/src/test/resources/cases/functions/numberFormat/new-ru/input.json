@@ -1,0 +1,17 @@
+{
+  "definitions": [
+    {
+      "ruLocale": "{{ locale:new 'ru', 'RU' }}",
+      "numberSettings": "{{ map:new 'style', 'number', 'groupingUsed', false, 'minimumFractionDigits', 2, 'maximumFractionDigits', 2 }}",
+      "percentSettings": "{{ map:new 'style', 'percent', 'minimumFractionDigits', 1, 'maximumFractionDigits', 1 }}",
+      "numberFormat": "{{ numberFormat:new .ruLocale, .numberSettings }}",
+      "numberFormatPipe": "{{ .numberSettings | numberFormat:new .ruLocale }}",
+      "percentFormat": "{{ numberFormat:new .ruLocale, .percentSettings }}"
+    }
+  ],
+  "template": {
+    "numberDirect": "{{ .numberFormat.format(1234.5) }}",
+    "numberPipe": "{{ .numberFormatPipe.format(1234.5) }}",
+    "percent": "{{ .percentFormat.format(0.256) }}"
+  }
+}

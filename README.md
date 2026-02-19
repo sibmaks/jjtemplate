@@ -168,6 +168,23 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 
 ---
 
+### `numberFormat` — Number Format Utilities
+
+* `numberFormat:new(locale[, settings])` — Create a `NumberFormat` instance for the specified `Locale`
+  and optional settings `Map`.
+  Supported `settings` keys:
+  `style` (`number|integer|currency|percent`),
+  `groupingUsed`,
+  `parseIntegerOnly`,
+  `maximumIntegerDigits`,
+  `minimumIntegerDigits`,
+  `maximumFractionDigits`,
+  `minimumFractionDigits`,
+  `currency`,
+  `roundingMode`.
+
+---
+
 ### `math` — Math Operations
 
 * `math:neg(value)` — Negate numeric value
