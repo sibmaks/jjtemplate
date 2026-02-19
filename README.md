@@ -1,5 +1,7 @@
 # JJTemplate
 
+[English](README.md) | [Русский](README.ru.md)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=bugs)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
@@ -115,7 +117,8 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
   substring.
 * `string:lastIndexOf(value, str)` — Returns the index within this string of the last occurrence of the specified
   substring.
-* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string. Support negative indexes.
+* `string:substr(value, beginIndex, [endIndex])` — Returns a string that is a substring of this string. Support negative
+  indexes.
 * `string:replace(value, target, replacement)` — Replaces each substring of this string that matches the literal target
   sequence with the specified literal replacement sequence.
 * `string:replaceAll(value, regex, replacement)` — Replaces each substring of this string that matches the given regular
@@ -173,15 +176,16 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
 * `numberFormat:new(locale[, settings])` — Create a `NumberFormat` instance for the specified `Locale`
   and optional settings `Map`.
   Supported `settings` keys:
-  `style` (`number|integer|currency|percent`),
-  `groupingUsed`,
-  `parseIntegerOnly`,
-  `maximumIntegerDigits`,
-  `minimumIntegerDigits`,
-  `maximumFractionDigits`,
-  `minimumFractionDigits`,
-  `currency`,
-  `roundingMode`.
+
+- `style` (`number|integer|currency|percent`),
+- `groupingUsed`,
+- `parseIntegerOnly`,
+- `maximumIntegerDigits`,
+- `minimumIntegerDigits`,
+- `maximumFractionDigits`,
+- `minimumFractionDigits`,
+- `currency`,
+- `roundingMode`.
 
 ---
 
