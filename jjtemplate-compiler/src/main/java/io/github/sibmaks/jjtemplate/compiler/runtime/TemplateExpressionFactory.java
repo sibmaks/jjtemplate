@@ -8,6 +8,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.SpreadListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchDefinitionTemplateExpression;
+import io.github.sibmaks.jjtemplate.parser.ExpressionParser;
 import io.github.sibmaks.jjtemplate.parser.api.*;
 import io.github.sibmaks.jjtemplate.parser.parser.JJTemplateParser;
 
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public final class TemplateExpressionFactory implements ExpressionVisitor<TemplateExpression> {
     private final FunctionRegistry functionRegistry;
+    private final ExpressionParser expressionParser;
 
     /**
      * Creates a factory configured with evaluation options.
@@ -36,6 +38,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
      */
     public TemplateExpressionFactory(TemplateEvaluationOptions evaluationOptions) {
         this.functionRegistry = new FunctionRegistry(evaluationOptions);
+        this.expressionParser = new ExpressionParser();
     }
 
     /**
@@ -80,7 +83,47 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
 
     @Override
     public TemplateExpression visitLiteral(LiteralExpression expr) {
+        if (expr.value instanceof String) {
+            return compileStringLiteral((String) expr.value);
+        }
         return new ConstantTemplateExpression(expr.value);
+    }
+
+    private TemplateExpression compileStringLiteral(String value) {
+        if (!value.contains("{{")) {
+            return new ConstantTemplateExpression(value);
+        }
+
+        var templateContext = expressionParser.parse(value);
+        var parts = templateContext.getParts();
+        var expressions = new ArrayList<TemplateExpression>(parts.size());
+        var hasInterpolation = false;
+
+        for (var part : parts) {
+            if (part instanceof JJTemplateParser.TextPart) {
+                var textPart = (JJTemplateParser.TextPart) part;
+                expressions.add(new ConstantTemplateExpression(textPart.getText()));
+                continue;
+            }
+            if (part instanceof JJTemplateParser.InterpolationPart) {
+                var interpolationPart = (JJTemplateParser.InterpolationPart) part;
+                if (interpolationPart.getType() != JJTemplateParser.InterpolationType.EXPRESSION) {
+                    throw new IllegalArgumentException("Only '{{ ... }}' substitutions are allowed inside string literals");
+                }
+                hasInterpolation = true;
+                expressions.add(compile(interpolationPart.getExpression()));
+            }
+        }
+
+        if (!hasInterpolation) {
+            return new ConstantTemplateExpression(value);
+        }
+
+        if (expressions.size() == 1) {
+            expressions.add(0, new ConstantTemplateExpression(""));
+        }
+
+        return new TemplateConcatTemplateExpression(expressions);
     }
 
     @Override

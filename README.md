@@ -22,7 +22,7 @@ IDEA plugin: [here](https://github.com/sibmaks/jjtemplate-plugin).
 <dependency>
     <groupId>io.github.sibmaks.jjtemplate</groupId>
     <artifactId>jjtemplate</artifactId>
-    <version>0.5.0</version>
+    <version>0.7.0</version>
     <type>pom</type>
 </dependency>
 ```
@@ -30,7 +30,7 @@ IDEA plugin: [here](https://github.com/sibmaks/jjtemplate-plugin).
 ### Gradle
 
 ```kotlin
-implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.5.0")
+implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.7.0")
 ```
 
 ## Example Workflow

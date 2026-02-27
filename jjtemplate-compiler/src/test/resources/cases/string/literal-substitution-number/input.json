@@ -1,0 +1,7 @@
+{
+  "template": {
+    "integer": "{{ 'N={{ .intValue }}' }}",
+    "decimal": "{{ 'D={{ .decimalValue }}' }}",
+    "ternaryNumber": "{{ .positive ? '{{ .intValue }}' : '{{ .decimalValue }}' }}"
+  }
+}

@@ -245,4 +245,31 @@ class TemplateCompilerImplTest {
 
         assertEquals("matched", rendered);
     }
+
+    @Test
+    void compileTemplateWithSubstitutionInsideStringLiteral() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .test ? '{{ .ok }}' : 'fail' }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+
+        assertEquals("ok", compiled.render(Map.of("test", true, "ok", "ok")));
+        assertEquals("fail", compiled.render(Map.of("test", false, "ok", "ok")));
+    }
+
+    @Test
+    void compileTemplateWithConditionalSubstitutionInsideStringLiteralShouldFail() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ '{{? .ok }}' }}")
+                .build();
+
+        var exception = assertThrows(TemplateCompilationException.class, () -> compiler.compile(script));
+        assertEquals("Error compiling template", exception.getMessage());
+
+        var cause = assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+        assertEquals("Only '{{ ... }}' substitutions are allowed inside string literals", cause.getMessage());
+    }
 }

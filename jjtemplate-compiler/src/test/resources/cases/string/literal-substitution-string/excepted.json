@@ -1,0 +1,5 @@
+{
+  "simple": "Hello, Alice!",
+  "concat": "John Doe",
+  "withText": "Role=dev; Team=core"
+}

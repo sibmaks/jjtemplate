@@ -1,0 +1,7 @@
+{
+  "template": {
+    "simple": "{{ 'Hello, {{ .name }}!' }}",
+    "concat": "{{ '{{ .first }} {{ .last }}' }}",
+    "withText": "{{ 'Role={{ .role }}; Team={{ .team }}' }}"
+  }
+}

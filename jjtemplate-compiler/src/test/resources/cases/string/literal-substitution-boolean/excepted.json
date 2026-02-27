@@ -1,0 +1,5 @@
+{
+  "flag": "flag=true",
+  "negatedText": "is=true",
+  "pair": "true|false"
+}

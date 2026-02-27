@@ -1,0 +1,7 @@
+{
+  "template": {
+    "ternaryTrue": "{{ .test ? '{{ .ok }}' : 'fail' }}",
+    "ternaryFalse": "{{ .test2 ? '{{ .ok }}' : 'fail' }}",
+    "concat": "{{ 'Hello {{ .ok }}!' }}"
+  }
+}

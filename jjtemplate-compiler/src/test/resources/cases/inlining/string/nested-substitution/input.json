@@ -1,0 +1,8 @@
+{
+  "definitions": [
+    {
+      "string": "nested"
+    }
+  ],
+  "template": "Hello {{ '{{ .string }}' }}"
+}

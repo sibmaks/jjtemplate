@@ -1,0 +1,7 @@
+{
+  "template": {
+    "whenTrue": "{{ .enabled ? '{{ .enabled ? .ok : .fail }}' : '{{ .fail }}' }}",
+    "whenFalse": "{{ .disabled ? '{{ .enabled ? .ok : .fail }}' : '{{ .fail }}' }}",
+    "nested": "{{ .enabled ? 'status={{ .enabled ? .ok : .fail }}' : 'status={{ .fail }}' }}"
+  }
+}

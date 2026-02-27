@@ -1,0 +1,5 @@
+{
+  "whenTrue": "OK",
+  "whenFalse": "FAIL",
+  "nested": "status=OK"
+}
