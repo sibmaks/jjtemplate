@@ -41,7 +41,7 @@ public final class TemplateLexer {
     private final String input;
     private final int n;
     private int pos = 0;
-    private Mode mode = Mode.TEXT;
+    private int expressionDepth = 0;
 
     /**
      * Creates a new {@code TemplateLexer} instance for the given input.
@@ -80,7 +80,7 @@ public final class TemplateLexer {
         var out = new ArrayList<Token>();
         try {
             while (pos < n) {
-                if (mode == Mode.TEXT) out.add(lexText());
+                if (expressionDepth == 0) out.add(lexText());
                 else out.add(lexExprToken());
             }
         } catch (TemplateLexerException e) {
@@ -88,7 +88,7 @@ public final class TemplateLexer {
         } catch (Exception e) {
             throw new TemplateLexerException(input, "Unexpected error: " + e.getMessage(), pos);
         }
-        if (mode == Mode.EXPR) {
+        if (expressionDepth > 0) {
             throw new TemplateLexerException(input, "Unterminated template: missing closing '}}'", pos);
         }
         return out;
@@ -110,15 +110,15 @@ public final class TemplateLexer {
                 char c = peek();
                 if (c == '?') {
                     pos++;
-                    mode = Mode.EXPR;
+                    expressionDepth = 1;
                     return new Token(TokenType.OPEN_COND, "{{?", openerStart, pos);
                 }
                 if (c == '.') {
                     pos++;
-                    mode = Mode.EXPR;
+                    expressionDepth = 1;
                     return new Token(TokenType.OPEN_SPREAD, "{{.", openerStart, pos);
                 }
-                mode = Mode.EXPR;
+                expressionDepth = 1;
                 return new Token(TokenType.OPEN_EXPR, "{{", openerStart, pos);
             } else pos++;
         }
@@ -133,10 +133,30 @@ public final class TemplateLexer {
             throw new TemplateLexerException(input, "Unexpected end inside expression", pos);
         }
 
+        if (peek() == '{' && peek2() == '{') {
+            pos += 2;
+            var c = peek();
+            if (c == '?') {
+                pos++;
+                expressionDepth++;
+                return new Token(TokenType.OPEN_COND, "{{?", start, pos);
+            }
+            if (c == '.') {
+                pos++;
+                expressionDepth++;
+                return new Token(TokenType.OPEN_SPREAD, "{{.", start, pos);
+            }
+            expressionDepth++;
+            return new Token(TokenType.OPEN_EXPR, "{{", start, pos);
+        }
+
         // Close delimiter
         if (peek() == '}' && peek2() == '}') {
             pos += 2;
-            mode = Mode.TEXT;
+            expressionDepth--;
+            if (expressionDepth < 0) {
+                throw new TemplateLexerException(input, "Unexpected closing '}}'", start);
+            }
             return new Token(TokenType.CLOSE, "}}", start, pos);
         }
 
@@ -182,12 +202,34 @@ public final class TemplateLexer {
         pos++; // opening '
         var sb = new StringBuilder();
         var closed = false;
+        int nestedExpressionDepth = 0;
         while (pos < n) {
-            var c = input.charAt(pos++);
-            if (c == '\'') {
+            if (nestedExpressionDepth == 0 && peek() == '\'') {
+                pos++;
                 closed = true;
                 break;
             }
+
+            if (peek() == '{' && peek2() == '{') {
+                sb.append('{').append('{');
+                pos += 2;
+                var opener = peek();
+                if (opener == '?' || opener == '.') {
+                    sb.append(opener);
+                    pos++;
+                }
+                nestedExpressionDepth++;
+                continue;
+            }
+
+            if (nestedExpressionDepth > 0 && peek() == '}' && peek2() == '}') {
+                sb.append('}').append('}');
+                pos += 2;
+                nestedExpressionDepth--;
+                continue;
+            }
+
+            var c = input.charAt(pos++);
             if (c == '\\' && pos < n) {
                 var e = input.charAt(pos++);
                 switch (e) {
@@ -226,7 +268,6 @@ public final class TemplateLexer {
         if (!closed) {
             throw new TemplateLexerException(input, "Unterminated string literal", pos);
         }
-        // Even if not closed, we emit STRING with what we have
         return new Token(TokenType.STRING, sb.toString(), start, pos);
     }
 
@@ -303,11 +344,5 @@ public final class TemplateLexer {
     private char peek2() {
         return (pos + 1 < n) ? input.charAt(pos + 1) : '\0';
     }
-
-    /**
-     * Internal lexer mode indicating whether parsing occurs in raw text ({@code TEXT})
-     * or inside a template expression ({@code EXPR}).
-     */
-    private enum Mode {TEXT, EXPR}
 
 }

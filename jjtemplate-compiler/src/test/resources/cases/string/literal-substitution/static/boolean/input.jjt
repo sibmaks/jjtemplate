@@ -1,0 +1,7 @@
+{
+  "template": {
+    "flag": "{{ 'flag={{ true }}' }}",
+    "negatedText": "{{ true ? 'is={{ true }}' : 'is={{ false }}' }}",
+    "pair": "{{ '{{ true }}|{{ false }}' }}"
+  }
+}

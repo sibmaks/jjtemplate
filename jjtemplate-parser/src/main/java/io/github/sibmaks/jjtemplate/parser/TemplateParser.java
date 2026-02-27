@@ -149,9 +149,52 @@ public final class TemplateParser {
                 var inner = parseExpression();
                 expect(TokenType.RPAREN, ")");
                 return inner;
+            case OPEN_EXPR:
+            case OPEN_COND:
+            case OPEN_SPREAD:
+                return parseNestedInterpolation();
             default:
                 throw error("Unexpected token: " + t.type);
         }
+    }
+
+    private Expression parseNestedInterpolation() {
+        var openToken = advance();
+        if (openToken.type != TokenType.OPEN_EXPR) {
+            throw error("Only '{{ ... }}' is allowed in nested interpolation");
+        }
+
+        int start = pos;
+        int depth = 0;
+        int end = -1;
+        while (pos < tokens.size()) {
+            var token = tokens.get(pos);
+            if (token.type == TokenType.OPEN_EXPR
+                    || token.type == TokenType.OPEN_COND
+                    || token.type == TokenType.OPEN_SPREAD) {
+                depth++;
+                pos++;
+                continue;
+            }
+            if (token.type == TokenType.CLOSE) {
+                if (depth == 0) {
+                    end = pos;
+                    break;
+                }
+                depth--;
+            }
+            pos++;
+        }
+
+        if (end < 0) {
+            throw error("Missing closing '}}'");
+        }
+
+        var parser = new TemplateParser(tokens.subList(start, end));
+        var expression = parser.parseExpression();
+        parser.expectEnd();
+        pos = end + 1;
+        return expression;
     }
 
     private Expression parseThenSwitchCaseExpression() {

@@ -36,7 +36,7 @@ class TemplateCompilerImplIntegrationTest {
 
     private static Arguments buildArguments(Path root, Path it) {
         try {
-            var templateScript = OBJECT_MAPPER.readValue(it.resolve("input.json").toFile(), TemplateScript.class);
+            var templateScript = OBJECT_MAPPER.readValue(it.resolve("input.jjt").toFile(), TemplateScript.class);
             var contextPath = it.resolve("variables.json").toFile();
             var context = Map.<String, Object>of();
             if (contextPath.exists()) {

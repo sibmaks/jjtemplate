@@ -77,9 +77,20 @@ public class ExpressionParser {
     }
 
     private int findClose(List<Token> tokens, int start) {
+        int depth = 0;
         for (int i = start; i < tokens.size(); i++) {
-            if (tokens.get(i).type == TokenType.CLOSE) {
-                return i;
+            var tokenType = tokens.get(i).type;
+            if (tokenType == TokenType.OPEN_EXPR
+                    || tokenType == TokenType.OPEN_COND
+                    || tokenType == TokenType.OPEN_SPREAD) {
+                depth++;
+                continue;
+            }
+            if (tokenType == TokenType.CLOSE) {
+                if (depth == 0) {
+                    return i;
+                }
+                depth--;
             }
         }
         throw new TemplateParseException("Missing closing '}}'");

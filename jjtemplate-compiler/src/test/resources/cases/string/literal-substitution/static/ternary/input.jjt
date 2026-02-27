@@ -1,0 +1,7 @@
+{
+  "template": {
+    "whenTrue": "{{ true ? '{{ true ? 'OK' : 'FAIL' }}' : '{{ 'FAIL' }}' }}",
+    "whenFalse": "{{ false ? '{{ true ? 'OK' : 'FAIL' }}' : '{{ 'FAIL' }}' }}",
+    "nested": "{{ true ? 'status={{ true ? 'OK' : 'FAIL' }}' : 'status={{ 'FAIL' }}' }}"
+  }
+}
