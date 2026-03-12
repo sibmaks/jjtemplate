@@ -74,7 +74,11 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
             return expression;
         }
         if (!(foldedArgs instanceof ConstantTemplateExpression)) {
-            return new DynamicFunctionCallTemplateExpression(function, (ListTemplateExpression) foldedArgs);
+            return new DynamicFunctionCallTemplateExpression(
+                    function,
+                    (ListTemplateExpression) foldedArgs,
+                    expression.getSourceExpression()
+            );
         }
         var constantArgs = (ConstantTemplateExpression) foldedArgs;
         var args = constantArgs.getValue();
@@ -82,7 +86,11 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
             throw new IllegalArgumentException("Not a list of function arguments: " + args);
         }
         var argList = (List<Object>) args;
-        var constantFunctionExpression = new ConstantFunctionCallTemplateExpression(function, argList);
+        var constantFunctionExpression = new ConstantFunctionCallTemplateExpression(
+                function,
+                argList,
+                expression.getSourceExpression()
+        );
         if (function.isDynamic()) {
             return constantFunctionExpression;
         }
@@ -112,7 +120,8 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         if (anyFolded) {
             return new PipeChainTemplateExpression(
                     foldedRoot,
-                    expression.getChain()
+                    expression.getChain(),
+                    expression.getSourceExpression()
             );
         }
 
@@ -123,48 +132,59 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
             PipeChainTemplateExpression base,
             ConstantTemplateExpression root
     ) {
-        var value = root.getValue();
-        var chain = base.getChain();
-        for (int i = 0; i < chain.size(); i++) {
-            var callExpression = chain.get(i);
-            if (callExpression instanceof ConstantFunctionCallTemplateExpression) {
-                var constantFunctionCall = (ConstantFunctionCallTemplateExpression) callExpression;
-                var function = constantFunctionCall.getFunction();
-                if (function.isDynamic()) {
+        try {
+            var value = root.getValue();
+            var chain = base.getChain();
+            for (int i = 0; i < chain.size(); i++) {
+                var callExpression = chain.get(i);
+                if (callExpression instanceof ConstantFunctionCallTemplateExpression) {
+                    var constantFunctionCall = (ConstantFunctionCallTemplateExpression) callExpression;
+                    var function = constantFunctionCall.getFunction();
+                    if (function.isDynamic()) {
+                        return new PipeChainTemplateExpression(
+                                new ConstantTemplateExpression(value),
+                                chain.subList(i, chain.size()),
+                                base.getSourceExpression()
+                        );
+                    }
+                    value = constantFunctionCall.apply(Context.empty(), value);
+                    continue;
+                }
+                var dynamicFunctionCall = (DynamicFunctionCallTemplateExpression) callExpression;
+                var function = dynamicFunctionCall.getFunction();
+                var argExpression = dynamicFunctionCall.getArgExpression();
+                var foldedArgs = argExpression.visit(this);
+                if (!(foldedArgs instanceof ConstantTemplateExpression)) {
                     return new PipeChainTemplateExpression(
                             new ConstantTemplateExpression(value),
-                            chain.subList(i, chain.size())
+                            chain.subList(i, chain.size()),
+                            base.getSourceExpression()
                     );
                 }
-                value = constantFunctionCall.apply(Context.empty(), value);
-                continue;
+                var constantArgs = (ConstantTemplateExpression) foldedArgs;
+                var args = constantArgs.getValue();
+                if (!(args instanceof List<?>)) {
+                    throw new IllegalArgumentException("Not a list of function arguments: " + args);
+                }
+                var argList = (List<Object>) args;
+                if (function.isDynamic()) {
+                    chain.set(i, new ConstantFunctionCallTemplateExpression(
+                            function,
+                            argList,
+                            dynamicFunctionCall.getSourceExpression()
+                    ));
+                    return new PipeChainTemplateExpression(
+                            new ConstantTemplateExpression(value),
+                            chain.subList(i, chain.size()),
+                            base.getSourceExpression()
+                    );
+                }
+                value = function.invoke(argList, value);
             }
-            var dynamicFunctionCall = (DynamicFunctionCallTemplateExpression) callExpression;
-            var function = dynamicFunctionCall.getFunction();
-            var argExpression = dynamicFunctionCall.getArgExpression();
-            var foldedArgs = argExpression.visit(this);
-            if (!(foldedArgs instanceof ConstantTemplateExpression)) {
-                return new PipeChainTemplateExpression(
-                        new ConstantTemplateExpression(value),
-                        chain.subList(i, chain.size())
-                );
-            }
-            var constantArgs = (ConstantTemplateExpression) foldedArgs;
-            var args = constantArgs.getValue();
-            if (!(args instanceof List<?>)) {
-                throw new IllegalArgumentException("Not a list of function arguments: " + args);
-            }
-            var argList = (List<Object>) args;
-            if (function.isDynamic()) {
-                chain.set(i, new ConstantFunctionCallTemplateExpression(function, argList));
-                return new PipeChainTemplateExpression(
-                        new ConstantTemplateExpression(value),
-                        chain.subList(i, chain.size())
-                );
-            }
-            value = function.invoke(argList, value);
+            return new ConstantTemplateExpression(value);
+        } catch (RuntimeException e) {
+            throw base.failedExecute(e);
         }
-        return new ConstantTemplateExpression(value);
     }
 
     @Override
@@ -235,7 +255,8 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
             var constantTernary = new TernaryTemplateExpression(
                     foldedCondition,
                     thenTrue,
-                    thenFalse
+                    thenFalse,
+                    expression.getSourceExpression()
             );
             var conditionValue = constantTernary.evaluateCondition(Context.empty());
             if (conditionValue) {
@@ -253,7 +274,12 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         if (condition != foldedCondition ||
                 thenTrue != foldedThenTrue ||
                 thenFalse != foldedThenFalse) {
-            return new TernaryTemplateExpression(foldedCondition, foldedThenTrue, foldedThenFalse);
+            return new TernaryTemplateExpression(
+                    foldedCondition,
+                    foldedThenTrue,
+                    foldedThenFalse,
+                    expression.getSourceExpression()
+            );
         }
 
         return expression;
@@ -305,7 +331,8 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
 
         return new VariableTemplateExpression(
                 expression.getRootName(),
-                newCallChain
+                newCallChain,
+                expression.getSourceExpression()
         );
     }
 
@@ -371,6 +398,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                         .itemVariableName(itemVariableName)
                         .source(foldedSource)
                         .body(foldedBody)
+                        .sourceExpression(expression.getSourceExpression())
                         .build();
                 var list = staticRange.apply(Context.of(Map.of()));
                 return new ConstantTemplateExpression(list);
@@ -384,6 +412,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                     .itemVariableName(itemVariableName)
                     .source(foldedSource)
                     .body(foldedBody)
+                    .sourceExpression(expression.getSourceExpression())
                     .build();
         }
 
@@ -465,6 +494,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
             return SwitchTemplateExpression.builder()
                     .condition(foldedCondition)
                     .cases(foldedCases)
+                    .sourceExpression(expression.getSourceExpression())
                     .build();
         }
 

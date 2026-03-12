@@ -25,6 +25,7 @@ import java.util.List;
 public final class DynamicFunctionCallTemplateExpression implements FunctionCallTemplateExpression {
     private final TemplateFunction<?> function;
     private final ListTemplateExpression argExpression;
+    private final String sourceExpression;
 
     @Override
     public List<Object> getArguments(Context context) {

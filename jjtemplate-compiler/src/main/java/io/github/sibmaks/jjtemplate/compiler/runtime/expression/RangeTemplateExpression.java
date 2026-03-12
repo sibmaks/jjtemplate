@@ -36,20 +36,25 @@ public final class RangeTemplateExpression implements TemplateExpression {
     private final String indexVariableName;
     private final TemplateExpression source;
     private final TemplateExpression body;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
-        var sourceObject = source.apply(context);
-        if (sourceObject == null) {
-            return null;
+        try {
+            var sourceObject = source.apply(context);
+            if (sourceObject == null) {
+                return null;
+            }
+            if (sourceObject instanceof Collection) {
+                return evaluateRange(context, (Collection<?>) sourceObject);
+            }
+            if (sourceObject.getClass().isArray()) {
+                return evaluateArray(context, sourceObject);
+            }
+            throw new IllegalArgumentException("Unsupported range source: " + sourceObject + ", " + sourceObject.getClass());
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
         }
-        if (sourceObject instanceof Collection) {
-            return evaluateRange(context, (Collection<?>) sourceObject);
-        }
-        if (sourceObject.getClass().isArray()) {
-            return evaluateArray(context, sourceObject);
-        }
-        throw new IllegalArgumentException("Unsupported range source: " + sourceObject + ", " + sourceObject.getClass());
     }
 
     private ArrayList<Object> evaluateArray(Context context, Object sourceObject) {

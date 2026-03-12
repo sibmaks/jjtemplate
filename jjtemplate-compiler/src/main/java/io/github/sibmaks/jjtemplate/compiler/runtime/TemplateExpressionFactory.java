@@ -30,6 +30,7 @@ import java.util.List;
 public final class TemplateExpressionFactory implements ExpressionVisitor<TemplateExpression> {
     private final FunctionRegistry functionRegistry;
     private final ExpressionParser expressionParser;
+    private final ExpressionSourceRenderer sourceRenderer;
 
     /**
      * Creates a factory configured with evaluation options.
@@ -39,6 +40,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
     public TemplateExpressionFactory(TemplateEvaluationOptions evaluationOptions) {
         this.functionRegistry = new FunctionRegistry(evaluationOptions);
         this.expressionParser = new ExpressionParser();
+        this.sourceRenderer = new ExpressionSourceRenderer();
     }
 
     /**
@@ -130,7 +132,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
     public TemplateExpression visitVariable(VariableExpression expr) {
         var segments = expr.segments;
         if (segments.isEmpty()) {
-            return new VariableTemplateExpression("", List.of());
+            return new VariableTemplateExpression("", List.of(), sourceRenderer.render(expr));
         }
         var rootName = segments.get(0).name;
         var callChain = new ArrayList<VariableTemplateExpression.Chain>(segments.size());
@@ -148,14 +150,14 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
             callChain.add(new VariableTemplateExpression.CallMethodChain(segment.name, argExpressions));
         }
 
-        return new VariableTemplateExpression(rootName, callChain);
+        return new VariableTemplateExpression(rootName, callChain, sourceRenderer.render(expr));
     }
 
     @Override
     public TemplateExpression visitFunction(FunctionCallExpression expr) {
         var function = functionRegistry.getFunction(expr.namespace, expr.name);
         var listTemplateExpression = getArguments(expr);
-        return new DynamicFunctionCallTemplateExpression(function, listTemplateExpression);
+        return new DynamicFunctionCallTemplateExpression(function, listTemplateExpression, sourceRenderer.render(expr));
     }
 
     private ListTemplateExpression getArguments(FunctionCallExpression expr) {
@@ -177,11 +179,15 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         for (var functionCall : expr.chain) {
             var function = functionRegistry.getFunction(functionCall.namespace, functionCall.name);
             var listTemplateExpression = getArguments(functionCall);
-            pipes.add(new DynamicFunctionCallTemplateExpression(function, listTemplateExpression));
+            pipes.add(new DynamicFunctionCallTemplateExpression(
+                    function,
+                    listTemplateExpression,
+                    sourceRenderer.render(functionCall)
+            ));
         }
 
         var previous = compile(expr.left);
-        return new PipeChainTemplateExpression(previous, pipes);
+        return new PipeChainTemplateExpression(previous, pipes, sourceRenderer.render(expr));
     }
 
     @Override
@@ -189,7 +195,8 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         return new TernaryTemplateExpression(
                 compile(expr.condition),
                 compile(expr.ifTrue),
-                compile(expr.ifFalse)
+                compile(expr.ifFalse),
+                sourceRenderer.render(expr)
         );
     }
 
@@ -200,6 +207,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         return SwitchDefinitionTemplateExpression.builder()
                 .key(keyExpression)
                 .condition(condition)
+                .sourceExpression(sourceRenderer.render(expr))
                 .build();
     }
 
@@ -210,6 +218,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
                 .itemVariableName(expr.itemVariableName)
                 .indexVariableName(expr.indexVariableName)
                 .source(compile(expr.source))
+                .sourceExpression(sourceRenderer.render(expr))
                 .build();
     }
 
@@ -222,6 +231,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         return SwitchDefinitionTemplateExpression.builder()
                 .key(new ConstantTemplateExpression(true))
                 .condition(condition)
+                .sourceExpression(sourceRenderer.render(expr))
                 .build();
     }
 
@@ -234,6 +244,7 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
         return SwitchDefinitionTemplateExpression.builder()
                 .key(new ConstantTemplateExpression(false))
                 .condition(condition)
+                .sourceExpression(sourceRenderer.render(expr))
                 .build();
     }
 

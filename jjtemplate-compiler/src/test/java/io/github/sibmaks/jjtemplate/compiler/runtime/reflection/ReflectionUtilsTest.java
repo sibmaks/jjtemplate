@@ -87,7 +87,7 @@ class ReflectionUtilsTest {
     void getPropertyOutOfRangeThrows() {
         var list = List.of("a");
         var ex = assertThrows(TemplateEvalException.class, () -> ReflectionUtils.getProperty(list, "10"));
-        assertTrue(ex.getMessage().startsWith("List index out of range"));
+        assertEquals("List index out of range: 10", ex.getMessage());
     }
 
     @Test

@@ -30,7 +30,7 @@ class VariableTemplateExpressionTest {
         when(context.getRoot("x"))
                 .thenReturn(rootValue);
 
-        var expression = new VariableTemplateExpression("x", List.of());
+        var expression = new VariableTemplateExpression("x", List.of(), null);
 
         var result = expression.apply(context);
 
@@ -44,7 +44,7 @@ class VariableTemplateExpressionTest {
 
         var expression = new VariableTemplateExpression("x", List.of(
                 new VariableTemplateExpression.GetPropertyChain("y")
-        ));
+        ), null);
 
         var result = expression.apply(context);
 
@@ -56,7 +56,7 @@ class VariableTemplateExpressionTest {
         when(context.getRoot("missing"))
                 .thenReturn(null);
 
-        var expression = new VariableTemplateExpression("missing", List.of());
+        var expression = new VariableTemplateExpression("missing", List.of(), null);
 
         var result = expression.apply(context);
 
@@ -78,7 +78,7 @@ class VariableTemplateExpressionTest {
             var chain = List.<VariableTemplateExpression.Chain>of(
                     new VariableTemplateExpression.GetPropertyChain("name")
             );
-            var expression = new VariableTemplateExpression("x", chain);
+            var expression = new VariableTemplateExpression("x", chain, null);
 
             var result = expression.apply(context);
 
@@ -100,7 +100,7 @@ class VariableTemplateExpressionTest {
             var chain = List.<VariableTemplateExpression.Chain>of(
                     new VariableTemplateExpression.GetPropertyChain("missing")
             );
-            var expression = new VariableTemplateExpression("x", chain);
+            var expression = new VariableTemplateExpression("x", chain, null);
 
             var result = expression.apply(context);
 
@@ -129,7 +129,7 @@ class VariableTemplateExpressionTest {
                     new VariableTemplateExpression.CallMethodChain("compute", List.of(argExpression))
             );
 
-            var expression = new VariableTemplateExpression("x", chain);
+            var expression = new VariableTemplateExpression("x", chain, null);
 
             var result = expression.apply(context);
 
@@ -151,7 +151,7 @@ class VariableTemplateExpressionTest {
             var chain = List.<VariableTemplateExpression.Chain>of(
                     new VariableTemplateExpression.GetPropertyChain("first")
             );
-            var expression = new VariableTemplateExpression("x", chain);
+            var expression = new VariableTemplateExpression("x", chain, null);
 
             var result = expression.apply(context);
 
@@ -161,7 +161,7 @@ class VariableTemplateExpressionTest {
 
     @Test
     void visitShouldDelegateToVisitor() {
-        var expression = new VariableTemplateExpression("x", List.of());
+        var expression = new VariableTemplateExpression("x", List.of(), null);
         var expected = "visited";
 
         TemplateExpressionVisitor<Object> visitor = mock();

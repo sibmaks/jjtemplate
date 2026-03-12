@@ -46,7 +46,8 @@ class TemplateExpressionFolderTest {
 
         var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                baseArgsExpression
+                baseArgsExpression,
+                null
         );
 
         var folded = folder.visit(expr);
@@ -66,7 +67,8 @@ class TemplateExpressionFolderTest {
 
         var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                baseArgsExpression
+                baseArgsExpression,
+                null
         );
 
         var folded = folder.visit(expr);
@@ -88,7 +90,8 @@ class TemplateExpressionFolderTest {
 
         var expr = new DynamicFunctionCallTemplateExpression(
                 function,
-                argsExpression
+                argsExpression,
+                null
         );
 
         var folded = folder.visit(expr);
@@ -104,7 +107,8 @@ class TemplateExpressionFolderTest {
 
         var expr = new ConstantFunctionCallTemplateExpression(
                 function,
-                List.of()
+                List.of(),
+                null
         );
 
         var folded = folder.visit(expr);
@@ -127,9 +131,11 @@ class TemplateExpressionFolderTest {
                 List.of(
                         new ConstantFunctionCallTemplateExpression(
                                 function,
-                                List.of(arg)
+                                List.of(arg),
+                                null
                         )
-                )
+                ),
+                null
         );
 
         var result = folder.visit(pipe);
@@ -149,9 +155,11 @@ class TemplateExpressionFolderTest {
         var expr = new PipeChainTemplateExpression(
                 new DynamicFunctionCallTemplateExpression(
                         function,
-                        baseArgsExpression
+                        baseArgsExpression,
+                        null
                 ),
-                List.of()
+                List.of(),
+                null
         );
 
         var folded = folder.visit(expr);
@@ -174,9 +182,11 @@ class TemplateExpressionFolderTest {
         var expr = new PipeChainTemplateExpression(
                 new ConstantFunctionCallTemplateExpression(
                         function,
-                        List.of()
+                        List.of(),
+                        null
                 ),
-                List.of()
+                List.of(),
+                null
         );
 
         var folded = folder.visit(expr);
@@ -200,9 +210,10 @@ class TemplateExpressionFolderTest {
         var pipe = new PipeChainTemplateExpression(
                 new ConstantTemplateExpression(pipeArg),
                 List.of(
-                        new ConstantFunctionCallTemplateExpression(staticked, List.of(arg)),
-                        new ConstantFunctionCallTemplateExpression(dynamicked, List.of(2))
-                )
+                        new ConstantFunctionCallTemplateExpression(staticked, List.of(arg), null),
+                        new ConstantFunctionCallTemplateExpression(dynamicked, List.of(2), null)
+                ),
+                null
         );
 
         var result = folder.visit(pipe);
@@ -233,9 +244,10 @@ class TemplateExpressionFolderTest {
         var pipe = new PipeChainTemplateExpression(
                 new ConstantTemplateExpression(pipeArg),
                 List.of(
-                        new ConstantFunctionCallTemplateExpression(firstFunction, List.of(arg)),
-                        new DynamicFunctionCallTemplateExpression(secondFunction, args2Expression)
-                )
+                        new ConstantFunctionCallTemplateExpression(firstFunction, List.of(arg), null),
+                        new DynamicFunctionCallTemplateExpression(secondFunction, args2Expression, null)
+                ),
+                null
         );
 
         var result = folder.visit(pipe);
@@ -272,7 +284,7 @@ class TemplateExpressionFolderTest {
         var concat = new TemplateConcatTemplateExpression(
                 List.of(
                         new ConstantTemplateExpression(UUID.randomUUID().toString()),
-                        new VariableTemplateExpression("x", List.of()),
+                        new VariableTemplateExpression("x", List.of(), null),
                         new ConstantTemplateExpression(UUID.randomUUID().toString())
                 )
         );
@@ -291,8 +303,8 @@ class TemplateExpressionFolderTest {
     void concatNoChangesReturnsSameInstance() {
         var concat = new TemplateConcatTemplateExpression(
                 List.of(
-                        new VariableTemplateExpression("x", List.of()),
-                        new VariableTemplateExpression("y", List.of())
+                        new VariableTemplateExpression("x", List.of(), null),
+                        new VariableTemplateExpression("y", List.of(), null)
                 )
         );
 
@@ -310,8 +322,8 @@ class TemplateExpressionFolderTest {
 
         var concat = new TemplateConcatTemplateExpression(
                 List.of(
-                        new VariableTemplateExpression("x", List.of()),
-                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()))
+                        new VariableTemplateExpression("x", List.of(), null),
+                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()), null)
                 )
         );
 
@@ -331,7 +343,8 @@ class TemplateExpressionFolderTest {
         var ternary = new TernaryTemplateExpression(
                 new ConstantTemplateExpression(true),
                 new ConstantTemplateExpression(thenTrue),
-                new ConstantTemplateExpression(thenFalse)
+                new ConstantTemplateExpression(thenFalse),
+                null
         );
 
         var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(ternary));
@@ -346,7 +359,8 @@ class TemplateExpressionFolderTest {
         var ternary = new TernaryTemplateExpression(
                 new ConstantTemplateExpression(false),
                 new ConstantTemplateExpression(thenTrue),
-                new ConstantTemplateExpression(thenFalse)
+                new ConstantTemplateExpression(thenFalse),
+                null
         );
 
         var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(ternary));
@@ -359,9 +373,10 @@ class TemplateExpressionFolderTest {
         var thenFalse = "thenFalse" + UUID.randomUUID();
 
         var ternary = new TernaryTemplateExpression(
-                new VariableTemplateExpression("x", List.of()),
+                new VariableTemplateExpression("x", List.of(), null),
                 new ConstantTemplateExpression(thenTrue),
-                new ConstantTemplateExpression(thenFalse)
+                new ConstantTemplateExpression(thenFalse),
+                null
         );
 
         var folded = folder.visit(ternary);
@@ -374,9 +389,10 @@ class TemplateExpressionFolderTest {
         var thenFalse = "thenFalse" + UUID.randomUUID();
 
         var ternary = new TernaryTemplateExpression(
-                new VariableTemplateExpression("x", List.of()),
+                new VariableTemplateExpression("x", List.of(), null),
                 new TemplateConcatTemplateExpression(List.of(new ConstantTemplateExpression(thenTrue))),
-                new ConstantTemplateExpression(thenFalse)
+                new ConstantTemplateExpression(thenFalse),
+                null
         );
 
         var folded = assertInstanceOf(TernaryTemplateExpression.class, folder.visit(ternary));
@@ -388,7 +404,7 @@ class TemplateExpressionFolderTest {
 
     @Test
     void noFoldVariableChain() {
-        var v = new VariableTemplateExpression("x", List.of());
+        var v = new VariableTemplateExpression("x", List.of(), null);
         assertSame(v, folder.visit(v));
     }
 
@@ -404,7 +420,8 @@ class TemplateExpressionFolderTest {
 
         var varExpr = new VariableTemplateExpression(
                 "x",
-                List.of(call)
+                List.of(call),
+                null
         );
 
         var folded = folder.visit(varExpr);
@@ -425,13 +442,14 @@ class TemplateExpressionFolderTest {
                 "m",
                 List.of(
                         staticArg,
-                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()))
+                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()), null)
                 )
         );
 
         var varExpr = new VariableTemplateExpression(
                 "x",
-                List.of(call)
+                List.of(call),
+                null
         );
 
         var folded = assertInstanceOf(VariableTemplateExpression.class, folder.visit(varExpr));
@@ -459,7 +477,8 @@ class TemplateExpressionFolderTest {
 
         var varExpr = new VariableTemplateExpression(
                 "x",
-                List.of(getPropertyChain)
+                List.of(getPropertyChain),
+                null
         );
 
         var folded = assertInstanceOf(VariableTemplateExpression.class, folder.visit(varExpr));

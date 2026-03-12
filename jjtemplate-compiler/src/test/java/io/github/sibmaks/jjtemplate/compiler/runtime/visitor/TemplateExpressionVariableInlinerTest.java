@@ -28,7 +28,7 @@ final class TemplateExpressionVariableInlinerTest {
         var values = new HashMap<String, Object>();
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var expression = new VariableTemplateExpression("unknown", List.of());
+        var expression = new VariableTemplateExpression("unknown", List.of(), null);
 
         var result = expression.visit(inliner);
         assertSame(expression, result);
@@ -41,7 +41,7 @@ final class TemplateExpressionVariableInlinerTest {
         values.put(variableName, null);
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var expression = new VariableTemplateExpression(variableName, List.of());
+        var expression = new VariableTemplateExpression(variableName, List.of(), null);
 
         var result = expression.visit(inliner);
         var inlined = assertInstanceOf(ConstantTemplateExpression.class, result);
@@ -56,7 +56,7 @@ final class TemplateExpressionVariableInlinerTest {
         values.put(variableName, variableValue);
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var expression = new VariableTemplateExpression(variableName, List.of());
+        var expression = new VariableTemplateExpression(variableName, List.of(), null);
 
         var result = expression.visit(inliner);
         assertEquals(new ConstantTemplateExpression(variableValue), result);
@@ -77,7 +77,7 @@ final class TemplateExpressionVariableInlinerTest {
         List<VariableTemplateExpression.Chain> chain =
                 List.of(new VariableTemplateExpression.GetPropertyChain("value"));
 
-        var expression = new VariableTemplateExpression(variableName, chain);
+        var expression = new VariableTemplateExpression(variableName, chain, null);
 
         var result = expression.visit(inliner);
         assertEquals(new ConstantTemplateExpression(variableValue), result);
@@ -91,7 +91,7 @@ final class TemplateExpressionVariableInlinerTest {
         List<VariableTemplateExpression.Chain> chain =
                 List.of(new VariableTemplateExpression.CallMethodChain("method", List.of()));
 
-        var expression = new VariableTemplateExpression("x", chain);
+        var expression = new VariableTemplateExpression("x", chain, null);
 
         var result = expression.visit(inliner);
         assertSame(expression, result);
@@ -114,7 +114,7 @@ final class TemplateExpressionVariableInlinerTest {
                 )
         );
 
-        var expression = new VariableTemplateExpression(variableName, chain);
+        var expression = new VariableTemplateExpression(variableName, chain, null);
 
         var result = expression.visit(inliner);
         assertEquals(new ConstantTemplateExpression(variableValue.substring(2)), result);
@@ -132,7 +132,7 @@ final class TemplateExpressionVariableInlinerTest {
         ListTemplateExpression inlinedArg = mock("inlinedArg");
         when(args.visit(inliner))
                 .thenReturn(inlinedArg);
-        var expression = new DynamicFunctionCallTemplateExpression(null, args);
+        var expression = new DynamicFunctionCallTemplateExpression(null, args, null);
 
         var result = expression.visit(inliner);
 
@@ -150,15 +150,15 @@ final class TemplateExpressionVariableInlinerTest {
         values.put(variableName, variableValue);
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var root = new VariableTemplateExpression(variableName, List.of());
+        var root = new VariableTemplateExpression(variableName, List.of(), null);
 
         ListTemplateExpression args = mock("args");
         ListTemplateExpression inlinedArg = mock("inlinedArg");
         when(args.visit(inliner))
                 .thenReturn(inlinedArg);
-        var fcall = new DynamicFunctionCallTemplateExpression(null, args);
+        var fcall = new DynamicFunctionCallTemplateExpression(null, args, null);
 
-        var expression = new PipeChainTemplateExpression(root, List.of(fcall));
+        var expression = new PipeChainTemplateExpression(root, List.of(fcall), null);
 
         var result = expression.visit(inliner);
 
@@ -178,7 +178,7 @@ final class TemplateExpressionVariableInlinerTest {
         var concat = new TemplateConcatTemplateExpression(
                 List.of(
                         new ConstantTemplateExpression("A"),
-                        new VariableTemplateExpression(variableName, List.of()),
+                        new VariableTemplateExpression(variableName, List.of(), null),
                         new ConstantTemplateExpression("B")
                 )
         );
@@ -203,11 +203,11 @@ final class TemplateExpressionVariableInlinerTest {
         values.put(variableName, variableValue);
         var inliner = new TemplateExpressionVariableInliner(values);
 
-        var condition = new VariableTemplateExpression(condVariableName, List.of());
-        var thenTrue = new VariableTemplateExpression(variableName, List.of());
-        var thenFalse = new VariableTemplateExpression("unknown", List.of());
+        var condition = new VariableTemplateExpression(condVariableName, List.of(), null);
+        var thenTrue = new VariableTemplateExpression(variableName, List.of(), null);
+        var thenFalse = new VariableTemplateExpression("unknown", List.of(), null);
 
-        var expression = new TernaryTemplateExpression(condition, thenTrue, thenFalse);
+        var expression = new TernaryTemplateExpression(condition, thenTrue, thenFalse, null);
 
         var result = expression.visit(inliner);
 
@@ -240,7 +240,8 @@ final class TemplateExpressionVariableInlinerTest {
 
         var functionCall = new DynamicFunctionCallTemplateExpression(
                 mock(TemplateFunction.class),
-                args
+                args,
+                null
         );
 
         var result = functionCall.visit(inliner);
@@ -257,10 +258,11 @@ final class TemplateExpressionVariableInlinerTest {
 
         var functionCall = new ConstantFunctionCallTemplateExpression(
                 mock(),
-                List.of()
+                List.of(),
+                null
         );
 
-        var pipe = new PipeChainTemplateExpression(root, List.of(functionCall));
+        var pipe = new PipeChainTemplateExpression(root, List.of(functionCall), null);
 
         var result = pipe.visit(inliner);
 
@@ -291,7 +293,7 @@ final class TemplateExpressionVariableInlinerTest {
         var thenTrue = new ConstantTemplateExpression("yes");
         var thenFalse = new ConstantTemplateExpression("no");
 
-        var ternary = new TernaryTemplateExpression(condition, thenTrue, thenFalse);
+        var ternary = new TernaryTemplateExpression(condition, thenTrue, thenFalse, null);
 
         var result = ternary.visit(inliner);
 

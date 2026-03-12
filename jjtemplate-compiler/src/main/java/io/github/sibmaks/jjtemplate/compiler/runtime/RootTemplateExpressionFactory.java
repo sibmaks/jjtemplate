@@ -316,6 +316,7 @@ public final class RootTemplateExpressionFactory {
         var switchExpression = SwitchTemplateExpression.builder()
                 .condition(condition)
                 .cases(switchCases)
+                .sourceExpression(expressionKey.getSourceExpression())
                 .build();
 
         return new ObjectFieldElement(
@@ -339,6 +340,7 @@ public final class RootTemplateExpressionFactory {
                 .indexVariableName(expressionKey.getIndexVariableName())
                 .source(expressionKey.getSource())
                 .body(compiledBody)
+                .sourceExpression(expressionKey.getSourceExpression())
                 .build();
 
         return new ObjectFieldElement(

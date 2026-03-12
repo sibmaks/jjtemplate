@@ -30,17 +30,22 @@ import java.util.stream.Collectors;
 public final class VariableTemplateExpression implements TemplateExpression {
     private final String rootName;
     private final List<Chain> callChain;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
-        var root = context.getRoot(rootName);
-        for (var chain : callChain) {
-            if (root == null) {
-                return null;
+        try {
+            var root = context.getRoot(rootName);
+            for (var chain : callChain) {
+                if (root == null) {
+                    return null;
+                }
+                root = chain.apply(context, root);
             }
-            root = chain.apply(context, root);
+            return root;
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
         }
-        return root;
     }
 
     @Override

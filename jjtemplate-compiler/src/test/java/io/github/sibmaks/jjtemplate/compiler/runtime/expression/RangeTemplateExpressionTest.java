@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -164,12 +165,10 @@ class RangeTemplateExpressionTest {
                 .name(name)
                 .build();
 
-        var exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> expression.apply(context)
-        );
+        var exception = assertThrows(TemplateEvalException.class, () -> expression.apply(context));
 
-        assertEquals("Unsupported range source: " + value + ", " + value.getClass(), exception.getMessage());
+        assertEquals("Failed execute: \"" + expression + "\"", exception.getMessage());
+        assertEquals("Unsupported range source: " + value + ", " + value.getClass(), exception.getCause().getMessage());
     }
 
     @Test
@@ -185,7 +184,8 @@ class RangeTemplateExpressionTest {
                 "item",
                 "index",
                 body,
-                separator
+                separator,
+                null
         );
 
         when(visitor.visit(expression))
@@ -204,9 +204,9 @@ class RangeTemplateExpressionTest {
         TemplateExpression body = mock("body");
         TemplateExpression separator = mock("name");
 
-        var expr1 = new RangeTemplateExpression(source, "item", "index", body, separator);
-        var expr2 = new RangeTemplateExpression(source, "item", "index", body, separator);
-        var expr3 = new RangeTemplateExpression(source, "x", "index", body, separator);
+        var expr1 = new RangeTemplateExpression(source, "item", "index", body, separator, null);
+        var expr2 = new RangeTemplateExpression(source, "item", "index", body, separator, null);
+        var expr3 = new RangeTemplateExpression(source, "x", "index", body, separator, null);
 
         assertEquals(expr1, expr2);
         assertEquals(expr1.hashCode(), expr2.hashCode());

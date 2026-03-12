@@ -36,7 +36,7 @@ class PipeChainTemplateExpressionTest {
                 .thenReturn("end");
 
         var chain = List.<FunctionCallTemplateExpression>of(pipe1, pipe2);
-        var expression = new PipeChainTemplateExpression(root, chain);
+        var expression = new PipeChainTemplateExpression(root, chain, null);
 
         var result = expression.apply(context);
 
@@ -55,7 +55,7 @@ class PipeChainTemplateExpressionTest {
         when(root.apply(context))
                 .thenReturn("only");
 
-        var expression = new PipeChainTemplateExpression(root, List.of());
+        var expression = new PipeChainTemplateExpression(root, List.of(), null);
 
         var result = expression.apply(context);
 
@@ -69,7 +69,7 @@ class PipeChainTemplateExpressionTest {
         var root = mock(TemplateExpression.class);
         var chain = List.<FunctionCallTemplateExpression>of();
 
-        var expression = new PipeChainTemplateExpression(root, chain);
+        var expression = new PipeChainTemplateExpression(root, chain, null);
 
         when(visitor.visit(expression))
                 .thenReturn("visited");
@@ -86,8 +86,8 @@ class PipeChainTemplateExpressionTest {
 
         DynamicFunctionCallTemplateExpression pipe = mock();
 
-        var exp1 = new PipeChainTemplateExpression(root, List.of(pipe));
-        var exp2 = new PipeChainTemplateExpression(root, List.of(pipe));
+        var exp1 = new PipeChainTemplateExpression(root, List.of(pipe), null);
+        var exp2 = new PipeChainTemplateExpression(root, List.of(pipe), null);
 
         assertEquals(exp1, exp2);
         assertEquals(exp1.hashCode(), exp2.hashCode());
@@ -98,8 +98,8 @@ class PipeChainTemplateExpressionTest {
         var rootA = mock(TemplateExpression.class);
         var rootB = mock(TemplateExpression.class);
 
-        var exp1 = new PipeChainTemplateExpression(rootA, List.of());
-        var exp2 = new PipeChainTemplateExpression(rootB, List.of());
+        var exp1 = new PipeChainTemplateExpression(rootA, List.of(), null);
+        var exp2 = new PipeChainTemplateExpression(rootB, List.of(), null);
 
         assertNotEquals(exp1, exp2);
     }

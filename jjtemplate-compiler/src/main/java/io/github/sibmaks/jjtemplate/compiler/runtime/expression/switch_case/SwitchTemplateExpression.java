@@ -30,21 +30,26 @@ import java.util.List;
 public final class SwitchTemplateExpression implements TemplateExpression {
     private final TemplateExpression condition;
     private final List<SwitchCase> cases;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
-        var conditionValue = condition.apply(context);
+        try {
+            var conditionValue = condition.apply(context);
 
-        for (var switchCase : cases) {
-            if (switchCase == null) {
-                throw new IllegalArgumentException("switch case must not be null");
+            for (var switchCase : cases) {
+                if (switchCase == null) {
+                    throw new IllegalArgumentException("switch case must not be null");
+                }
+                if (switchCase.matches(conditionValue, context)) {
+                    return switchCase.evaluate(context, conditionValue);
+                }
             }
-            if (switchCase.matches(conditionValue, context)) {
-                return switchCase.evaluate(context, conditionValue);
-            }
+
+            return null;
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
         }
-
-        return null;
     }
 
     @Override

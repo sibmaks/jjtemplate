@@ -26,14 +26,19 @@ public final class TernaryTemplateExpression implements TemplateExpression {
     private final TemplateExpression condition;
     private final TemplateExpression thenTrue;
     private final TemplateExpression thenFalse;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
-        var evaluatedCondition = evaluateCondition(context);
-        if (evaluatedCondition) {
-            return thenTrue.apply(context);
+        try {
+            var evaluatedCondition = evaluateCondition(context);
+            if (evaluatedCondition) {
+                return thenTrue.apply(context);
+            }
+            return thenFalse.apply(context);
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
         }
-        return thenFalse.apply(context);
     }
 
     /**
@@ -45,7 +50,9 @@ public final class TernaryTemplateExpression implements TemplateExpression {
     public boolean evaluateCondition(Context context) {
         var evaluatedCondition = condition.apply(context);
         if (!(evaluatedCondition instanceof Boolean)) {
-            throw new IllegalStateException("Cannot evaluate expression: " + this + ", condition is not boolean: " + evaluatedCondition);
+            throw new IllegalStateException(
+                    "Cannot evaluate expression: " + getDiagnosticExpression() + ", condition is not boolean: " + evaluatedCondition
+            );
         }
         return (boolean) evaluatedCondition;
     }

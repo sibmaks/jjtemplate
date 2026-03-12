@@ -259,7 +259,10 @@ class NumberFormatNewTemplateFunctionTest {
     void invalidRoundingModeNameShouldFail() {
         var exception = assertThrows(TemplateEvalException.class,
                 () -> function.invoke(List.of(Locale.US, Map.of("roundingMode", "INVALID"))));
-        assertTrue(exception.getMessage().startsWith("numberFormat:new: No enum constant"));
+        assertEquals(
+                "numberFormat:new: No enum constant java.math.RoundingMode.INVALID",
+                exception.getMessage()
+        );
     }
 
     @Test

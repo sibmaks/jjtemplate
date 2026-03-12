@@ -96,11 +96,10 @@ class FloatTemplateFunctionTest {
 
     @Test
     void unsupportedTypeArg() {
-        var args = List.of(new Object());
+        var value = new Object();
+        var args = List.of(value);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        var message = exception.getMessage();
-        assertNotNull(message);
-        assertTrue(message.startsWith("cast:float: cannot convert: java.lang.Object@"));
+        assertEquals("cast:float: cannot convert: " + value, exception.getMessage());
     }
 
     @Test
@@ -108,9 +107,7 @@ class FloatTemplateFunctionTest {
         var args = List.of();
         var pipe = new Object();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
-        var message = exception.getMessage();
-        assertNotNull(message);
-        assertTrue(message.startsWith("cast:float: cannot convert: java.lang.Object@"));
+        assertEquals("cast:float: cannot convert: " + pipe, exception.getMessage());
     }
 
     public static Stream<Arguments> justToFloatCases() {

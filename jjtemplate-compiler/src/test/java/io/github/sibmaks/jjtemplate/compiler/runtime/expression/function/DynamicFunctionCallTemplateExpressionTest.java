@@ -36,7 +36,8 @@ class DynamicFunctionCallTemplateExpressionTest {
 
         var expression = new DynamicFunctionCallTemplateExpression(
                 function,
-                args
+                args,
+                null
         );
 
         var result = expression.apply(context);
@@ -66,7 +67,8 @@ class DynamicFunctionCallTemplateExpressionTest {
 
         var expression = new DynamicFunctionCallTemplateExpression(
                 function,
-                args
+                args,
+                null
         );
 
         var result = expression.apply(context, pipe);
@@ -84,7 +86,8 @@ class DynamicFunctionCallTemplateExpressionTest {
         var function = mock(TemplateFunction.class);
         var expression = new DynamicFunctionCallTemplateExpression(
                 function,
-                mock()
+                mock(),
+                null
         );
 
         when(visitor.visit(expression))

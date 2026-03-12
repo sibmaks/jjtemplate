@@ -33,14 +33,19 @@ import java.util.List;
 public final class PipeChainTemplateExpression implements TemplateExpression {
     private final TemplateExpression root;
     private final List<FunctionCallTemplateExpression> chain;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
-        var value = root.apply(context);
-        for (var pipe : chain) {
-            value = pipe.apply(context, value);
+        try {
+            var value = root.apply(context);
+            for (var pipe : chain) {
+                value = pipe.apply(context, value);
+            }
+            return value;
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
         }
-        return value;
     }
 
     @Override

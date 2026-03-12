@@ -23,6 +23,7 @@ import java.util.List;
 public final class ConstantFunctionCallTemplateExpression implements FunctionCallTemplateExpression {
     private final TemplateFunction<?> function;
     private final List<Object> arguments;
+    private final String sourceExpression;
 
     @Override
     public List<Object> getArguments(Context context) {

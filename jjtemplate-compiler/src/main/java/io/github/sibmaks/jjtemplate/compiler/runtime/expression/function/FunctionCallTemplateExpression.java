@@ -7,6 +7,12 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import java.util.List;
 
 /**
+ * Common contract for runtime function-call expressions.
+ * <p>
+ * Implementations provide access to the target {@link TemplateFunction}, lazy
+ * argument evaluation, and the default execution behavior used for standalone
+ * function calls and pipe-chain stages.
+ * </p>
  *
  * @author sibmaks
  * @since 0.5.0
@@ -29,11 +35,25 @@ public interface FunctionCallTemplateExpression extends TemplateExpression {
      */
     List<Object> getArguments(Context context);
 
+    /**
+     * Evaluates this function call as a standalone expression.
+     * <p>
+     * Function-specific failures are wrapped with expression source details,
+     * while the original exception is preserved as the standard cause.
+     * </p>
+     *
+     * @param context evaluation context
+     * @return function result
+     */
     @Override
     default Object apply(final Context context) {
-        var function = getFunction();
-        var args = getArguments(context);
-        return function.invoke(args);
+        try {
+            var function = getFunction();
+            var args = getArguments(context);
+            return function.invoke(args);
+        } catch (RuntimeException e) {
+            throw failedExecute(e);
+        }
     }
 
     /**

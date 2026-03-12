@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +31,8 @@ class TernaryTemplateExpressionTest {
         var ternary = new TernaryTemplateExpression(
                 conditionExpression,
                 trueExpression,
-                falseExpression
+                falseExpression,
+                null
         );
 
         var result = ternary.apply(context);
@@ -59,7 +61,8 @@ class TernaryTemplateExpressionTest {
         var ternary = new TernaryTemplateExpression(
                 conditionExpression,
                 trueExpression,
-                falseExpression
+                falseExpression,
+                null
         );
 
         var result = ternary.apply(context);
@@ -83,13 +86,15 @@ class TernaryTemplateExpressionTest {
         var ternary = new TernaryTemplateExpression(
                 conditionExpression,
                 mock(TemplateExpression.class),
-                mock(TemplateExpression.class)
+                mock(TemplateExpression.class),
+                null
         );
 
-        var exception = assertThrows(IllegalStateException.class,
+        var exception = assertThrows(TemplateEvalException.class,
                 () -> ternary.apply(context));
 
-        assertTrue(exception.getMessage().contains("Cannot evaluate expression"));
+        assertEquals("Failed execute: \"" + ternary + "\"", exception.getMessage());
+        assertTrue(exception.getCause().getMessage().contains("Cannot evaluate expression"));
     }
 
     @Test
@@ -103,7 +108,8 @@ class TernaryTemplateExpressionTest {
         var ternary = new TernaryTemplateExpression(
                 conditionExpression,
                 trueExpression,
-                falseExpression
+                falseExpression,
+                null
         );
 
         var expected = "visited";
@@ -124,8 +130,8 @@ class TernaryTemplateExpressionTest {
         var t1 = mock(TemplateExpression.class);
         var f1 = mock(TemplateExpression.class);
 
-        var first = new TernaryTemplateExpression(c1, t1, f1);
-        var second = new TernaryTemplateExpression(c1, t1, f1);
+        var first = new TernaryTemplateExpression(c1, t1, f1, null);
+        var second = new TernaryTemplateExpression(c1, t1, f1, null);
 
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());

@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressionVisitor;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,8 @@ class SwitchTemplateExpressionTest {
 
         var expression = new SwitchTemplateExpression(
                 condition,
-                List.of(case1, case2)
+                List.of(case1, case2),
+                null
         );
 
         var result = expression.apply(context);
@@ -75,7 +77,8 @@ class SwitchTemplateExpressionTest {
 
         var expression = new SwitchTemplateExpression(
                 condition,
-                List.of(case1, case2)
+                List.of(case1, case2),
+                null
         );
 
         var result = expression.apply(context);
@@ -94,14 +97,16 @@ class SwitchTemplateExpressionTest {
 
         var expression = new SwitchTemplateExpression(
                 condition,
-                cases
+                cases,
+                null
         );
 
-        var ex = assertThrows(IllegalArgumentException.class,
+        var ex = assertThrows(TemplateEvalException.class,
                 () -> expression.apply(context)
         );
 
-        assertEquals("switch case must not be null", ex.getMessage());
+        assertEquals("Failed execute: \"" + expression + "\"", ex.getMessage());
+        assertEquals("switch case must not be null", ex.getCause().getMessage());
     }
 
     @Test
@@ -112,7 +117,8 @@ class SwitchTemplateExpressionTest {
 
         var expression = new SwitchTemplateExpression(
                 condition,
-                List.of()
+                List.of(),
+                null
         );
 
         var visitResult = UUID.randomUUID().toString();
@@ -135,9 +141,9 @@ class SwitchTemplateExpressionTest {
         SwitchCase case1 = mock("firstCase");
         SwitchCase case2 = mock("secondCase");
 
-        var expr1 = new SwitchTemplateExpression(condition, List.of(case1, case2));
-        var expr2 = new SwitchTemplateExpression(condition, List.of(case1, case2));
-        var expr3 = new SwitchTemplateExpression(condition, List.of(case1));
+        var expr1 = new SwitchTemplateExpression(condition, List.of(case1, case2), null);
+        var expr2 = new SwitchTemplateExpression(condition, List.of(case1, case2), null);
+        var expr3 = new SwitchTemplateExpression(condition, List.of(case1), null);
 
         assertEquals(expr1, expr2);
         assertEquals(expr1.hashCode(), expr2.hashCode());

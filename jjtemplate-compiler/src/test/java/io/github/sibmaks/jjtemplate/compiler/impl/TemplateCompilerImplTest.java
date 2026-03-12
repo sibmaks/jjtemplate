@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
+import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
@@ -271,5 +272,83 @@ class TemplateCompilerImplTest {
 
         var cause = assertInstanceOf(IllegalArgumentException.class, exception.getCause());
         assertEquals("Only '{{ ... }}' substitutions are allowed inside string literals", cause.getMessage());
+    }
+
+    @Test
+    void renderShouldIncludeFailedPipeExpressionInException() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value | gt 1 }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+        var context = new HashMap<String, Object>();
+        context.put("value", null);
+
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(context));
+        assertEquals("Failed execute: \".value | gt 1\"", exception.getMessage());
+        assertEquals("gt: expected number, actual: null", exception.getCause().getMessage());
+    }
+
+    @Test
+    void renderShouldIncludeFailedFunctionExpressionInException() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ gt .value, 1 }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+        var context = new HashMap<String, Object>();
+        context.put("value", null);
+
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(context));
+        assertEquals("Failed execute: \"gt .value, 1\"", exception.getMessage());
+        assertEquals("gt: expected number, actual: null", exception.getCause().getMessage());
+    }
+
+    @Test
+    void compileShouldIncludeFailedPipeExpressionWhenOptimizerEvaluatesConstantExpression() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ null | gt 1 }}")
+                .build();
+
+        var exception = assertThrows(TemplateCompilationException.class, () -> compiler.compile(script));
+        assertEquals("Error optimizing template", exception.getMessage());
+
+        var cause = assertInstanceOf(TemplateEvalException.class, exception.getCause());
+        assertEquals("Failed execute: \"null | gt 1\"", cause.getMessage());
+        assertEquals("gt: expected number, actual: null", cause.getCause().getMessage());
+    }
+
+    @Test
+    void renderShouldIncludeFailedTernaryExpressionInException() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value ? 'yes' : 'no' }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(Map.of("value", 1)));
+        assertEquals("Failed execute: \".value ? 'yes' : 'no'\"", exception.getMessage());
+        assertEquals(
+                "Cannot evaluate expression: .value ? 'yes' : 'no', condition is not boolean: 1",
+                exception.getCause().getMessage()
+        );
+    }
+
+    @Test
+    void renderShouldIncludeFailedVariableExpressionInException() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.missing() }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(Map.of("value", "text")));
+        assertEquals("Failed execute: \".value.missing()\"", exception.getMessage());
+        assertNotNull(exception.getCause());
     }
 }

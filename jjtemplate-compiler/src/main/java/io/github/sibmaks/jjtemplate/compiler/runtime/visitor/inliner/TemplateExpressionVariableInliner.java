@@ -61,7 +61,11 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         if (argExpression == foldedArgExpression) {
             return function;
         }
-        return new DynamicFunctionCallTemplateExpression(function.getFunction(), (ListTemplateExpression) foldedArgExpression);
+        return new DynamicFunctionCallTemplateExpression(
+                function.getFunction(),
+                (ListTemplateExpression) foldedArgExpression,
+                function.getSourceExpression()
+        );
     }
 
     @Override
@@ -84,7 +88,7 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         if (root == inlinedRoot && !anyChainInlined) {
             return pipe;
         }
-        return new PipeChainTemplateExpression(inlinedRoot, chain);
+        return new PipeChainTemplateExpression(inlinedRoot, chain, pipe.getSourceExpression());
     }
 
     @Override
@@ -118,7 +122,12 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         if (condition != inlinedCondition ||
                 thenTrue != inlinedThenTrue ||
                 thenFalse != inlinedThenFalse) {
-            return new TernaryTemplateExpression(inlinedCondition, inlinedThenTrue, inlinedThenFalse);
+            return new TernaryTemplateExpression(
+                    inlinedCondition,
+                    inlinedThenTrue,
+                    inlinedThenFalse,
+                    ternary.getSourceExpression()
+            );
         }
         return ternary;
     }
@@ -183,7 +192,7 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         }
 
         if (anyArgInlined) {
-            return new VariableTemplateExpression(rootName, newCallChain);
+            return new VariableTemplateExpression(rootName, newCallChain, variable.getSourceExpression());
         }
 
         return variable;
@@ -227,6 +236,7 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
                     .itemVariableName(expression.getItemVariableName())
                     .source(inlinedSource)
                     .body(inlinedBody)
+                    .sourceExpression(expression.getSourceExpression())
                     .build();
         }
 
@@ -269,6 +279,7 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
             return SwitchTemplateExpression.builder()
                     .condition(inlinedCondition)
                     .cases(inlinedCases)
+                    .sourceExpression(expression.getSourceExpression())
                     .build();
         }
 

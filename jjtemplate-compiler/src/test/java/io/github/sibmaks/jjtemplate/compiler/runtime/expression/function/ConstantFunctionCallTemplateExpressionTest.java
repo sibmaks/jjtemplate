@@ -31,7 +31,8 @@ class ConstantFunctionCallTemplateExpressionTest {
 
         var expression = new ConstantFunctionCallTemplateExpression(
                 function,
-                list
+                list,
+                null
         );
 
         var result = expression.apply(context);
@@ -49,7 +50,8 @@ class ConstantFunctionCallTemplateExpressionTest {
         var function = mock(TemplateFunction.class);
         var expression = new ConstantFunctionCallTemplateExpression(
                 function,
-                mock()
+                mock(),
+                null
         );
 
         when(visitor.visit(expression))

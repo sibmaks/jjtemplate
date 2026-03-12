@@ -85,7 +85,7 @@ class IntTemplateFunctionTest {
     void invalidStringToIntArg() {
         var args = List.<Object>of("not_a_number");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: not_a_number"));
+        assertEquals("cast:int: cannot convert: not_a_number", exception.getMessage());
     }
 
     @Test
@@ -93,14 +93,15 @@ class IntTemplateFunctionTest {
         var args = List.of();
         var pipe = "abc";
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
-        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: abc"));
+        assertEquals("cast:int: cannot convert: abc", exception.getMessage());
     }
 
     @Test
     void unsupportedTypeArg() {
-        var args = List.of(new Object());
+        var value = new Object();
+        var args = List.of(value);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: java.lang.Object"));
+        assertEquals("cast:int: cannot convert: " + value, exception.getMessage());
     }
 
     @Test
@@ -108,7 +109,7 @@ class IntTemplateFunctionTest {
         var args = List.of();
         var pipe = new Object();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, pipe));
-        assertTrue(exception.getMessage().startsWith("cast:int: cannot convert: java.lang.Object"));
+        assertEquals("cast:int: cannot convert: " + pipe, exception.getMessage());
     }
 
     public static Stream<Arguments> justToIntCases() {

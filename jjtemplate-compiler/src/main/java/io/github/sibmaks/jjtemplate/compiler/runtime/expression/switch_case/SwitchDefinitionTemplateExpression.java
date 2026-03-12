@@ -20,6 +20,7 @@ import lombok.*;
 public final class SwitchDefinitionTemplateExpression implements TemplateExpression {
     private final TemplateExpression key;
     private final TemplateExpression condition;
+    private final String sourceExpression;
 
     @Override
     public Object apply(final Context context) {
