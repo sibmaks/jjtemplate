@@ -2,6 +2,8 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.logic;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,13 +16,32 @@ import java.util.Objects;
  * @since 0.0.1
  */
 public final class NotEqualsTemplateFunction implements TemplateFunction<Boolean> {
+    private boolean areNotEquals(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return asNum((Number) left).compareTo(asNum((Number) right)) != 0;
+        }
+        return !Objects.equals(left, right);
+    }
+
+    private BigDecimal asNum(Number value) {
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
+        if (value instanceof BigInteger) {
+            return new BigDecimal((BigInteger) value);
+        }
+        if (value instanceof Long || value instanceof Integer || value instanceof Short || value instanceof Byte) {
+            return BigDecimal.valueOf(value.longValue());
+        }
+        return BigDecimal.valueOf(value.doubleValue());
+    }
 
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 1) {
             throw fail("1 argument required");
         }
-        return !Objects.equals(args.get(0), pipeArg);
+        return areNotEquals(args.get(0), pipeArg);
     }
 
     @Override
@@ -28,7 +49,7 @@ public final class NotEqualsTemplateFunction implements TemplateFunction<Boolean
         if (args.size() != 2) {
             throw fail("2 arguments required");
         }
-        return !Objects.equals(args.get(0), args.get(1));
+        return areNotEquals(args.get(0), args.get(1));
     }
 
     @Override

@@ -1,0 +1,13 @@
+{
+  "definitions": [
+    {
+      "singleItemList": [
+        "value"
+      ]
+    }
+  ],
+  "template": {
+    "listLengthEqualsOnePipeKey": "{{ .singleItemList | list:len | neq 1 }}",
+    "listLengthEqualsZeroPipeKey": "{{ .singleItemList | list:len | neq 0 }}"
+  }
+}

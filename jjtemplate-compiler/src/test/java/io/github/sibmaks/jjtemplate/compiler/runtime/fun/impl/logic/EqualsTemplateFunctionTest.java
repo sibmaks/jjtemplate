@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -78,6 +79,9 @@ class EqualsTemplateFunctionTest {
                 Arguments.of(null, "text", false),
                 Arguments.of("text", "text", true),
                 Arguments.of(42, 42, true),
+                Arguments.of(1, BigInteger.ONE, true),
+                Arguments.of(BigInteger.ONE, 1, true),
+                Arguments.of(1L, BigInteger.ONE, true),
                 Arguments.of(Integer.MAX_VALUE, Integer.MAX_VALUE, true),
                 Arguments.of(3.1415, 3.1415, true),
                 Arguments.of(Double.MAX_VALUE, Double.MAX_VALUE, true),

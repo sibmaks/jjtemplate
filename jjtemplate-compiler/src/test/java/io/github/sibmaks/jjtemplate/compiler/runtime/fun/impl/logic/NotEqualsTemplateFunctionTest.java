@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -78,6 +79,9 @@ class NotEqualsTemplateFunctionTest {
                 Arguments.of(null, "text", true),
                 Arguments.of("text", "text", false),
                 Arguments.of(42, 42, false),
+                Arguments.of(1, BigInteger.ONE, false),
+                Arguments.of(BigInteger.ONE, 1, false),
+                Arguments.of(1L, BigInteger.ONE, false),
                 Arguments.of(Integer.MAX_VALUE, Integer.MAX_VALUE, false),
                 Arguments.of(3.1415, 3.1415, false),
                 Arguments.of(Double.MAX_VALUE, Double.MAX_VALUE, false),
