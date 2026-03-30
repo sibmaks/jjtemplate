@@ -178,10 +178,34 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
                     value = callMethodChain.apply(Context.empty(), value);
                 }
                 newCallChain.add(callMethodChain);
-            } else {
-                var propertyChain = (VariableTemplateExpression.GetPropertyChain) chain;
+            } else if (chain instanceof VariableTemplateExpression.BoundMethodChain) {
+                var callMethodChain = (VariableTemplateExpression.BoundMethodChain) chain;
+                var localAnyArgInlined = false;
+                var argsExpressions = callMethodChain.getArgsExpressions();
+                var inlinedArguments = new ArrayList<TemplateExpression>(argsExpressions.size());
+                for (var argsExpression : argsExpressions) {
+                    var inlined = argsExpression.visit(this);
+                    localAnyArgInlined |= argsExpression != inlined;
+                    inlinedArguments.add(inlined);
+                    if (!(inlined instanceof ConstantTemplateExpression)) {
+                        folding = false;
+                    }
+                }
+                anyArgInlined |= localAnyArgInlined;
+                if (localAnyArgInlined) {
+                    callMethodChain = new VariableTemplateExpression.BoundMethodChain(
+                            callMethodChain.getMethodName(),
+                            inlinedArguments,
+                            callMethodChain.getResolvedMethods()
+                    );
+                }
                 if (folding) {
-                    value = propertyChain.apply(Context.empty(), value);
+                    value = callMethodChain.apply(Context.empty(), value);
+                }
+                newCallChain.add(callMethodChain);
+            } else {
+                if (folding) {
+                    value = chain.apply(Context.empty(), value);
                 }
                 newCallChain.add(chain);
             }

@@ -138,6 +138,51 @@ class VariableTemplateExpressionTest {
     }
 
     @Test
+    void applyShouldFollowBoundPropertyChain() {
+        var rootValue = new Bean("prop");
+
+        when(context.getRoot("x"))
+                .thenReturn(rootValue);
+
+        var resolvedProperty = ReflectionUtils.resolveProperty(Bean.class, "name")
+                .orElseThrow();
+        var chain = List.<VariableTemplateExpression.Chain>of(
+                new VariableTemplateExpression.BoundPropertyChain("name", List.of(resolvedProperty))
+        );
+        var expression = new VariableTemplateExpression("x", chain, null);
+
+        var result = expression.apply(context);
+
+        assertEquals("prop", result);
+    }
+
+    @Test
+    void applyShouldFollowBoundMethodChain() {
+        var rootValue = "abcdef";
+        TemplateExpression argExpression = mock("expression");
+
+        when(context.getRoot("x"))
+                .thenReturn(rootValue);
+        when(argExpression.apply(context))
+                .thenReturn(2);
+
+        var resolvedMethod = ReflectionUtils.resolveMethods(String.class, "substring", List.of(Integer.class))
+                .get(0);
+        var chain = List.<VariableTemplateExpression.Chain>of(
+                new VariableTemplateExpression.BoundMethodChain(
+                        "substring",
+                        List.of(argExpression),
+                        List.of(resolvedMethod)
+                )
+        );
+        var expression = new VariableTemplateExpression("x", chain, null);
+
+        var result = expression.apply(context);
+
+        assertEquals("cdef", result);
+    }
+
+    @Test
     void applyShouldStopIfIntermediateChainResultIsNull() {
         var rootValue = new Object();
 
@@ -172,5 +217,17 @@ class VariableTemplateExpressionTest {
         var result = expression.visit(visitor);
 
         assertEquals(expected, result);
+    }
+
+    private static final class Bean {
+        private final String name;
+
+        private Bean(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }

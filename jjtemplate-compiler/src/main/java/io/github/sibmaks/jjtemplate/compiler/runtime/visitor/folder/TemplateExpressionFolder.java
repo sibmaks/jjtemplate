@@ -320,6 +320,31 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 } else {
                     newCallChain.add(callMethodChain);
                 }
+            } else if (chain instanceof VariableTemplateExpression.BoundMethodChain) {
+                var callMethodChain = (VariableTemplateExpression.BoundMethodChain) chain;
+                var anyArgFolded = false;
+                var args = new ArrayList<TemplateExpression>();
+                for (var argsExpression : callMethodChain.getArgsExpressions()) {
+                    var folded = argsExpression.visit(this);
+                    if (folded != argsExpression) {
+                        anyArgFolded = true;
+                        args.add(folded);
+                    } else {
+                        args.add(argsExpression);
+                    }
+                }
+                if (anyArgFolded) {
+                    anyFolded = true;
+                    newCallChain.add(
+                            new VariableTemplateExpression.BoundMethodChain(
+                                    callMethodChain.getMethodName(),
+                                    args,
+                                    callMethodChain.getResolvedMethods()
+                            )
+                    );
+                } else {
+                    newCallChain.add(callMethodChain);
+                }
             } else {
                 newCallChain.add(chain);
             }

@@ -26,6 +26,16 @@ public interface TemplateCompiler {
     CompiledTemplate compile(TemplateScript script);
 
     /**
+     * Compiles the provided template script into a {@link CompiledTemplate}
+     * using compile-time type information for known variables.
+     *
+     * @param script source template script to compile
+     * @param context compile-time context metadata
+     * @return the compiled template ready for rendering
+     */
+    CompiledTemplate compile(TemplateScript script, TemplateCompileContext context);
+
+    /**
      * Returns the default {@link TemplateCompiler} instance
      * configured with the system default {@link Locale}.
      *

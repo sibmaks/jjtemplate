@@ -94,6 +94,12 @@ public final class VariableUsageCollector implements
                 for (var argsExpression : argsExpressions) {
                     argsExpression.visit(this);
                 }
+            } else if (chain instanceof VariableTemplateExpression.BoundMethodChain) {
+                var callMethodChain = (VariableTemplateExpression.BoundMethodChain) chain;
+                var argsExpressions = callMethodChain.getArgsExpressions();
+                for (var argsExpression : argsExpressions) {
+                    argsExpression.visit(this);
+                }
             }
         }
 

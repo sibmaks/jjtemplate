@@ -74,11 +74,28 @@ public final class VariableTemplateExpression implements TemplateExpression {
     @AllArgsConstructor
     @ToString
     public static final class GetPropertyChain implements Chain {
+        @Getter
         private final String propertyName;
 
         @Override
         public Object apply(final Context context, final Object o) {
             return ReflectionUtils.getProperty(o, propertyName);
+        }
+    }
+
+    /**
+     * Chain element that uses pre-resolved property accessors for known types.
+     */
+    @Getter
+    @AllArgsConstructor
+    @ToString
+    public static final class BoundPropertyChain implements Chain {
+        private final String propertyName;
+        private final List<ReflectionUtils.ResolvedProperty> resolvedProperties;
+
+        @Override
+        public Object apply(Context context, Object o) {
+            return ReflectionUtils.getProperty(o, propertyName, resolvedProperties);
         }
     }
 
@@ -102,6 +119,26 @@ public final class VariableTemplateExpression implements TemplateExpression {
                     .map(it -> it.apply(context))
                     .collect(Collectors.toList());
             return ReflectionUtils.invokeMethodReflective(o, methodName, args);
+        }
+    }
+
+    /**
+     * Chain element that uses pre-resolved methods for known receiver types.
+     */
+    @Getter
+    @AllArgsConstructor
+    @ToString
+    public static final class BoundMethodChain implements Chain {
+        private final String methodName;
+        private final List<TemplateExpression> argsExpressions;
+        private final List<ReflectionUtils.ResolvedMethod> resolvedMethods;
+
+        @Override
+        public Object apply(Context context, Object o) {
+            var args = argsExpressions.stream()
+                    .map(it -> it.apply(context))
+                    .collect(Collectors.toList());
+            return ReflectionUtils.invokeMethodReflective(o, methodName, args, resolvedMethods);
         }
     }
 }

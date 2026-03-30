@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.sibmaks.jjtemplate.compiler.api.Definition;
+import io.github.sibmaks.jjtemplate.compiler.api.MapTemplateCompileContext;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
@@ -123,6 +124,35 @@ class TemplateCompilerImplIntegrationLegacyTest {
         assertEquals(excepted, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
+                caseName,
+                (compiledAt - begin) / 1000000.0,
+                (renderedAt - compiledAt) / 1000000.0
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("cases")
+    void testScenarioWithTypedContextFromVariables(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            Object excepted
+    ) {
+        var options = TemplateCompileOptions.builder()
+                .definitionExpressionFallback(true)
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var compileContext = new MapTemplateCompileContext(buildTypesFromContext(context));
+        var begin = System.nanoTime();
+        var compiled = compiler.compile(templateScript, compileContext);
+        var compiledAt = System.nanoTime();
+        assertNotNull(compiled);
+        var rendered = compiled.render(context);
+        var renderedAt = System.nanoTime();
+        var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
+        assertEquals(excepted, renderedJson);
+        System.out.printf(
+                "Case '%s', compiled with typed context: %.4f ms, rendered: %.4f ms%n",
                 caseName,
                 (compiledAt - begin) / 1000000.0,
                 (renderedAt - compiledAt) / 1000000.0
@@ -370,6 +400,17 @@ class TemplateCompilerImplIntegrationLegacyTest {
                 .stream()
                 .sorted()
                 .map(it -> buildArguments(resourcesDir, it));
+    }
+
+    private static Map<String, List<Class<?>>> buildTypesFromContext(Map<String, Object> context) {
+        var types = new LinkedHashMap<String, List<Class<?>>>(context.size());
+        for (var entry : context.entrySet()) {
+            var value = entry.getValue();
+            if (value != null) {
+                types.put(entry.getKey(), List.of(value.getClass()));
+            }
+        }
+        return types;
     }
 
     @SafeVarargs

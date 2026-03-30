@@ -14,6 +14,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressi
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.TemplateTypeInferenceVisitor;
+import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.typebind.TemplateExpressionTypeBinder;
 import io.github.sibmaks.jjtemplate.parser.ExpressionParser;
 
 import java.util.ArrayList;
@@ -68,6 +69,11 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
     @Override
     public CompiledTemplate compile(TemplateScript script) {
+        return compile(script, null);
+    }
+
+    @Override
+    public CompiledTemplate compile(TemplateScript script, TemplateCompileContext context) {
         var defs = Optional.ofNullable(script.getDefinitions())
                 .orElseGet(List::of);
         var template = script.getTemplate();
@@ -79,6 +85,9 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
 
         var templateExpression = compileTemplate(template);
         var compiledTemplate = new CompiledTemplateImpl(internalVariables, templateExpression);
+        if (context != null) {
+            compiledTemplate = bindTypes(compiledTemplate, context);
+        }
         var repeat = false;
         do {
             repeat = false;
@@ -95,6 +104,20 @@ public final class TemplateCompilerImpl implements TemplateCompiler {
             }
         } while (repeat);
         return buildCompiledTemplate(compiledTemplate);
+    }
+
+    private CompiledTemplateImpl bindTypes(
+            CompiledTemplateImpl compiledTemplate,
+            TemplateCompileContext context
+    ) {
+        try {
+            var binder = new TemplateExpressionTypeBinder(context);
+            return binder.bind(compiledTemplate);
+        } catch (TemplateCompilationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TemplateCompilationException("Error binding template types", e);
+        }
     }
 
     private TemplateExpression compileTemplate(Object template) {

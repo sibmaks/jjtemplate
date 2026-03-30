@@ -7,7 +7,9 @@
     }
   ],
   "template": {
+    "listLengthEqualsOneKey": "{{ list:len .singleItemList | eq 1 }}",
     "listLengthEqualsOnePipeKey": "{{ .singleItemList | list:len | eq 1 }}",
+    "listLengthEqualsZeroKey": "{{ list:len .singleItemList | eq 0 }}",
     "listLengthEqualsZeroPipeKey": "{{ .singleItemList | list:len | eq 0 }}"
   }
 }

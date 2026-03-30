@@ -164,4 +164,26 @@ class VariableUsageCollectorTest {
         assertEquals(1, collector.getVariables().size());
         assertEquals(Set.of("x"), collector.getVariables());
     }
+
+    @Test
+    void visitVariableTemplateExpressionWhenCollectsBoundMethodArgs() {
+        var arg = mock(TemplateExpression.class);
+        var expr = mock(VariableTemplateExpression.class);
+        when(expr.getRootName())
+                .thenReturn("x");
+        when(expr.getCallChain())
+                .thenReturn(List.of(
+                        new VariableTemplateExpression.BoundMethodChain(
+                                "m",
+                                List.of(arg),
+                                List.of()
+                        )
+                ));
+
+        collector.visit(expr);
+
+        assertEquals(Set.of("x"), collector.getVariables());
+        verify(arg)
+                .visit(collector);
+    }
 }

@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.Constan
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner.TemplateExpressionVariableInliner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -111,6 +112,30 @@ final class TemplateExpressionVariableInlinerTest {
                 new VariableTemplateExpression.CallMethodChain(
                         "substring",
                         List.of(arg)
+                )
+        );
+
+        var expression = new VariableTemplateExpression(variableName, chain, null);
+
+        var result = expression.visit(inliner);
+        assertEquals(new ConstantTemplateExpression(variableValue.substring(2)), result);
+    }
+
+    @Test
+    void boundMethodChainIsAppliedWhenAllArgsInlineToValues() {
+        var values = new HashMap<String, Object>();
+        var variableName = UUID.randomUUID().toString();
+        var variableValue = UUID.randomUUID().toString();
+        values.put(variableName, variableValue);
+        var inliner = new TemplateExpressionVariableInliner(values);
+
+        var resolvedMethod = ReflectionUtils.resolveMethods(String.class, "substring", List.of(Integer.class))
+                .get(0);
+        List<VariableTemplateExpression.Chain> chain = List.of(
+                new VariableTemplateExpression.BoundMethodChain(
+                        "substring",
+                        List.of(new ConstantTemplateExpression(2)),
+                        List.of(resolvedMethod)
                 )
         );
 

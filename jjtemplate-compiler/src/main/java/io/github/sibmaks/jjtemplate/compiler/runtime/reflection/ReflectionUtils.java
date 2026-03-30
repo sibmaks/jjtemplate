@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.reflection;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.lang.invoke.MethodHandle;
@@ -32,7 +33,7 @@ public final class ReflectionUtils {
             field.setAccessible(true);
             try {
                 var getter = LOOKUP.unreflectGetter(field);
-                map.put(field.getName(), new AccessDescriptor(field.getName(), getter));
+                map.put(field.getName(), new AccessDescriptor(field.getName(), getter, field.getType()));
             } catch (IllegalAccessException ignored) {
                 // skip forbidden fields
             }
@@ -50,7 +51,7 @@ public final class ReflectionUtils {
                 method.setAccessible(true);
                 try {
                     var methodHandle = LOOKUP.unreflect(method);
-                    map.put(name, new AccessDescriptor(name, methodHandle));
+                    map.put(name, new AccessDescriptor(name, methodHandle, method.getReturnType()));
                 } catch (IllegalAccessException ignored) {
                     // skip forbidden methods
                 }
@@ -229,10 +230,72 @@ public final class ReflectionUtils {
         }
     }
 
+    private static boolean isMethodCompatible(Method method, List<Class<?>> argTypes) {
+        var params = method.getParameterTypes();
+        if (!method.isVarArgs()) {
+            if (params.length != argTypes.size()) {
+                return false;
+            }
+            for (int i = 0; i < params.length; i++) {
+                var argType = argTypes.get(i);
+                if (argType == null) {
+                    continue;
+                }
+                var paramType = wrap(params[i]);
+                var wrappedArgType = wrap(argType);
+                if (paramType.equals(wrappedArgType) || paramType.isAssignableFrom(wrappedArgType)) {
+                    continue;
+                }
+                if (isNumeric(paramType) && isNumeric(wrappedArgType)) {
+                    continue;
+                }
+                return false;
+            }
+            return true;
+        }
+
+        var fixedCount = params.length - 1;
+        if (argTypes.size() < fixedCount) {
+            return false;
+        }
+        for (int i = 0; i < fixedCount; i++) {
+            var argType = argTypes.get(i);
+            if (argType == null) {
+                continue;
+            }
+            var paramType = wrap(params[i]);
+            var wrappedArgType = wrap(argType);
+            if (paramType.equals(wrappedArgType) || paramType.isAssignableFrom(wrappedArgType)) {
+                continue;
+            }
+            if (isNumeric(paramType) && isNumeric(wrappedArgType)) {
+                continue;
+            }
+            return false;
+        }
+        var varArgType = wrap(params[fixedCount].getComponentType());
+        for (int i = fixedCount; i < argTypes.size(); i++) {
+            var argType = argTypes.get(i);
+            if (argType == null) {
+                continue;
+            }
+            var wrappedArgType = wrap(argType);
+            if (varArgType.equals(wrappedArgType) || varArgType.isAssignableFrom(wrappedArgType)) {
+                continue;
+            }
+            if (isNumeric(varArgType) && isNumeric(wrappedArgType)) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
     @AllArgsConstructor
     private static final class AccessDescriptor {
         private String name;
         private MethodHandle getter;
+        private Class<?> valueType;
 
         Object get(Object target) throws Throwable {
             return getter == null ? null : getter.invoke(target);
@@ -246,6 +309,80 @@ public final class ReflectionUtils {
         ConversionResult(Object[] values, int score) {
             this.values = values;
             this.score = score;
+        }
+    }
+
+    /**
+     * Pre-resolved property accessor for a specific declared type.
+     */
+    @AllArgsConstructor
+    public static final class ResolvedProperty {
+        @Getter
+        private final Class<?> ownerType;
+        @Getter
+        private final String propertyName;
+        private final MethodHandle getter;
+        @Getter
+        private final Class<?> valueType;
+
+        /**
+         * Reads the property value from the target object.
+         *
+         * @param target receiver object
+         * @return resolved property value
+         * @throws Throwable when invocation fails
+         */
+        Object get(Object target) throws Throwable {
+            return getter.invoke(target);
+        }
+    }
+
+    /**
+     * Pre-resolved method wrapper for a specific declared type.
+     */
+    @Getter
+    @AllArgsConstructor
+    public static final class ResolvedMethod {
+        private final Class<?> ownerType;
+        private final Method method;
+
+        /**
+         * Returns the declared return type of the resolved method.
+         *
+         * @return declared return type
+         */
+        public Class<?> getReturnType() {
+            return method.getReturnType();
+        }
+
+        Object invoke(Object target, List<Object> args) throws ReflectiveOperationException {
+            var params = method.getParameterTypes();
+            Method selected = method;
+            Object[] converted;
+            if (method.isVarArgs()) {
+                int fixedCount = params.length - 1;
+                var varargType = params[fixedCount].getComponentType();
+                var varargArray = Array.newInstance(varargType, args.size() - fixedCount);
+                for (int i = fixedCount; i < args.size(); i++) {
+                    Array.set(varargArray, i - fixedCount, args.get(i));
+                }
+                var merged = new ArrayList<>(args.subList(0, fixedCount));
+                merged.add(varargArray);
+                var conversion = tryConvertArgs(params, merged);
+                if (conversion == null) {
+                    throw new TemplateEvalException("No matching method " + method.getName() + " found for args " + args);
+                }
+                converted = conversion.values;
+                converted = convertVarARgs(args, selected, converted);
+            } else {
+                var conversion = tryConvertArgs(params, args);
+                if (conversion == null) {
+                    throw new TemplateEvalException("No matching method " + method.getName() + " found for args " + args);
+                }
+                converted = conversion.values;
+            }
+            selected.setAccessible(true);
+            return selected.invoke(target, converted);
         }
     }
 
@@ -297,7 +434,7 @@ public final class ReflectionUtils {
     /**
      * Resolves a single property from an object, map, list, array, or custom resolver.
      *
-     * @param obj source object
+     * @param obj  source object
      * @param name property name or index
      * @return resolved property value, or {@code null} when not found by supported fallback paths
      */
@@ -355,11 +492,40 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Resolves a property using precomputed accessors when possible.
+     *
+     * @param obj        source object
+     * @param name       property name
+     * @param properties pre-resolved accessors
+     * @return resolved property value
+     */
+    public static Object getProperty(
+            Object obj,
+            String name,
+            List<ResolvedProperty> properties
+    ) {
+        if (obj == null) {
+            return null;
+        }
+        for (var property : properties) {
+            if (!property.getOwnerType().isInstance(obj)) {
+                continue;
+            }
+            try {
+                return property.get(obj);
+            } catch (Throwable e) {
+                throw new TemplateEvalException("Failed to access property '" + name + "' of " + obj.getClass(), e);
+            }
+        }
+        return getProperty(obj, name);
+    }
+
+    /**
      * Invokes a method on the target using reflective overload resolution and argument conversion.
      *
-     * @param target invocation target
+     * @param target     invocation target
      * @param methodName method name
-     * @param args invocation arguments
+     * @param args       invocation arguments
      * @return invocation result
      */
     public static Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
@@ -427,5 +593,96 @@ public final class ReflectionUtils {
         } catch (ReflectiveOperationException e) {
             throw new TemplateEvalException("Error invoking method " + methodName + ": " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Invokes a method using pre-resolved handlers when possible.
+     *
+     * @param target          invocation target
+     * @param methodName      method name
+     * @param args            invocation arguments
+     * @param resolvedMethods pre-resolved methods
+     * @return invocation result
+     */
+    public static Object invokeMethodReflective(
+            Object target,
+            String methodName,
+            List<Object> args,
+            List<ResolvedMethod> resolvedMethods
+    ) {
+        if (target == null) {
+            throw new TemplateEvalException("Cannot call method on null target");
+        }
+        for (var resolvedMethod : resolvedMethods) {
+            if (!resolvedMethod.getOwnerType().isInstance(target)) {
+                continue;
+            }
+            try {
+                return resolvedMethod.invoke(target, args);
+            } catch (ReflectiveOperationException e) {
+                throw new TemplateEvalException("Error invoking method " + methodName + ": " + e.getMessage(), e);
+            }
+        }
+        return invokeMethodReflective(target, methodName, args);
+    }
+
+    /**
+     * Returns whether the declared type may be extended by a runtime subtype.
+     *
+     * @param type declared type
+     * @return {@code true} when soft validation should treat missing members as unknown
+     */
+    public static boolean isSoftlyExtensible(Class<?> type) {
+        if (type.isPrimitive() || type.isArray() || type.isEnum()) {
+            return false;
+        }
+        var modifiers = type.getModifiers();
+        return !java.lang.reflect.Modifier.isFinal(modifiers);
+    }
+
+    /**
+     * Resolves compatible methods for the declared type and argument types.
+     *
+     * @param type       owner type
+     * @param methodName method name
+     * @param argTypes   argument types; {@code null} means unknown
+     * @return compatible methods
+     */
+    public static List<ResolvedMethod> resolveMethods(
+            Class<?> type,
+            String methodName,
+            List<Class<?>> argTypes
+    ) {
+        var methods = METHOD_CACHE.computeIfAbsent(type, Class::getMethods);
+        var result = new ArrayList<ResolvedMethod>();
+        for (var method : methods) {
+            if (!method.getName().equals(methodName)) {
+                continue;
+            }
+            if (!isMethodCompatible(method, argTypes)) {
+                continue;
+            }
+            result.add(new ResolvedMethod(type, method));
+        }
+        return result;
+    }
+
+    /**
+     * Resolves a readable property for the declared type.
+     *
+     * @param type         owner type
+     * @param propertyName property name
+     * @return resolved property if available
+     */
+    public static Optional<ResolvedProperty> resolveProperty(Class<?> type, String propertyName) {
+        if (type == null || type.isArray() || Map.class.isAssignableFrom(type) || List.class.isAssignableFrom(type)) {
+            return Optional.empty();
+        }
+        var descriptors = buildDescriptorMap(type);
+        var descriptor = descriptors.get(propertyName);
+        if (descriptor == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new ResolvedProperty(type, propertyName, descriptor.getter, descriptor.valueType));
     }
 }

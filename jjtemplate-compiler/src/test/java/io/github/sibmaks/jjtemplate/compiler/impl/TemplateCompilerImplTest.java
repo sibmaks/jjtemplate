@@ -1,9 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.impl;
 
-import io.github.sibmaks.jjtemplate.compiler.api.Definition;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.compiler.api.*;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
@@ -350,5 +347,190 @@ class TemplateCompilerImplTest {
         var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(Map.of("value", "text")));
         assertEquals("Failed execute: \".value.missing()\"", exception.getMessage());
         assertNotNull(exception.getCause());
+    }
+
+    @Test
+    void compileWithTypedContextShouldFailForMissingPropertyOnFinalTypeSoft() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.missing }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("value", List.of(FinalValue.class)),
+                TemplateTypeValidationMode.SOFT
+        );
+
+        var exception = assertThrows(TemplateCompilationException.class, () -> compiler.compile(script, context));
+
+        assertEquals(
+                "Unknown property 'missing' in expression '.value.missing' for types [io.github.sibmaks.jjtemplate.compiler.impl.TemplateCompilerImplTest$FinalValue]",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void compileWithTypedContextShouldIgnoreMissingPropertyOnNonFinalTypeSoft() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.missing }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("value", List.of(SoftValue.class)),
+                TemplateTypeValidationMode.SOFT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals("ok", compiled.render(Map.of("value", new SoftValueChild("ok"))));
+    }
+
+    @Test
+    void compileWithTypedContextShouldFailForMissingPropertyOnNonFinalTypeStrict() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.missing }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("value", List.of(SoftValue.class)),
+                TemplateTypeValidationMode.STRICT
+        );
+
+        var exception = assertThrows(TemplateCompilationException.class, () -> compiler.compile(script, context));
+
+        assertEquals(
+                "Unknown property 'missing' in expression '.value.missing' for types [io.github.sibmaks.jjtemplate.compiler.impl.TemplateCompilerImplTest$SoftValue]",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void compileWithTypedContextShouldTreatMapAccessAsUnknown() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .payload.user.name }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("payload", List.of(Map.class)),
+                TemplateTypeValidationMode.STRICT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals(
+                "Bob",
+                compiled.render(Map.of("payload", Map.of("user", Map.of("name", "Bob"))))
+        );
+    }
+
+    @Test
+    void compileWithTypedContextShouldBindKnownMethod() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.upper() }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("value", List.of(FinalMethodValue.class)),
+                TemplateTypeValidationMode.SOFT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals(
+                "OK",
+                compiled.render(
+                        Map.of("value", new FinalMethodValue("ok"))
+                )
+        );
+    }
+
+    @Test
+    void compileWithTypedContextShouldInferTypeFromDefinition() {
+        var compiler = TemplateCompiler.getInstance();
+        var definition = new Definition();
+        definition.put("user", "{{ .source }}");
+        var script = TemplateScript.builder()
+                .definitions(List.of(definition))
+                .template("{{ .user.name }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("source", List.of(FinalValue.class)),
+                TemplateTypeValidationMode.SOFT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals(
+                "Alice",
+                compiled.render(
+                        Map.of("source", new FinalValue("Alice"))
+                )
+        );
+    }
+
+    @Test
+    void compileWithTypedContextShouldValidateArrayRangeItem() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template(Map.of("{{ items range item,index of .values }}", "{{ .item.name }}"))
+                .build();
+
+        var context = new MapTemplateCompileContext(
+                Map.of("values", List.of(FinalValue[].class)),
+                TemplateTypeValidationMode.SOFT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals(
+                Map.of("items", List.of("Alice", "Bob")),
+                compiled.render(
+                        Map.of(
+                                "values",
+                                new FinalValue[]{
+                                        new FinalValue("Alice"),
+                                        new FinalValue("Bob")
+                                }
+                        )
+                )
+        );
+    }
+
+    private static final class FinalValue {
+        private final String name;
+
+        private FinalValue(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    private static class SoftValue {
+    }
+
+    private static final class SoftValueChild extends SoftValue {
+        private final String missing;
+
+        private SoftValueChild(String missing) {
+            this.missing = missing;
+        }
+
+        public String getMissing() {
+            return missing;
+        }
+    }
+
+    private static final class FinalMethodValue {
+        private final String value;
+
+        private FinalMethodValue(String value) {
+            this.value = value;
+        }
+
+        public String upper() {
+            return value.toUpperCase();
+        }
     }
 }

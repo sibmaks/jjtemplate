@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.Constan
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder.TemplateExpressionFolder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -484,6 +485,48 @@ class TemplateExpressionFolderTest {
         var folded = assertInstanceOf(VariableTemplateExpression.class, folder.visit(varExpr));
 
         assertSame(varExpr, folded);
+    }
+
+    @Test
+    void foldBoundVariableCallMethodArgsPartialFold() {
+        TemplateFunction<String> staticked = mock();
+
+        var value = UUID.randomUUID().toString();
+        when(staticked.invoke(List.of()))
+                .thenReturn(value);
+
+        var resolvedMethod = ReflectionUtils.resolveMethods(String.class, "substring", List.of(Integer.class))
+                .get(0);
+        var call = new VariableTemplateExpression.BoundMethodChain(
+                "substring",
+                List.of(
+                        new ConstantTemplateExpression(1),
+                        new DynamicFunctionCallTemplateExpression(staticked, new ListTemplateExpression(List.of()), null)
+                ),
+                List.of(resolvedMethod)
+        );
+
+        var varExpr = new VariableTemplateExpression(
+                "x",
+                List.of(call),
+                null
+        );
+
+        var folded = assertInstanceOf(VariableTemplateExpression.class, folder.visit(varExpr));
+
+        assertNotSame(varExpr, folded);
+
+        var newChain = folded.getCallChain();
+        assertEquals(1, newChain.size());
+        var newCall = assertInstanceOf(VariableTemplateExpression.BoundMethodChain.class, newChain.get(0));
+
+        assertEquals("substring", newCall.getMethodName());
+        assertEquals(call.getResolvedMethods(), newCall.getResolvedMethods());
+
+        var argsExpressions = newCall.getArgsExpressions();
+        assertEquals(2, argsExpressions.size());
+        assertEquals(1, assertInstanceOf(ConstantTemplateExpression.class, argsExpressions.get(0)).getValue());
+        assertEquals(value, assertInstanceOf(ConstantTemplateExpression.class, argsExpressions.get(1)).getValue());
     }
 
     @Test

@@ -1,4 +1,6 @@
 {
+  "listLengthEqualsOneKey": true,
   "listLengthEqualsOnePipeKey": true,
+  "listLengthEqualsZeroKey": false,
   "listLengthEqualsZeroPipeKey": false
 }
