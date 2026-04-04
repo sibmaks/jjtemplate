@@ -3,10 +3,7 @@ package io.github.sibmaks.jjtemplate.compiler.runtime;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.LocaleConfigurableTemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
-import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -54,7 +51,6 @@ import java.util.*;
  * @see TemplateFunction
  * @since 0.1.2
  */
-@Slf4j
 final class FunctionRegistry {
     private final Map<String, Map<String, TemplateFunction<?>>> functions;
     private final TemplateEvaluationOptions options;
@@ -89,32 +85,12 @@ final class FunctionRegistry {
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
     private List<TemplateFunction<?>> getBuiltInFunctions() {
-        var result = new ArrayList<TemplateFunction<?>>();
-        var found = new HashSet<String>();
-        var basePackage = TemplateFunction.class.getPackageName();
-
-        for (var type : ClasspathScanner.findClasses(basePackage, List.of(TemplateFunction.class.getClassLoader()))) {
-            if (!TemplateFunction.class.isAssignableFrom(type) ||
-                    Modifier.isAbstract(type.getModifiers()) ||
-                    Modifier.isInterface(type.getModifiers())) {
-                continue;
-            }
-            if (!found.add(type.getName())) {
-                log.warn("Duplicate built-in function class found: {}", type.getName());
-                continue;
-            }
-            try {
-                var castType = (Class<TemplateFunction<?>>) type;
-                var defaultConstructor = castType.getDeclaredConstructor();
-                defaultConstructor.setAccessible(true);
-                var instance = configureFunction(defaultConstructor.newInstance());
-                result.add(instance);
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                     IllegalAccessException e) {
-                throw new IllegalStateException(String.format("Failed to create built-in function: %s", type.getName()), e);
-            }
+        var builtInFunctions = BuiltInFunctionRegistry.getFunctions();
+        var result = new ArrayList<TemplateFunction<?>>(builtInFunctions.size());
+        for (var function : builtInFunctions) {
+            var instance = configureFunction(function);
+            result.add(instance);
         }
-
         return result;
     }
 
