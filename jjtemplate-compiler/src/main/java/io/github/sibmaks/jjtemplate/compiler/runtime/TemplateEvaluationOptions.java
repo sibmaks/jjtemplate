@@ -43,6 +43,14 @@ public final class TemplateEvaluationOptions {
     private static final TemplateEvaluationOptions INSTANCE = TemplateEvaluationOptions.builder().build();
 
     /**
+     * Default locale used by locale-sensitive built-in functions when
+     * a locale argument is not passed explicitly.
+     */
+    @NonNull
+    @Builder.Default
+    private final Locale locale = Locale.getDefault();
+
+    /**
      * A list of user-defined template functions to register in addition to
      * the built-in JJTemplate functions.
      * <p>

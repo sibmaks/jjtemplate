@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.string;
 
-import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.LocaleConfigurableTemplateFunction;
 
 import java.util.List;
 import java.util.Locale;
@@ -21,7 +21,16 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.4.0
  */
-public abstract class StringCaseTemplateFunction implements TemplateFunction<String> {
+public abstract class StringCaseTemplateFunction implements LocaleConfigurableTemplateFunction<String> {
+    private final Locale defaultLocale;
+
+    protected StringCaseTemplateFunction() {
+        this(Locale.getDefault());
+    }
+
+    protected StringCaseTemplateFunction(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+    }
 
     /**
      * Format string into required case
@@ -34,7 +43,7 @@ public abstract class StringCaseTemplateFunction implements TemplateFunction<Str
 
     @Override
     public String invoke(List<Object> args, Object pipeArg) {
-        var locale = Locale.getDefault();
+        var locale = defaultLocale;
         if (args.size() == 1) {
             locale = (Locale) args.get(0);
         } else if (args.size() > 1) {
@@ -48,7 +57,7 @@ public abstract class StringCaseTemplateFunction implements TemplateFunction<Str
         if (args.isEmpty()) {
             throw fail("at least 1 argument required");
         }
-        var locale = Locale.getDefault();
+        var locale = defaultLocale;
         var value = args.get(0);
         if (args.size() == 2) {
             locale = (Locale) args.get(0);

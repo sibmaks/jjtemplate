@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.string;
 
-import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.LocaleConfigurableTemplateFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,22 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.0.1
  */
-public final class StringFormatTemplateFunction implements TemplateFunction<String> {
+public final class StringFormatTemplateFunction implements LocaleConfigurableTemplateFunction<String> {
+    private final Locale defaultLocale;
+
+    /**
+     * Creates a function using the process default locale.
+     */
+    public StringFormatTemplateFunction() {
+        this(Locale.getDefault());
+    }
+
+    private StringFormatTemplateFunction(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+    }
 
     private String format(List<Object> args) {
-        var locale = Locale.getDefault();
+        var locale = defaultLocale;
         String format;
         var firstArg = args.remove(0);
         if (firstArg instanceof Locale) {
@@ -70,5 +82,10 @@ public final class StringFormatTemplateFunction implements TemplateFunction<Stri
     @Override
     public boolean isDynamic() {
         return false;
+    }
+
+    @Override
+    public StringFormatTemplateFunction withDefaultLocale(Locale locale) {
+        return new StringFormatTemplateFunction(locale);
     }
 }

@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.LocaleConfigurableTemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +57,7 @@ import java.util.*;
 @Slf4j
 final class FunctionRegistry {
     private final Map<String, Map<String, TemplateFunction<?>>> functions;
+    private final TemplateEvaluationOptions options;
 
     /**
      * Constructs a function registry using the provided evaluation options.
@@ -69,6 +71,7 @@ final class FunctionRegistry {
      * @throws IllegalArgumentException if duplicate function names are detected
      */
     FunctionRegistry(TemplateEvaluationOptions options) {
+        this.options = options;
         var builtInFunctions = getBuiltInFunctions();
         var userFunctions = options.getFunctions();
         this.functions = new HashMap<>(builtInFunctions.size() + userFunctions.size());
@@ -85,7 +88,7 @@ final class FunctionRegistry {
      *
      * @return an immutable list of built-in {@link TemplateFunction}s
      */
-    private static List<TemplateFunction<?>> getBuiltInFunctions() {
+    private List<TemplateFunction<?>> getBuiltInFunctions() {
         var result = new ArrayList<TemplateFunction<?>>();
         var found = new HashSet<String>();
         var basePackage = TemplateFunction.class.getPackageName();
@@ -104,7 +107,7 @@ final class FunctionRegistry {
                 var castType = (Class<TemplateFunction<?>>) type;
                 var defaultConstructor = castType.getDeclaredConstructor();
                 defaultConstructor.setAccessible(true);
-                var instance = defaultConstructor.newInstance();
+                var instance = configureFunction(defaultConstructor.newInstance());
                 result.add(instance);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
@@ -113,6 +116,14 @@ final class FunctionRegistry {
         }
 
         return result;
+    }
+
+    private <T> TemplateFunction<T> configureFunction(TemplateFunction<T> function) {
+        if (function instanceof LocaleConfigurableTemplateFunction<?>) {
+            var localeAware = (LocaleConfigurableTemplateFunction<T>) function;
+            return localeAware.withDefaultLocale(options.getLocale());
+        }
+        return function;
     }
 
     private void addFunctions(List<TemplateFunction<?>> builtInFunctions) {

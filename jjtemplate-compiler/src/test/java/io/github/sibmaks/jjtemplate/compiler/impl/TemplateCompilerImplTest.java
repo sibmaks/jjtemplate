@@ -2,12 +2,14 @@ package io.github.sibmaks.jjtemplate.compiler.impl;
 
 import io.github.sibmaks.jjtemplate.compiler.api.*;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
+import io.github.sibmaks.jjtemplate.compiler.runtime.TemplateEvaluationOptions;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,6 +19,23 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author sibmaks
  */
 class TemplateCompilerImplTest {
+
+    @Test
+    void compileTemplateShouldUseLocaleFromEvaluationOptions() {
+        var options = TemplateCompileOptions.builder()
+                .evaluationOptions(TemplateEvaluationOptions.builder()
+                        .locale(Locale.forLanguageTag("tr"))
+                        .build())
+                .build();
+        var compiler = TemplateCompiler.getInstance(options);
+        var script = TemplateScript.builder()
+                .template("{{ string:upper 'i' }}")
+                .build();
+
+        var rendered = compiler.compile(script).render();
+
+        assertEquals("İ", rendered);
+    }
 
     @Test
     void compileTemplateIsRequired() {

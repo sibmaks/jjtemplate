@@ -1,6 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.date;
 
-import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.LocaleConfigurableTemplateFunction;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
@@ -18,7 +18,19 @@ import java.util.Locale;
  * @author sibmaks
  * @since 0.0.1
  */
-public final class DateFormatTemplateFunction implements TemplateFunction<String> {
+public final class DateFormatTemplateFunction implements LocaleConfigurableTemplateFunction<String> {
+    private final Locale defaultLocale;
+
+    /**
+     * Creates a function using the process default locale.
+     */
+    public DateFormatTemplateFunction() {
+        this(Locale.getDefault());
+    }
+
+    private DateFormatTemplateFunction(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+    }
 
     private String format(Locale locale, String format, Object date) {
         if (date == null) {
@@ -40,7 +52,7 @@ public final class DateFormatTemplateFunction implements TemplateFunction<String
         if (args.isEmpty()) {
             throw fail("at least 1 argument required");
         }
-        var locale = Locale.getDefault();
+        var locale = defaultLocale;
         String format;
         if (args.get(0) instanceof Locale) {
             locale = (Locale) args.get(0);
@@ -62,7 +74,7 @@ public final class DateFormatTemplateFunction implements TemplateFunction<String
         if (args.size() < 2) {
             throw fail("at least 2 arguments required");
         }
-        var locale = Locale.getDefault();
+        var locale = defaultLocale;
         String format;
         Object date;
         if (args.get(0) instanceof Locale) {
@@ -92,5 +104,10 @@ public final class DateFormatTemplateFunction implements TemplateFunction<String
     @Override
     public boolean isDynamic() {
         return false;
+    }
+
+    @Override
+    public DateFormatTemplateFunction withDefaultLocale(Locale locale) {
+        return new DateFormatTemplateFunction(locale);
     }
 }

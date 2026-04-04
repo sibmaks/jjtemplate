@@ -2,9 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.date;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -20,10 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author sibmaks
  */
-@ExtendWith(MockitoExtension.class)
 class DateFormatTemplateFunctionTest {
-    @InjectMocks
-    private DateFormatTemplateFunction function;
+    private final DateFormatTemplateFunction function = new DateFormatTemplateFunction();
 
     @Test
     void checkFunctionNamespace() {

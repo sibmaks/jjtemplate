@@ -2,9 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,10 +15,8 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author sibmaks
  */
-@ExtendWith(MockitoExtension.class)
 class StringFormatTemplateFunctionTest {
-    @InjectMocks
-    private StringFormatTemplateFunction function;
+    private final StringFormatTemplateFunction function = new StringFormatTemplateFunction();
 
     @Test
     void checkFunctionName() {

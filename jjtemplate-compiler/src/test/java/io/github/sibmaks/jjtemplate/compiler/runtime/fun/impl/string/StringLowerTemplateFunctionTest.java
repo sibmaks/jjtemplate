@@ -2,12 +2,9 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.string;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author sibmaks
  */
-@ExtendWith(MockitoExtension.class)
 class StringLowerTemplateFunctionTest {
-    @InjectMocks
-    private StringLowerTemplateFunction function;
+    private final StringLowerTemplateFunction function = new StringLowerTemplateFunction();
 
     @Test
     void checkFunctionName() {

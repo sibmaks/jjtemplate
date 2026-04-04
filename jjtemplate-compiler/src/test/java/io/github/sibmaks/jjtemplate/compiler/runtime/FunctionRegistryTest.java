@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +17,18 @@ import static org.mockito.Mockito.*;
  * @author sibmaks
  */
 class FunctionRegistryTest {
+
+    @Test
+    void shouldConfigureBuiltInLocaleSensitiveFunctions() {
+        var options = TemplateEvaluationOptions.builder()
+                .locale(Locale.forLanguageTag("tr"))
+                .build();
+        var registry = new FunctionRegistry(options);
+
+        var function = registry.getFunction("string", "upper");
+
+        assertEquals("\u0130", function.invoke(List.of("i")));
+    }
 
     @Test
     void shouldLoadBuiltInFunctionsWhenContextClassLoaderDoesNotSeeCompilerClasses() throws Exception {

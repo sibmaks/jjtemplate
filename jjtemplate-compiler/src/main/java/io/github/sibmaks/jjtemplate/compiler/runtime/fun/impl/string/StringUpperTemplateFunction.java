@@ -12,6 +12,16 @@ import java.util.Locale;
  * @since 0.0.1
  */
 public final class StringUpperTemplateFunction extends StringCaseTemplateFunction {
+    /**
+     * Creates a function using the process default locale.
+     */
+    public StringUpperTemplateFunction() {
+        super();
+    }
+
+    private StringUpperTemplateFunction(Locale defaultLocale) {
+        super(defaultLocale);
+    }
 
     @Override
     protected String toCase(Locale locale, Object value) {
@@ -25,5 +35,10 @@ public final class StringUpperTemplateFunction extends StringCaseTemplateFunctio
     @Override
     public String getName() {
         return "upper";
+    }
+
+    @Override
+    public StringUpperTemplateFunction withDefaultLocale(Locale locale) {
+        return new StringUpperTemplateFunction(locale);
     }
 }
