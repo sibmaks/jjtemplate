@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateTypeValidationMode;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.VariableTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.FieldResolver;
 import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 
 import java.util.ArrayList;
@@ -185,6 +186,10 @@ final class TemplateExpressionVariableResolver {
             if (resolved.isPresent()) {
                 resolvedProperties.add(resolved.get());
                 nextTypes.add(resolved.get().getValueType());
+                continue;
+            }
+            if (FieldResolver.class.isAssignableFrom(type)) {
+                hasUnknown = true;
                 continue;
             }
             if (validationMode == TemplateTypeValidationMode.SOFT && ReflectionUtils.isSoftlyExtensible(type)) {

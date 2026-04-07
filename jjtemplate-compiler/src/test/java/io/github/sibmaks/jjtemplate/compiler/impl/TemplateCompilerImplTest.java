@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.*;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.TemplateEvaluationOptions;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
+import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.FieldResolver;
 import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
@@ -443,6 +444,22 @@ class TemplateCompilerImplTest {
     }
 
     @Test
+    void compileWithTypedContextShouldTreatFieldResolverPropertyAsUnknownInStrictMode() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.missing }}")
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("value", List.of(FieldResolverValue.class)),
+                TemplateTypeValidationMode.STRICT
+        );
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals("resolved:missing", compiled.render(Map.of("value", new FieldResolverValue())));
+    }
+
+    @Test
     void compileWithTypedContextShouldBindKnownMethod() {
         var compiler = TemplateCompiler.getInstance();
         var script = TemplateScript.builder()
@@ -582,6 +599,13 @@ class TemplateCompilerImplTest {
 
         public String upper() {
             return value.toUpperCase();
+        }
+    }
+
+    private static final class FieldResolverValue implements FieldResolver {
+        @Override
+        public Object resolve(String fieldName) {
+            return "resolved:" + fieldName;
         }
     }
 }

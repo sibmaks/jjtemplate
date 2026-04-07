@@ -5,6 +5,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateTypeValidationMode;
 import io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.VariableTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.FieldResolver;
 import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 
@@ -217,6 +218,29 @@ class TemplateExpressionVariableResolverTest {
     }
 
     @Test
+    void bindVariableExpressionShouldTreatMissingPropertyAsUnknownForFieldResolverInStrictMode() {
+        var compileContext = new MapTemplateCompileContext(
+                Map.of("value", List.of(WithFieldResolver.class)),
+                TemplateTypeValidationMode.STRICT
+        );
+        var scope = new CompileScope(null, Map.of(), compileContext);
+        var bindingEngine = new TemplateExpressionBindingEngine(compileContext);
+        var resolver = new TemplateExpressionVariableResolver(compileContext);
+        var expression = new VariableTemplateExpression(
+                "value",
+                List.of(new VariableTemplateExpression.GetPropertyChain("missing")),
+                ".value.missing"
+        );
+
+        var bound = assertInstanceOf(
+                VariableTemplateExpression.class,
+                resolver.bindVariableExpression(expression, scope, bindingEngine)
+        );
+
+        assertEquals(expression.getCallChain(), bound.getCallChain());
+    }
+
+    @Test
     void inferVariableTypeShouldRespectPreBoundPropertyChain() {
         var compileContext = new MapTemplateCompileContext(Map.of("value", List.of(FinalValue.class)));
         var scope = new CompileScope(null, Map.of(), compileContext);
@@ -246,5 +270,13 @@ class TemplateExpressionVariableResolverTest {
     }
 
     private static class SoftValue {
+    }
+
+    private static class WithFieldResolver implements FieldResolver {
+
+        @Override
+        public Object resolve(String fieldName) {
+            return fieldName;
+        }
     }
 }
