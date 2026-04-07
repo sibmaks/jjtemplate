@@ -6,11 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +83,7 @@ class NumberFormatNewTemplateFunctionTest {
 
     @Test
     void firstArgumentNullMustFail() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(java.util.Collections.singletonList(null)));
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(Collections.singletonList(null)));
         assertEquals("numberFormat:new: 1st argument must be Locale, got null", exception.getMessage());
     }
 
@@ -93,7 +96,7 @@ class NumberFormatNewTemplateFunctionTest {
 
     @Test
     void secondArgumentNullMustFail() {
-        var args = new java.util.ArrayList<Object>();
+        var args = new ArrayList<>();
         args.add(Locale.US);
         args.add(null);
         var exception = assertThrows(TemplateEvalException.class,
@@ -271,7 +274,7 @@ class NumberFormatNewTemplateFunctionTest {
                 .getDeclaredMethod("setRoundingMode", NumberFormat.class, Object.class);
         method.setAccessible(true);
 
-        var cause = assertThrows(java.lang.reflect.InvocationTargetException.class,
+        var cause = assertThrows(InvocationTargetException.class,
                 () -> method.invoke(function, new StubNumberFormat(), RoundingMode.DOWN)).getCause();
 
         assertInstanceOf(TemplateEvalException.class, cause);

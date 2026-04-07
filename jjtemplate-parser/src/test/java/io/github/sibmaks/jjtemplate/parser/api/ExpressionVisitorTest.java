@@ -84,6 +84,14 @@ class ExpressionVisitorTest {
         assertEquals(ExpressionType.VARIABLE, actual);
     }
 
+    @Test
+    void testVisitSpread() {
+        var visitor = new StubVisitor();
+        var expression = new SpreadExpression(new LiteralExpression("value"));
+        var actual = expression.accept(visitor);
+        assertEquals(ExpressionType.LITERAL, actual);
+    }
+
     enum ExpressionType {
         LITERAL,
         VARIABLE,

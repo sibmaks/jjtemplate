@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,7 +148,7 @@ public final class ReflectionUtils {
             return false;
         }
         var modifiers = type.getModifiers();
-        return !java.lang.reflect.Modifier.isFinal(modifiers);
+        return !Modifier.isFinal(modifiers);
     }
 
     /**

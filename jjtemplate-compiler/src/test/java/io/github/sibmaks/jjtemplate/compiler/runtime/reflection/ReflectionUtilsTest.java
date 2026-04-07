@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -27,6 +28,17 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void getAllPropertiesOfMapShouldIgnoreNonStringKeys() {
+        var map = new LinkedHashMap<Object, Object>();
+        map.put("a", 1);
+        map.put(2, "ignored");
+
+        var props = ReflectionUtils.getAllProperties(map);
+
+        assertEquals(Map.of("a", 1), props);
+    }
+
+    @Test
     void getAllPropertiesOfList() {
         var list = List.of("x", "y");
         var props = ReflectionUtils.getAllProperties(list);
@@ -41,6 +53,12 @@ class ReflectionUtilsTest {
         assertTrue(props.containsKey("age"));
         assertTrue(props.containsKey("active"));
         assertTrue(props.containsKey("name"));
+    }
+
+    @Test
+    void getAllPropertiesShouldIgnoreFailingGetter() {
+        var props = ReflectionUtils.getAllProperties(new BrokenProperty());
+        assertFalse(props.containsKey("boom"));
     }
 
     @Test
@@ -71,9 +89,22 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void getPropertyFromArrayOutOfRangeThrows() {
+        var array = new String[]{"a"};
+        var ex = assertThrows(TemplateEvalException.class, () -> ReflectionUtils.getProperty(array, "10"));
+        assertEquals("Array index out of range: 10", ex.getMessage());
+    }
+
+    @Test
     void getPropertyFromStringByIndex() {
         var actual = ReflectionUtils.getProperty("hello", "1");
         assertEquals("e", actual);
+    }
+
+    @Test
+    void getPropertyFromStringOutOfRangeThrows() {
+        var ex = assertThrows(TemplateEvalException.class, () -> ReflectionUtils.getProperty("a", "10"));
+        assertEquals("String index out of range: 10", ex.getMessage());
     }
 
     @Test
@@ -134,6 +165,31 @@ class ReflectionUtilsTest {
         var value = ReflectionUtils.getProperty(map, "missing");
 
         assertNull(value);
+    }
+
+    @Test
+    void getPropertyWithResolvedPropertiesShouldFallbackWhenOwnerTypeDoesNotMatch() {
+        var resolved = ReflectionUtils.resolveProperty(Person.class, "name").orElseThrow();
+
+        var actual = ReflectionUtils.getProperty(Map.of("name", "Bob"), "name", List.of(resolved));
+
+        assertEquals("Bob", actual);
+    }
+
+    @Test
+    void getPropertyWithResolvedPropertiesShouldWrapAccessorFailure() {
+        var resolved = ReflectionUtils.resolveProperty(BrokenProperty.class, "boom").orElseThrow();
+
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.getProperty(new BrokenProperty(), "boom", List.of(resolved))
+        );
+
+        assertEquals(
+                "Failed to access property 'boom' of class io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtilsTest$BrokenProperty",
+                ex.getMessage()
+        );
+        assertNotNull(ex.getCause());
     }
 
     @Test
@@ -257,12 +313,138 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void invokeMethodShouldWrapReflectiveInvocationFailure() {
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.invokeMethodReflective(new BrokenMethod(), "explode", List.of())
+        );
+
+        assertTrue(ex.getMessage().contains("Error invoking method explode"));
+        assertNotNull(ex.getCause());
+    }
+
+    @Test
+    void invokeMethodWithResolvedMethodsShouldFallbackWhenOwnerTypeDoesNotMatch() {
+        var resolved = ReflectionUtils.resolveMethods(Person.class, "greet", List.of(String.class));
+
+        var actual = ReflectionUtils.invokeMethodReflective("text", "substring", List.of(1), resolved);
+
+        assertEquals("ext", actual);
+    }
+
+    @Test
+    void invokeMethodWithResolvedMethodsShouldWrapInvocationFailure() {
+        var resolved = ReflectionUtils.resolveMethods(BrokenMethod.class, "explode", List.of());
+
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.invokeMethodReflective(new BrokenMethod(), "explode", List.of(), resolved)
+        );
+
+        assertTrue(ex.getMessage().contains("Error invoking method explode"));
+        assertNotNull(ex.getCause());
+    }
+
+    @Test
+    void invokeMethodWithResolvedMethodsNullTargetThrows() {
+        var resolved = ReflectionUtils.resolveMethods(Person.class, "greet", List.of(String.class));
+
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.invokeMethodReflective(null, "greet", List.of("Hi"), resolved)
+        );
+
+        assertEquals("Cannot call method on null target", ex.getMessage());
+    }
+
+    @Test
+    void resolvePropertyReturnsEmptyForUnsupportedTypes() {
+        assertTrue(ReflectionUtils.resolveProperty(null, "x").isEmpty());
+        assertTrue(ReflectionUtils.resolveProperty(String[].class, "0").isEmpty());
+        assertTrue(ReflectionUtils.resolveProperty(Map.class, "x").isEmpty());
+        assertTrue(ReflectionUtils.resolveProperty(List.class, "0").isEmpty());
+    }
+
+    @Test
+    void isSoftlyExtensibleShouldHandleFinalAndSpecialTypes() {
+        assertTrue(ReflectionUtils.isSoftlyExtensible(Person.class));
+        assertFalse(ReflectionUtils.isSoftlyExtensible(String.class));
+        assertFalse(ReflectionUtils.isSoftlyExtensible(int.class));
+        assertFalse(ReflectionUtils.isSoftlyExtensible(String[].class));
+        assertFalse(ReflectionUtils.isSoftlyExtensible(Mode.class));
+    }
+
+    @Test
+    void conversionSupportShouldHandleWrapDefaultAndFailures() throws NoSuchMethodException {
+        assertEquals(Boolean.class, ReflectionConversionSupport.wrap(boolean.class));
+        assertEquals(Character.class, ReflectionConversionSupport.wrap(char.class));
+        assertEquals(void.class, ReflectionConversionSupport.wrap(void.class));
+        assertNull(ReflectionConversionSupport.tryConvertArgs(new Class[]{String.class}, List.of(1)));
+
+        var method = Person.class.getMethod("greet", String.class);
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of(1))
+        );
+        assertEquals("No matching method greet found for args [1]", ex.getMessage());
+    }
+
+    @Test
+    void reflectionUtilsShouldResolveEnumConstantWrapper() throws Exception {
+        var method = ReflectionUtils.class.getDeclaredMethod("resolveEnumConstant", Class.class, String.class);
+        method.setAccessible(true);
+
+        var result = method.invoke(null, Mode.class, "ON");
+
+        assertEquals(Mode.ON, result);
+    }
+
+    @Test
+    void methodSupportShouldRejectIncompatibleVarArgsDuringResolvedInvocation() throws NoSuchMethodException {
+        var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
+        var ex = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of(1))
+        );
+        assertEquals("No matching method collectVarargs found for args [1]", ex.getMessage());
+    }
+
+    @Test
+    void methodSupportShouldInvokeResolvedVarArgsMethod() throws ReflectiveOperationException {
+        var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
+
+        var result = ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of("sum", 1, 2, 3));
+
+        assertEquals(6, result);
+    }
+
+    @Test
+    void methodSupportShouldRejectResolvedVarArgsWithIncompatibleElementType() throws NoSuchMethodException {
+        var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
+        var ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of("sum", "bad"))
+        );
+        assertNotNull(ex.getMessage());
+    }
+
+    @Test
+    void methodSupportShouldResolveCompatibilityBranches() {
+        assertFalse(ReflectionMethodSupport.resolveMethods(Person.class, "greet", Collections.singletonList(null)).isEmpty());
+        assertFalse(ReflectionMethodSupport.resolveMethods(Person.class, "addNumbers", List.of(Long.class, Integer.class)).isEmpty());
+        assertFalse(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of(String.class, Integer.class)).isEmpty());
+        assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of(String.class, String.class)).isEmpty());
+        assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of()).isEmpty());
+        assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of(Integer.class)).isEmpty());
+    }
+
+    @Test
     void resolveEnumConstantThrowsWhenTypeIsNotEnum() throws Exception {
         var method = ReflectionUtils.class.getDeclaredMethod("resolveEnumConstant", Class.class, String.class);
         method.setAccessible(true);
 
         var ex = assertThrows(
-                java.lang.reflect.InvocationTargetException.class,
+                InvocationTargetException.class,
                 () -> method.invoke(null, String.class, "ANY")
         );
         assertInstanceOf(IllegalArgumentException.class, ex.getCause());
@@ -370,6 +552,18 @@ class ReflectionUtilsTest {
         @Override
         public Object resolve(String methodName, Object[] args) {
             return "fallback:" + methodName + ":" + Arrays.toString(args);
+        }
+    }
+
+    public static class BrokenProperty {
+        public String getBoom() {
+            throw new IllegalStateException("boom");
+        }
+    }
+
+    public static class BrokenMethod {
+        public String explode() {
+            throw new IllegalStateException("boom");
         }
     }
 

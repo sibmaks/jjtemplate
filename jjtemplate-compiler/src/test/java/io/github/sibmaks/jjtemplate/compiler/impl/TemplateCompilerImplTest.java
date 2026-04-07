@@ -8,6 +8,7 @@ import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -245,7 +246,7 @@ class TemplateCompilerImplTest {
         var source = new Definition();
         source.put("value", "text");
 
-        var switchCases = new java.util.LinkedHashMap<String, Object>();
+        var switchCases = new LinkedHashMap<String, Object>();
         switchCases.put("else", "fallback");
         switchCases.put("'text'", "matched");
 
@@ -512,6 +513,37 @@ class TemplateCompilerImplTest {
                         )
                 )
         );
+    }
+
+    @Test
+    void compileShouldWrapUnexpectedBindingErrors() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ .value.name }}")
+                .build();
+        TemplateCompileContext context = variableName -> {
+            throw new IllegalStateException("boom");
+        };
+
+        var exception = assertThrows(TemplateCompilationException.class, () -> compiler.compile(script, context));
+
+        assertEquals("Error binding template types", exception.getMessage());
+        assertEquals("boom", exception.getCause().getMessage());
+    }
+
+    @Test
+    void compileShouldRejectNonFieldDefinitionElements() {
+        var compiler = TemplateCompiler.getInstance();
+        var definition = new Definition();
+        definition.put("{{? true }}", "value");
+        var script = TemplateScript.builder()
+                .definitions(List.of(definition))
+                .template("ok")
+                .build();
+
+        var exception = assertThrows(TemplateEvalException.class, () -> compiler.compile(script));
+
+        assertTrue(exception.getMessage().contains("Unknown object field element type"));
     }
 
     private static final class FinalValue {

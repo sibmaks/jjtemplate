@@ -1,10 +1,12 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor;
 
+import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder.TemplateExpressionFolder;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -82,6 +85,27 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
+    void foldStaticFunctionShouldRejectNonListConstantArgs() {
+        TemplateFunction<String> function = mock();
+
+        ListTemplateExpression baseArgsExpression = mock("baseArgs");
+        ConstantTemplateExpression constantArgsExpression = mock("constantArgs");
+        when(baseArgsExpression.visit(folder))
+                .thenReturn(constantArgsExpression);
+        when(constantArgsExpression.getValue())
+                .thenReturn("not-a-list");
+
+        var expr = new DynamicFunctionCallTemplateExpression(
+                function,
+                baseArgsExpression,
+                "fn()"
+        );
+
+        var exception = assertThrows(IllegalArgumentException.class, () -> folder.visit(expr));
+        assertEquals("Not a list of function arguments: not-a-list", exception.getMessage());
+    }
+
+    @Test
     void doNotFoldStaticFunctionWhenArgsNotConstant() {
         TemplateFunction<String> function = mock();
 
@@ -115,6 +139,22 @@ class TemplateExpressionFolderTest {
         var folded = folder.visit(expr);
 
         assertSame(expr, folded);
+    }
+
+    @Test
+    void foldStaticConstantFunctionCall() {
+        TemplateFunction<String> function = mock();
+        when(function.invoke(List.of("a")))
+                .thenReturn("A");
+
+        var expr = new ConstantFunctionCallTemplateExpression(
+                function,
+                List.of("a"),
+                "f('a')"
+        );
+
+        var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(expr));
+        assertEquals("A", folded.getValue());
     }
 
     @Test
@@ -264,6 +304,55 @@ class TemplateExpressionFolderTest {
     }
 
     @Test
+    void pipeShouldWrapInvalidDynamicFunctionArgs() {
+        TemplateFunction<String> function = mock();
+
+        ListTemplateExpression argsExpression = mock("args");
+        ConstantTemplateExpression constantArgsExpression = mock("constantArgs");
+        when(argsExpression.visit(folder))
+                .thenReturn(constantArgsExpression);
+        when(constantArgsExpression.getValue())
+                .thenReturn("not-a-list");
+
+        var pipe = new PipeChainTemplateExpression(
+                new ConstantTemplateExpression("root"),
+                List.of(
+                        new DynamicFunctionCallTemplateExpression(function, argsExpression, "f()")
+                ),
+                "root | f()"
+        );
+
+        var exception = assertThrows(TemplateEvalException.class, () -> folder.visit(pipe));
+        assertEquals("Failed execute: \"root | f()\"", exception.getMessage());
+        assertEquals("Not a list of function arguments: not-a-list", exception.getCause().getMessage());
+    }
+
+    @Test
+    void pipeShouldStopOnDynamicFunctionAfterFoldingArgs() {
+        TemplateFunction<String> function = mock();
+        when(function.isDynamic())
+                .thenReturn(true);
+
+        ListTemplateExpression argsExpression = mock("args");
+        ConstantTemplateExpression constantArgsExpression = mock("constantArgs");
+        when(argsExpression.visit(folder))
+                .thenReturn(constantArgsExpression);
+        when(constantArgsExpression.getValue())
+                .thenReturn(List.of("x"));
+
+        var pipe = new PipeChainTemplateExpression(
+                new ConstantTemplateExpression("root"),
+                new ArrayList<>(List.of(new DynamicFunctionCallTemplateExpression(function, argsExpression, "f('x')"))),
+                "root | f('x')"
+        );
+
+        var folded = assertInstanceOf(PipeChainTemplateExpression.class, folder.visit(pipe));
+        assertEquals("root", assertInstanceOf(ConstantTemplateExpression.class, folded.getRoot()).getValue());
+        var functionCall = assertInstanceOf(ConstantFunctionCallTemplateExpression.class, folded.getChain().get(0));
+        assertEquals(List.of("x"), functionCall.getArguments(Context.empty()));
+    }
+
+    @Test
     void foldConcatMergeStrings() {
         var left = UUID.randomUUID().toString();
         var right = UUID.randomUUID().toString();
@@ -401,6 +490,26 @@ class TemplateExpressionFolderTest {
 
         var foldedThenTrue = assertInstanceOf(ConstantTemplateExpression.class, folded.getThenTrue());
         assertEquals(thenTrue, foldedThenTrue.getValue());
+    }
+
+    @Test
+    void ternaryShouldReturnNewExpressionWhenConditionChangesWithoutBecomingConstant() {
+        TemplateExpression originalCondition = mock();
+        TemplateExpression foldedCondition = mock();
+        when(originalCondition.visit(folder))
+                .thenReturn(foldedCondition);
+
+        var ternary = new TernaryTemplateExpression(
+                originalCondition,
+                new ConstantTemplateExpression("yes"),
+                new ConstantTemplateExpression("no"),
+                "cond ? yes : no"
+        );
+
+        var folded = assertInstanceOf(TernaryTemplateExpression.class, folder.visit(ternary));
+
+        assertSame(foldedCondition, folded.getCondition());
+        assertNotSame(ternary, folded);
     }
 
     @Test

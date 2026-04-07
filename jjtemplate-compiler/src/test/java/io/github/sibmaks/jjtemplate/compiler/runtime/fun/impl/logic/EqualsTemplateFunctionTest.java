@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +83,20 @@ class EqualsTemplateFunctionTest {
                 Arguments.of(1, BigInteger.ONE, true),
                 Arguments.of(BigInteger.ONE, 1, true),
                 Arguments.of(1L, BigInteger.ONE, true),
+                Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE, true),
                 Arguments.of(Integer.MAX_VALUE, Integer.MAX_VALUE, true),
+                Arguments.of(Short.MIN_VALUE, Short.MIN_VALUE, true),
+                Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE, true),
+                Arguments.of(Byte.MAX_VALUE, Byte.MAX_VALUE, true),
+                Arguments.of(Byte.MIN_VALUE, Byte.MIN_VALUE, true),
                 Arguments.of(3.1415, 3.1415, true),
                 Arguments.of(Double.MAX_VALUE, Double.MAX_VALUE, true),
+                Arguments.of(1, object, false),
+                Arguments.of(object, 1, false),
                 Arguments.of(object, object, true),
-                Arguments.of(object, new Object(), false)
+                Arguments.of(object, new Object(), false),
+                Arguments.of(new BigDecimal("1.0"), new BigDecimal("1.000"), true),
+                Arguments.of(new BigDecimal("1.0"), new BigDecimal("1.0001"), false)
         );
     }
 }

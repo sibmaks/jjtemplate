@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +99,7 @@ class DateParseTemplateFunctionTest {
         var args = List.<Object>of("yyyy-MM-dd", "invalid-date");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("date:parse: invalid date string: invalid-date", exception.getMessage());
-        assertInstanceOf(java.time.format.DateTimeParseException.class, exception.getCause());
+        assertInstanceOf(DateTimeParseException.class, exception.getCause());
     }
 
     @Test
@@ -106,6 +107,6 @@ class DateParseTemplateFunctionTest {
         var args = List.<Object>of("yyyy-MM-dd");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, "not-a-date"));
         assertEquals("date:parse: invalid date string: not-a-date", exception.getMessage());
-        assertInstanceOf(java.time.format.DateTimeParseException.class, exception.getCause());
+        assertInstanceOf(DateTimeParseException.class, exception.getCause());
     }
 }

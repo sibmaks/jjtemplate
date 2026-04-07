@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +83,20 @@ class NotEqualsTemplateFunctionTest {
                 Arguments.of(1, BigInteger.ONE, false),
                 Arguments.of(BigInteger.ONE, 1, false),
                 Arguments.of(1L, BigInteger.ONE, false),
+                Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE, false),
                 Arguments.of(Integer.MAX_VALUE, Integer.MAX_VALUE, false),
+                Arguments.of(Short.MIN_VALUE, Short.MIN_VALUE, false),
+                Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE, false),
+                Arguments.of(Byte.MAX_VALUE, Byte.MAX_VALUE, false),
+                Arguments.of(Byte.MIN_VALUE, Byte.MIN_VALUE, false),
                 Arguments.of(3.1415, 3.1415, false),
                 Arguments.of(Double.MAX_VALUE, Double.MAX_VALUE, false),
+                Arguments.of(1, object, true),
+                Arguments.of(object, 1, true),
                 Arguments.of(object, object, false),
-                Arguments.of(object, new Object(), true)
+                Arguments.of(object, new Object(), true),
+                Arguments.of(new BigDecimal("1.0"), new BigDecimal("1.000"), false),
+                Arguments.of(new BigDecimal("1.0"), new BigDecimal("1.0001"), true)
         );
     }
 }

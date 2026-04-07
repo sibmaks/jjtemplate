@@ -6,6 +6,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressi
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressionVisitor;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,7 +93,7 @@ class SwitchTemplateExpressionTest {
 
         TemplateExpression condition = mock("condition");
 
-        var cases = new java.util.ArrayList<SwitchCase>();
+        var cases = new ArrayList<SwitchCase>();
         cases.add(null);
 
         var expression = new SwitchTemplateExpression(

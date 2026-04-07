@@ -51,9 +51,9 @@ public final class RootTemplateExpressionFactory {
     /**
      * Creates a factory with explicit definition-expression fallback mode.
      *
-     * @param typeInferenceVisitor type inference strategy
-     * @param expressionFactory expression compiler for parsed contexts
-     * @param expressionParser parser for raw template strings
+     * @param typeInferenceVisitor         type inference strategy
+     * @param expressionFactory            expression compiler for parsed contexts
+     * @param expressionParser             parser for raw template strings
      * @param definitionExpressionFallback if {@code true}, definition keys can be treated as expressions
      */
     public RootTemplateExpressionFactory(
@@ -310,7 +310,11 @@ public final class RootTemplateExpressionFactory {
         }
         switchCases.addAll(elseSwitchCases);
 
-        var expressionKey = (SwitchDefinitionTemplateExpression) expressionFactory.compile(keyContext);
+        var compiledKey = expressionFactory.compile(keyContext);
+        if (!(compiledKey instanceof SwitchDefinitionTemplateExpression)) {
+            throw new IllegalStateException("Switch definition expression expected");
+        }
+        var expressionKey = (SwitchDefinitionTemplateExpression) compiledKey;
         var switchKey = expressionKey.getKey();
         var condition = expressionKey.getCondition();
         var switchExpression = SwitchTemplateExpression.builder()
