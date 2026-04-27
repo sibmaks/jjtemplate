@@ -39,8 +39,8 @@ import java.util.*;
  * <h2>Customization</h2>
  * <p>
  * Users can register custom functions through
- * {@link TemplateEvaluationOptions.TemplateEvaluationOptionsBuilder#functions(List)}, which will override
- * built-in ones if the same name is used.
+ * {@link TemplateEvaluationOptions.TemplateEvaluationOptionsBuilder#functions(List)}. Custom function names must be
+ * unique within their namespace, including built-in functions.
  * </p>
  *
  * <h2>Error Handling</h2>
@@ -59,7 +59,7 @@ final class FunctionRegistry {
      * Constructs a function registry using the provided evaluation options.
      * <p>
      * Registers all built-in functions, then merges user-defined ones.
-     * If a user function has the same name as a built-in one, an
+     * If a user function has the same namespace and name as an already registered function, an
      * {@link IllegalArgumentException} is thrown.
      * </p>
      *

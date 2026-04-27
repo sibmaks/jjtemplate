@@ -30,13 +30,18 @@ class ObjectTemplateExpressionTest {
 
         var result = expression.apply(context);
 
-        Map<String, Object> map = assertInstanceOf(Map.class, result);
+        Map<String, Object> map = assertMap(result);
 
         verify(el1)
                 .apply(context, map);
 
         verify(el2)
                 .apply(context, map);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> assertMap(Object result) {
+        return (Map<String, Object>) assertInstanceOf(Map.class, result);
     }
 
     @Test

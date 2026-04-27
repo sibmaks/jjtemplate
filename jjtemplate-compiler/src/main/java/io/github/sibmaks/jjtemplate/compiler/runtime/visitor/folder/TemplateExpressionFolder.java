@@ -85,7 +85,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         if (!(args instanceof List<?>)) {
             throw new IllegalArgumentException("Not a list of function arguments: " + args);
         }
-        var argList = (List<Object>) args;
+        var argList = toArgumentList(args);
         var constantFunctionExpression = new ConstantFunctionCallTemplateExpression(
                 function,
                 argList,
@@ -166,7 +166,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 if (!(args instanceof List<?>)) {
                     throw new IllegalArgumentException("Not a list of function arguments: " + args);
                 }
-                var argList = (List<Object>) args;
+                var argList = toArgumentList(args);
                 if (function.isDynamic()) {
                     chain.set(i, new ConstantFunctionCallTemplateExpression(
                             function,
@@ -185,6 +185,13 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         } catch (RuntimeException e) {
             throw base.failedExecute(e);
         }
+    }
+
+    private static List<Object> toArgumentList(Object args) {
+        if (!(args instanceof List<?>)) {
+            throw new IllegalArgumentException("Not a list of function arguments: " + args);
+        }
+        return new ArrayList<>((List<?>) args);
     }
 
     @Override

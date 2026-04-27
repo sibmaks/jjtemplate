@@ -52,10 +52,14 @@ public final class ObjectElementFolder implements ObjectElementVisitor<List<Obje
 
         if (foldedSource instanceof ConstantTemplateExpression) {
             var constantExpression = (ConstantTemplateExpression) foldedSource;
-            var expressionValue = (Map<String, Object>) constantExpression.getValue();
-            var elements = new ArrayList<ObjectElement>(expressionValue.size());
-            for (var entry : expressionValue.entrySet()) {
-                var key = entry.getKey();
+            var expressionValue = constantExpression.getValue();
+            if (!(expressionValue instanceof Map<?, ?>)) {
+                throw new IllegalArgumentException("Not a map of object fields: " + expressionValue);
+            }
+            var map = (Map<?, ?>) expressionValue;
+            var elements = new ArrayList<ObjectElement>(map.size());
+            for (var entry : map.entrySet()) {
+                var key = String.valueOf(entry.getKey());
                 var value = entry.getValue();
                 var itemElement = new ObjectStaticFieldElement(key, value);
                 elements.add(itemElement);
