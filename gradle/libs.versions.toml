@@ -1,9 +1,9 @@
 [versions]
-lombok = "1.18.42"
+lombok = "1.18.46"
 slf4j = "2.0.17"
-jackson = "2.20.0"
-junit-bom = "5.14.0"
-mockito = "5.20.0"
+jackson = "2.21.3"
+junit-bom = "5.14.4"
+mockito = "5.23.0"
 
 [libraries]
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
