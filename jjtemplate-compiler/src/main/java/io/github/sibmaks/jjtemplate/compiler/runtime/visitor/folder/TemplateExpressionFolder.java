@@ -64,6 +64,13 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         this.switchCaseFolder = new SwitchCaseFolder(this);
     }
 
+    private static List<Object> toArgumentList(Object args) {
+        if (!(args instanceof List<?>)) {
+            throw new IllegalArgumentException("Not a list of function arguments: " + args);
+        }
+        return new ArrayList<>((List<?>) args);
+    }
+
     @Override
     public TemplateExpression visit(DynamicFunctionCallTemplateExpression expression) {
         var function = expression.getFunction();
@@ -155,9 +162,21 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 var argExpression = dynamicFunctionCall.getArgExpression();
                 var foldedArgs = argExpression.visit(this);
                 if (!(foldedArgs instanceof ConstantTemplateExpression)) {
+                    if (i == 0 && root == base.getRoot() && foldedArgs == argExpression) {
+                        return base;
+                    }
+                    var remainingChain = chain.subList(i, chain.size());
+                    if (foldedArgs != argExpression) {
+                        remainingChain = new ArrayList<>(remainingChain);
+                        remainingChain.set(0, new DynamicFunctionCallTemplateExpression(
+                                function,
+                                (ListTemplateExpression) foldedArgs,
+                                dynamicFunctionCall.getSourceExpression()
+                        ));
+                    }
                     return new PipeChainTemplateExpression(
                             new ConstantTemplateExpression(value),
-                            chain.subList(i, chain.size()),
+                            remainingChain,
                             base.getSourceExpression()
                     );
                 }
@@ -185,13 +204,6 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         } catch (RuntimeException e) {
             throw base.failedExecute(e);
         }
-    }
-
-    private static List<Object> toArgumentList(Object args) {
-        if (!(args instanceof List<?>)) {
-            throw new IllegalArgumentException("Not a list of function arguments: " + args);
-        }
-        return new ArrayList<>((List<?>) args);
     }
 
     @Override
@@ -391,7 +403,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 .map(ListStaticItemElement.class::cast)
                 .collect(Collectors.toList());
         if (staticItemElements.size() == foldedElements.size()) {
-            var staticObject = new ListTemplateExpression(foldedElements);
+            var staticObject = new ListTemplateExpression(staticItemElements);
             var evaluated = staticObject.apply(Context.empty());
             return new ConstantTemplateExpression(evaluated);
         }
@@ -474,7 +486,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 .map(ObjectStaticFieldElement.class::cast)
                 .collect(Collectors.toList());
         if (staticFieldElements.size() == foldedElements.size()) {
-            var staticObject = new ObjectTemplateExpression(foldedElements);
+            var staticObject = new ObjectTemplateExpression(staticFieldElements);
             var evaluated = staticObject.apply(Context.empty());
             return new ConstantTemplateExpression(evaluated);
         }

@@ -31,7 +31,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 public final class ObjectTemplateExpression implements TemplateExpression {
-    private final List<ObjectElement> elements;
+    private final List<? extends ObjectElement> elements;
 
     @Override
     public Object apply(final Context context) {

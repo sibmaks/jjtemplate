@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.DynamicListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
@@ -350,6 +351,22 @@ class TemplateExpressionFolderTest {
         assertEquals("root", assertInstanceOf(ConstantTemplateExpression.class, folded.getRoot()).getValue());
         var functionCall = assertInstanceOf(ConstantFunctionCallTemplateExpression.class, folded.getChain().get(0));
         assertEquals(List.of("x"), functionCall.getArguments(Context.empty()));
+    }
+
+    @Test
+    void pipeWithConstantRootAndDynamicArgsShouldReturnSameWhenNoFold() {
+        TemplateFunction<String> function = mock();
+        var args = new ListTemplateExpression(List.of(
+                new DynamicListElement(new VariableTemplateExpression("x", List.of(), null))
+        ));
+
+        var pipe = new PipeChainTemplateExpression(
+                new ConstantTemplateExpression("root"),
+                List.of(new DynamicFunctionCallTemplateExpression(function, args, null)),
+                null
+        );
+
+        assertSame(pipe, folder.visit(pipe));
     }
 
     @Test
