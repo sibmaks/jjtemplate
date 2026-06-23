@@ -6,7 +6,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -29,7 +28,7 @@ class ReflectionUtilsTest {
 
     @Test
     void getAllPropertiesOfMapShouldIgnoreNonStringKeys() {
-        var map = new LinkedHashMap<Object, Object>();
+        var map = new LinkedHashMap<>();
         map.put("a", 1);
         map.put(2, "ignored");
 
@@ -390,16 +389,6 @@ class ReflectionUtilsTest {
     }
 
     @Test
-    void reflectionUtilsShouldResolveEnumConstantWrapper() throws Exception {
-        var method = ReflectionUtils.class.getDeclaredMethod("resolveEnumConstant", Class.class, String.class);
-        method.setAccessible(true);
-
-        var result = method.invoke(null, Mode.class, "ON");
-
-        assertEquals(Mode.ON, result);
-    }
-
-    @Test
     void methodSupportShouldRejectIncompatibleVarArgsDuringResolvedInvocation() throws NoSuchMethodException {
         var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
         var ex = assertThrows(
@@ -436,19 +425,6 @@ class ReflectionUtilsTest {
         assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of(String.class, String.class)).isEmpty());
         assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of()).isEmpty());
         assertTrue(ReflectionMethodSupport.resolveMethods(Person.class, "collectVarargs", List.of(Integer.class)).isEmpty());
-    }
-
-    @Test
-    void resolveEnumConstantThrowsWhenTypeIsNotEnum() throws Exception {
-        var method = ReflectionUtils.class.getDeclaredMethod("resolveEnumConstant", Class.class, String.class);
-        method.setAccessible(true);
-
-        var ex = assertThrows(
-                InvocationTargetException.class,
-                () -> method.invoke(null, String.class, "ANY")
-        );
-        assertInstanceOf(IllegalArgumentException.class, ex.getCause());
-        assertEquals("class java.lang.String is not an enum type", ex.getCause().getMessage());
     }
 
     @ParameterizedTest

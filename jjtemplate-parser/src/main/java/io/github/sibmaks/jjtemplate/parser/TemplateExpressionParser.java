@@ -217,18 +217,16 @@ final class TemplateExpressionParser {
 
         do {
             var ident = cursor.expect(TokenType.IDENT, "identifier after '.'");
-            var args = parseMethodCallArguments();
-            segments.add(args == null
-                    ? new VariableExpression.Segment(ident.lexeme)
-                    : new VariableExpression.Segment(ident.lexeme, args));
+            var segment = parseMethodCallArguments(ident);
+            segments.add(segment);
         } while (cursor.match(TokenType.DOT));
 
         return new VariableExpression(segments);
     }
 
-    private List<Expression> parseMethodCallArguments() {
+    private VariableExpression.Segment parseMethodCallArguments(Token ident) {
         if (!cursor.match(TokenType.LPAREN)) {
-            return null;
+            return new VariableExpression.Segment(ident.lexeme);
         }
         var args = new ArrayList<Expression>();
         if (!cursor.check(TokenType.RPAREN)) {
@@ -237,7 +235,7 @@ final class TemplateExpressionParser {
             } while (cursor.match(TokenType.COMMA));
         }
         cursor.expect(TokenType.RPAREN, ")");
-        return args;
+        return new VariableExpression.Segment(ident.lexeme, args);
     }
 
     /**

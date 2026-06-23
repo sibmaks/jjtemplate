@@ -3,6 +3,7 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.date;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public final class DateNowTemplateFunction implements TemplateFunction<LocalDate
         if (!args.isEmpty()) {
             throw fail("too much arguments passed");
         }
-        return LocalDate.now();
+        return LocalDate.now(ZoneId.systemDefault());
     }
 
     @Override

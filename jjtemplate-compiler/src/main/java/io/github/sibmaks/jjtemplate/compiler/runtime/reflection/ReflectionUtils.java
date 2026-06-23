@@ -178,10 +178,6 @@ public final class ReflectionUtils {
         return ReflectionPropertySupport.resolveProperty(type, propertyName);
     }
 
-    private static Object resolveEnumConstant(Class<?> enumType, String enumValue) {
-        return ReflectionConversionSupport.resolveEnumConstant(enumType, enumValue);
-    }
-
     static TemplateEvalException methodInvocationError(String methodName, ReflectiveOperationException exception) {
         return new TemplateEvalException("Error invoking method " + methodName + ": " + exception.getMessage(), exception);
     }
