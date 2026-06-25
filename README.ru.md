@@ -145,8 +145,8 @@ implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.5.0")
 
 ### `date` - Утилиты для дат
 
-* `date:format([locale], pattern, date)` - форматировать дату (`Date`, `LocalDate`, `LocalDateTime`,
-  `ZonedLocalDateTime`)
+* `date:format([locale], pattern, date)` - форматировать дату (`Date`, `GregorianCalendar`, `LocalDate`,
+  `LocalDateTime`, `ZonedLocalDateTime`)
 * `date:parse(pattern, string)` - распарсить строку в `LocalDate`
 * `date:now()` - получить текущий `LocalDate`
 

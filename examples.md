@@ -275,6 +275,7 @@ Supports:
 - `java.time.LocalDateTime`
 - `java.time.ZonedDateTime`
 - `java.util.Date`
+- `java.util.GregorianCalendar`
 
 **Template:**
 

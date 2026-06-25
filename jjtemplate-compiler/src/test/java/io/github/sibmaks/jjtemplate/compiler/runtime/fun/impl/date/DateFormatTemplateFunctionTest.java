@@ -7,9 +7,13 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -107,17 +111,81 @@ class DateFormatTemplateFunctionTest {
     }
 
     @Test
+    void validInvokeArgsWithGregorianCalendar() {
+        var format = "yyyy-MM-dd HH:mm:ss z";
+        var locale = Locale.US;
+        var date = new GregorianCalendar(TimeZone.getTimeZone("UTC"), locale);
+        date.set(2024, Calendar.NOVEMBER, 5, 8, 45, 12);
+        date.set(Calendar.MILLISECOND, 0);
+        var formatter = new SimpleDateFormat(format, locale);
+        formatter.setCalendar((GregorianCalendar) date.clone());
+        var expected = formatter.format(date.getTime());
+
+        var args = List.<Object>of(locale, format, date);
+        var actual = function.invoke(args);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void validInvokePipeWithGregorianCalendar() {
+        var format = "dd-MM-yyyy HH:mm z";
+        var locale = Locale.US;
+        var date = new GregorianCalendar(TimeZone.getTimeZone("UTC"), locale);
+        date.set(2024, Calendar.NOVEMBER, 5, 8, 45, 12);
+        date.set(Calendar.MILLISECOND, 0);
+        var formatter = new SimpleDateFormat(format, locale);
+        formatter.setCalendar((GregorianCalendar) date.clone());
+        var expected = formatter.format(date.getTime());
+
+        var args = List.<Object>of(locale, format);
+        var actual = function.invoke(args, date);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void invokeIsThreadSafeWithGregorianCalendar() throws Exception {
+        var format = "yyyy-MM-dd HH:mm:ss.SSS z";
+        var locale = Locale.US;
+        var date = new GregorianCalendar(TimeZone.getTimeZone("UTC"), locale);
+        date.set(2024, Calendar.NOVEMBER, 5, 8, 45, 12);
+        date.set(Calendar.MILLISECOND, 123);
+        var formatter = new SimpleDateFormat(format, locale);
+        formatter.setCalendar((GregorianCalendar) date.clone());
+        var expected = formatter.format(date.getTime());
+        var args = List.<Object>of(locale, format, date);
+
+        var executor = Executors.newFixedThreadPool(8);
+        try {
+            var futures = executor.invokeAll(List.of(
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args),
+                    () -> function.invoke(args)
+            ));
+            for (var future : futures) {
+                assertEquals(expected, future.get());
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
     void invalidTypeInInvokeArgs() {
         var args = List.<Object>of("yyyy-MM-dd", 42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
-        assertEquals("date:format: cannot convert 42 to TemporalAccessor", exception.getMessage());
+        assertEquals("date:format: cannot convert 42 to supported date type", exception.getMessage());
     }
 
     @Test
     void invalidTypeInInvokePipe() {
         var args = List.<Object>of("yyyy-MM-dd");
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args, 42));
-        assertEquals("date:format: cannot convert 42 to TemporalAccessor", exception.getMessage());
+        assertEquals("date:format: cannot convert 42 to supported date type", exception.getMessage());
     }
 
     @Test

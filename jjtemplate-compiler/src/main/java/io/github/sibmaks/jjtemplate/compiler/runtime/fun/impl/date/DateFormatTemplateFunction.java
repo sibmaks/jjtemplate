@@ -6,13 +6,14 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * Template function that formats date values using a pattern.
  * <p>
- * Supports {@link TemporalAccessor} and {@link Date}.
+ * Supports {@link TemporalAccessor}, {@link Date}, and {@link GregorianCalendar}.
  * Locale may be provided explicitly, otherwise the default locale is used.
  *
  * @author sibmaks
@@ -44,7 +45,13 @@ public final class DateFormatTemplateFunction implements LocaleConfigurableTempl
             var formatter = new SimpleDateFormat(format, locale);
             return formatter.format((Date) date);
         }
-        throw fail("cannot convert " + date + " to TemporalAccessor");
+        if (date instanceof GregorianCalendar) {
+            var calendar = (GregorianCalendar) ((GregorianCalendar) date).clone();
+            var formatter = new SimpleDateFormat(format, locale);
+            formatter.setCalendar(calendar);
+            return formatter.format(calendar.getTime());
+        }
+        throw fail("cannot convert " + date + " to supported date type");
     }
 
     @Override
