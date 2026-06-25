@@ -9,6 +9,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -30,6 +32,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author sibmaks
  */
+@Timeout(
+        value = 5,
+        unit = TimeUnit.SECONDS,
+        threadMode = Timeout.ThreadMode.SEPARATE_THREAD
+)
 class TemplateCompilerImplIntegrationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)

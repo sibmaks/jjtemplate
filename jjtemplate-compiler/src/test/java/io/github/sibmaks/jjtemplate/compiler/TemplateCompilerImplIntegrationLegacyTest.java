@@ -3,12 +3,9 @@ package io.github.sibmaks.jjtemplate.compiler;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.sibmaks.jjtemplate.compiler.api.Definition;
-import io.github.sibmaks.jjtemplate.compiler.api.MapTemplateCompileContext;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileOptions;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
-import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+import io.github.sibmaks.jjtemplate.compiler.api.*;
 import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -20,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -30,6 +28,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author sibmaks
  */
+@Timeout(
+        value = 5,
+        unit = TimeUnit.SECONDS,
+        threadMode = Timeout.ThreadMode.SEPARATE_THREAD
+)
 class TemplateCompilerImplIntegrationLegacyTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
@@ -100,6 +103,17 @@ class TemplateCompilerImplIntegrationLegacyTest {
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getClassOf(T[] array) {
         return (Class<T>) array.getClass().getComponentType();
+    }
+
+    private static Map<String, List<Class<?>>> buildTypesFromContext(Map<String, Object> context) {
+        var types = new LinkedHashMap<String, List<Class<?>>>(context.size());
+        for (var entry : context.entrySet()) {
+            var value = entry.getValue();
+            if (value != null) {
+                types.put(entry.getKey(), List.of(value.getClass()));
+            }
+        }
+        return types;
     }
 
     @ParameterizedTest
@@ -400,17 +414,6 @@ class TemplateCompilerImplIntegrationLegacyTest {
                 .stream()
                 .sorted()
                 .map(it -> buildArguments(resourcesDir, it));
-    }
-
-    private static Map<String, List<Class<?>>> buildTypesFromContext(Map<String, Object> context) {
-        var types = new LinkedHashMap<String, List<Class<?>>>(context.size());
-        for (var entry : context.entrySet()) {
-            var value = entry.getValue();
-            if (value != null) {
-                types.put(entry.getKey(), List.of(value.getClass()));
-            }
-        }
-        return types;
     }
 
     @SafeVarargs
