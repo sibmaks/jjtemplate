@@ -5,8 +5,12 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.DynamicListElement;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListStaticItemElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.DefaultTemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.logic.AndTemplateFunction;
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.logic.OrTemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
 import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder.TemplateExpressionFolder;
@@ -20,7 +24,9 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -123,6 +129,103 @@ class TemplateExpressionFolderTest {
         var folded = folder.visit(expr);
 
         assertSame(expr, folded);
+    }
+
+    @Test
+    void foldLazyFunctionsWithoutFoldingUnusedArgument() {
+        assertLazyFunctionFolds(new DefaultTemplateFunction(), "selected", "selected");
+        assertLazyFunctionFolds(new AndTemplateFunction(), false, false);
+        assertLazyFunctionFolds(new OrTemplateFunction(), true, true);
+    }
+
+    @Test
+    void foldLazyPipeFunctionsWithoutFoldingUnusedArgument() {
+        assertLazyPipeFunctionFolds(new DefaultTemplateFunction(), "selected", "selected");
+        assertLazyPipeFunctionFolds(new AndTemplateFunction(), false, false);
+        assertLazyPipeFunctionFolds(new OrTemplateFunction(), true, true);
+    }
+
+    @Test
+    void foldRequiredLazyFunctionArguments() {
+        assertRequiredLazyFunctionFolds(new DefaultTemplateFunction(), null, "fallback", "fallback");
+        assertRequiredLazyFunctionFolds(new AndTemplateFunction(), true, false, false);
+        assertRequiredLazyFunctionFolds(new OrTemplateFunction(), false, true, true);
+    }
+
+    @Test
+    void keepLazyFunctionDynamicWhenRequiredArgumentIsNotConstant() {
+        var unusedArgument = mock(TemplateExpression.class);
+        var expression = new DynamicFunctionCallTemplateExpression(
+                new DefaultTemplateFunction(),
+                new ListTemplateExpression(List.of(
+                        new DynamicListElement(new VariableTemplateExpression("value", List.of(), ".value")),
+                        new DynamicListElement(unusedArgument)
+                )),
+                "default .value, unused"
+        );
+
+        var folded = folder.visit(expression);
+
+        assertSame(expression, folded);
+        verify(unusedArgument, never())
+                .visit(folder);
+    }
+
+    private void assertLazyFunctionFolds(TemplateFunction<?> function, Object firstArgument, Object expected) {
+        var unusedArgument = mock(TemplateExpression.class);
+        var expression = new DynamicFunctionCallTemplateExpression(
+                function,
+                new ListTemplateExpression(List.of(
+                        new ListStaticItemElement(firstArgument),
+                        new DynamicListElement(unusedArgument)
+                )),
+                function.getName()
+        );
+
+        var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(expression));
+
+        assertEquals(expected, folded.getValue());
+        verify(unusedArgument, never())
+                .visit(folder);
+    }
+
+    private void assertLazyPipeFunctionFolds(TemplateFunction<?> function, Object pipeArgument, Object expected) {
+        var unusedArgument = mock(TemplateExpression.class);
+        var expression = new PipeChainTemplateExpression(
+                new ConstantTemplateExpression(pipeArgument),
+                List.of(new DynamicFunctionCallTemplateExpression(
+                        function,
+                        new ListTemplateExpression(List.of(new DynamicListElement(unusedArgument))),
+                        function.getName()
+                )),
+                function.getName()
+        );
+
+        var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(expression));
+
+        assertEquals(expected, folded.getValue());
+        verify(unusedArgument, never())
+                .visit(folder);
+    }
+
+    private void assertRequiredLazyFunctionFolds(
+            TemplateFunction<?> function,
+            Object firstArgument,
+            Object secondArgument,
+            Object expected
+    ) {
+        var expression = new DynamicFunctionCallTemplateExpression(
+                function,
+                new ListTemplateExpression(List.of(
+                        new ListStaticItemElement(firstArgument),
+                        new DynamicListElement(new ConstantTemplateExpression(secondArgument))
+                )),
+                function.getName()
+        );
+
+        var folded = assertInstanceOf(ConstantTemplateExpression.class, folder.visit(expression));
+
+        assertEquals(expected, folded.getValue());
     }
 
     @Test

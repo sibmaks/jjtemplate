@@ -4,6 +4,8 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.DynamicListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListStaticItemElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
@@ -16,6 +18,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.Swit
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.visitor.varusage.VariableUsageCollector;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +78,7 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
     public TemplateExpression visit(DynamicFunctionCallTemplateExpression expression) {
         var function = expression.getFunction();
         if (function.isLazy()) {
-            return expression;
+            return foldLazyFunction(expression);
         }
         var argExpression = expression.getArgExpression();
         var foldedArgs = argExpression.visit(this);
@@ -106,6 +109,33 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         }
         var objectFunction = constantFunctionExpression.apply(Context.empty());
         return new ConstantTemplateExpression(objectFunction);
+    }
+
+    private TemplateExpression foldLazyFunction(DynamicFunctionCallTemplateExpression expression) {
+        var function = expression.getFunction();
+        if (function.isDynamic()) {
+            return expression;
+        }
+        var argExpression = expression.getArgExpression();
+        var arguments = LazyFoldingArgumentList.create(argExpression, this);
+        if (arguments == null) {
+            return expression;
+        }
+        try {
+            return new ConstantTemplateExpression(function.invoke(arguments));
+        } catch (NonConstantArgumentException ignored) {
+            var foldedArguments = arguments.toExpression();
+            if (foldedArguments == argExpression) {
+                return expression;
+            }
+            return new DynamicFunctionCallTemplateExpression(
+                    function,
+                    foldedArguments,
+                    expression.getSourceExpression()
+            );
+        } catch (RuntimeException e) {
+            throw expression.failedExecute(e);
+        }
     }
 
     @Override
@@ -163,14 +193,33 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 var dynamicFunctionCall = (DynamicFunctionCallTemplateExpression) callExpression;
                 var function = dynamicFunctionCall.getFunction();
                 if (function.isLazy()) {
-                    if (i == 0 && root == base.getRoot()) {
-                        return base;
+                    if (function.isDynamic()) {
+                        return stopFoldingPipe(base, root, value, chain, i, dynamicFunctionCall);
                     }
-                    return new PipeChainTemplateExpression(
-                            new ConstantTemplateExpression(value),
-                            chain.subList(i, chain.size()),
-                            base.getSourceExpression()
+                    var arguments = LazyFoldingArgumentList.create(
+                            dynamicFunctionCall.getArgExpression(),
+                            this
                     );
+                    if (arguments == null) {
+                        return stopFoldingPipe(base, root, value, chain, i, dynamicFunctionCall);
+                    }
+                    try {
+                        value = function.invoke(arguments, value);
+                        continue;
+                    } catch (NonConstantArgumentException ignored) {
+                        return stopFoldingPipe(
+                                base,
+                                root,
+                                value,
+                                chain,
+                                i,
+                                new DynamicFunctionCallTemplateExpression(
+                                        function,
+                                        arguments.toExpression(),
+                                        dynamicFunctionCall.getSourceExpression()
+                                )
+                        );
+                    }
                 }
                 var argExpression = dynamicFunctionCall.getArgExpression();
                 var foldedArgs = argExpression.visit(this);
@@ -217,6 +266,30 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         } catch (RuntimeException e) {
             throw base.failedExecute(e);
         }
+    }
+
+    private PipeChainTemplateExpression stopFoldingPipe(
+            PipeChainTemplateExpression base,
+            ConstantTemplateExpression root,
+            Object value,
+            List<FunctionCallTemplateExpression> chain,
+            int index,
+            DynamicFunctionCallTemplateExpression current
+    ) {
+        var original = chain.get(index);
+        if (index == 0 && root == base.getRoot() && current.equals(original)) {
+            return base;
+        }
+        var remainingChain = chain.subList(index, chain.size());
+        if (!current.equals(original)) {
+            remainingChain = new ArrayList<>(remainingChain);
+            remainingChain.set(0, current);
+        }
+        return new PipeChainTemplateExpression(
+                new ConstantTemplateExpression(value),
+                remainingChain,
+                base.getSourceExpression()
+        );
     }
 
     @Override
@@ -556,6 +629,91 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         }
 
         return expression;
+    }
+
+    private static final class LazyFoldingArgumentList extends AbstractList<Object> {
+        private final ListTemplateExpression source;
+        private final TemplateExpressionFolder folder;
+        private final List<ListElement> elements;
+        private final Object[] values;
+        private final boolean[] evaluated;
+        private boolean changed;
+
+        private LazyFoldingArgumentList(
+                ListTemplateExpression source,
+                TemplateExpressionFolder folder
+        ) {
+            this.source = source;
+            this.folder = folder;
+            this.elements = new ArrayList<>(source.getElements());
+            this.values = new Object[elements.size()];
+            this.evaluated = new boolean[elements.size()];
+        }
+
+        private static LazyFoldingArgumentList create(
+                ListTemplateExpression source,
+                TemplateExpressionFolder folder
+        ) {
+            for (var element : source.getElements()) {
+                if (!(element instanceof DynamicListElement)
+                        && !(element instanceof ListStaticItemElement)) {
+                    return null;
+                }
+            }
+            return new LazyFoldingArgumentList(source, folder);
+        }
+
+        @Override
+        public Object get(int index) {
+            if (!evaluated[index]) {
+                values[index] = fold(index);
+                evaluated[index] = true;
+            }
+            return values[index];
+        }
+
+        private Object fold(int index) {
+            var element = elements.get(index);
+            if (element instanceof ListStaticItemElement) {
+                var staticElement = (ListStaticItemElement) element;
+                return staticElement.getValue();
+            }
+            var dynamicElement = (DynamicListElement) element;
+            var expression = dynamicElement.getValue();
+            var folded = expression.visit(folder);
+            if (folded instanceof ConstantTemplateExpression) {
+                var constant = (ConstantTemplateExpression) folded;
+                elements.set(index, new ListStaticItemElement(constant.getValue()));
+                changed = true;
+                return constant.getValue();
+            }
+            if (folded != expression) {
+                elements.set(index, new DynamicListElement(folded));
+                changed = true;
+            }
+            throw NonConstantArgumentException.INSTANCE;
+        }
+
+        @Override
+        public int size() {
+            return elements.size();
+        }
+
+        private ListTemplateExpression toExpression() {
+            if (!changed) {
+                return source;
+            }
+            return new ListTemplateExpression(elements);
+        }
+    }
+
+    private static final class NonConstantArgumentException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        private static final NonConstantArgumentException INSTANCE = new NonConstantArgumentException();
+
+        private NonConstantArgumentException() {
+            super(null, null, false, false);
+        }
     }
 
 }

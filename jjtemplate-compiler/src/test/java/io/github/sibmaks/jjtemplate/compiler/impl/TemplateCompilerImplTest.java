@@ -23,6 +23,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class TemplateCompilerImplTest {
 
     @Test
+    void compileShortCircuitedLazyFunctionToStaticTemplate() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template("{{ default 'selected', (cast:int 'not-a-number') }}")
+                .build();
+
+        var compiled = compiler.compile(script);
+
+        assertInstanceOf(StaticCompiledTemplateImpl.class, compiled);
+        assertEquals("selected", compiled.render());
+    }
+
+    @Test
     void compileTemplateShouldUseLocaleFromEvaluationOptions() {
         var options = TemplateCompileOptions.builder()
                 .evaluationOptions(TemplateEvaluationOptions.builder()
