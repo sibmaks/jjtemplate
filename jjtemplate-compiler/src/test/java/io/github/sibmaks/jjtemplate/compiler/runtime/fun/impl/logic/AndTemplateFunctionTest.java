@@ -44,6 +44,11 @@ class AndTemplateFunctionTest {
     }
 
     @Test
+    void isLazy() {
+        assertTrue(function.isLazy());
+    }
+
+    @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));

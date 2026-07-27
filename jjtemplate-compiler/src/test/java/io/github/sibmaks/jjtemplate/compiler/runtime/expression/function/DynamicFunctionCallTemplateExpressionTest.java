@@ -49,6 +49,36 @@ class DynamicFunctionCallTemplateExpressionTest {
     }
 
     @Test
+    void applyShouldInvokeLazyFunctionWithLazyArguments() {
+        Context context = mock();
+        ListTemplateExpression args = mock();
+        List<Object> list = List.of(UUID.randomUUID());
+        when(args.applyLazy(context))
+                .thenReturn(list);
+
+        TemplateFunction<String> function = mock();
+        when(function.isLazy())
+                .thenReturn(true);
+        var functionResult = UUID.randomUUID().toString();
+        when(function.invoke(list))
+                .thenReturn(functionResult);
+
+        var expression = new DynamicFunctionCallTemplateExpression(
+                function,
+                args,
+                null
+        );
+
+        var result = expression.apply(context);
+
+        assertEquals(functionResult, result);
+        verify(args)
+                .applyLazy(context);
+        verify(args, never())
+                .apply(context);
+    }
+
+    @Test
     void applyWithPipeShouldInvokeFunctionPassingPipeValue() {
         Context context = mock();
 

@@ -15,16 +15,19 @@ import java.util.List;
  */
 public final class OrTemplateFunction implements TemplateFunction<Boolean> {
 
-    private boolean or(Object left, Object right) {
+    private boolean requireBoolean(Object value) {
+        if (!(value instanceof Boolean)) {
+            throw fail("all arguments must be a boolean");
+        }
+        return (boolean) value;
+    }
+
+    private boolean or(Object left, List<Object> remainingArgs) {
         if (!(left instanceof Boolean)) {
             throw fail("all arguments must be a boolean");
         }
-        if (!(right instanceof Boolean)) {
-            throw fail("all arguments must be a boolean");
-        }
         var x = (boolean) left;
-        var y = (boolean) right;
-        return x || y;
+        return x || requireBoolean(remainingArgs.get(0));
     }
 
     @Override
@@ -32,7 +35,7 @@ public final class OrTemplateFunction implements TemplateFunction<Boolean> {
         if (args.size() != 1) {
             throw fail("1 argument required");
         }
-        return or(args.get(0), pipeArg);
+        return or(pipeArg, args);
     }
 
     @Override
@@ -40,7 +43,8 @@ public final class OrTemplateFunction implements TemplateFunction<Boolean> {
         if (args.size() != 2) {
             throw fail("2 arguments required");
         }
-        return or(args.get(0), args.get(1));
+        var left = requireBoolean(args.get(0));
+        return left || requireBoolean(args.get(1));
     }
 
     @Override
@@ -56,5 +60,10 @@ public final class OrTemplateFunction implements TemplateFunction<Boolean> {
     @Override
     public boolean isDynamic() {
         return false;
+    }
+
+    @Override
+    public boolean isLazy() {
+        return true;
     }
 }

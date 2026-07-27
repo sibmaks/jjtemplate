@@ -132,4 +132,19 @@ public interface TemplateFunction<T> {
     default boolean isDynamic() {
         return true;
     }
+
+    /**
+     * Indicates whether positional arguments should be evaluated only when
+     * accessed by this function.
+     * <p>
+     * Lazy functions can short-circuit without evaluating unused arguments.
+     * Implementations must access arguments through the supplied {@link List}
+     * instead of copying or iterating over the complete list eagerly.
+     * </p>
+     *
+     * @return {@code true} when positional arguments should be evaluated lazily
+     */
+    default boolean isLazy() {
+        return false;
+    }
 }

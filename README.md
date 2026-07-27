@@ -228,6 +228,12 @@ Call syntax uses a colon (`:`), e.g. `{{ cast:str .value }}` or `{{ .text | stri
   { "upperName": "{{ .name | string:upper }}" }
   ```
 * Namespace separation ensures no name collisions and improves clarity.
+* `default`, `and`, and `or` evaluate their arguments lazily. `default` evaluates
+  its fallback only when the input is `null`; `and` and `or` use boolean
+  short-circuit evaluation.
+* Custom `TemplateFunction` implementations can opt into the same behavior by
+  overriding `isLazy()` and accessing only the arguments they need from the
+  supplied `List`.
 
 ---
 

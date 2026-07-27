@@ -1,0 +1,10 @@
+{
+  "template": [
+    "{{ default 'selected', (cast:int 'not-a-number') }}",
+    "{{ 'selected' | default (cast:int 'not-a-number') }}",
+    "{{ and false, (cast:int 'not-a-number') }}",
+    "{{ false | and (cast:int 'not-a-number') }}",
+    "{{ or true, (cast:int 'not-a-number') }}",
+    "{{ true | or (cast:int 'not-a-number') }}"
+  ]
+}

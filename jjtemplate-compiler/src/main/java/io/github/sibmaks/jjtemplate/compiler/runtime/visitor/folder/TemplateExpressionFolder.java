@@ -74,6 +74,9 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
     @Override
     public TemplateExpression visit(DynamicFunctionCallTemplateExpression expression) {
         var function = expression.getFunction();
+        if (function.isLazy()) {
+            return expression;
+        }
         var argExpression = expression.getArgExpression();
         var foldedArgs = argExpression.visit(this);
         var anyFolded = argExpression != foldedArgs;
@@ -159,6 +162,16 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
                 }
                 var dynamicFunctionCall = (DynamicFunctionCallTemplateExpression) callExpression;
                 var function = dynamicFunctionCall.getFunction();
+                if (function.isLazy()) {
+                    if (i == 0 && root == base.getRoot()) {
+                        return base;
+                    }
+                    return new PipeChainTemplateExpression(
+                            new ConstantTemplateExpression(value),
+                            chain.subList(i, chain.size()),
+                            base.getSourceExpression()
+                    );
+                }
                 var argExpression = dynamicFunctionCall.getArgExpression();
                 var foldedArgs = argExpression.visit(this);
                 if (!(foldedArgs instanceof ConstantTemplateExpression)) {

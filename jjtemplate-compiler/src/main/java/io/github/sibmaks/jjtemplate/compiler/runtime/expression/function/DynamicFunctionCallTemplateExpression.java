@@ -29,6 +29,9 @@ public final class DynamicFunctionCallTemplateExpression implements FunctionCall
 
     @Override
     public List<Object> getArguments(Context context) {
+        if (function.isLazy()) {
+            return argExpression.applyLazy(context);
+        }
         return new ArrayList<>(argExpression.apply(context));
     }
 

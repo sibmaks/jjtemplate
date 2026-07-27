@@ -52,4 +52,9 @@ public final class DefaultTemplateFunction implements TemplateFunction<Object> {
     public boolean isDynamic() {
         return false;
     }
+
+    @Override
+    public boolean isLazy() {
+        return true;
+    }
 }

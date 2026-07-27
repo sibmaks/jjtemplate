@@ -44,6 +44,11 @@ class OrTemplateFunctionTest {
     }
 
     @Test
+    void isLazy() {
+        assertTrue(function.isLazy());
+    }
+
+    @Test
     void noArgsOnInvoke() {
         var args = List.of();
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
@@ -80,7 +85,7 @@ class OrTemplateFunctionTest {
 
     @Test
     void passInvalidRightArgument() {
-        var args = List.<Object>of(true, 42);
+        var args = List.<Object>of(false, 42);
         var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("or: all arguments must be a boolean", exception.getMessage());
     }
