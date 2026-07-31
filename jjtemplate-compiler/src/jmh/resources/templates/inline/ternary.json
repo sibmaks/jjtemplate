@@ -1,8 +1,0 @@
-{
-  "definitions": [
-    {
-      "internalTrue": true
-    }
-  ],
-  "template": "{{ .internalTrue ? 'ok' : 'fail' }}"
-}

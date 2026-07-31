@@ -1,3 +1,0 @@
-{
-  "template": "{{ .extTrue ? 'ok' : 'fail' }}"
-}

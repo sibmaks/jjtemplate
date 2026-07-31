@@ -48,11 +48,6 @@ subprojects {
     }
 
     tasks.withType<Checkstyle>().configureEach {
-        // Exclude JMH benchmark sources from Checkstyle.
-        exclude("**/src/jmh/**")
-        if (name == "checkstyleJmh") {
-            enabled = false
-        }
         reports {
             xml.required.set(true)
             html.required.set(true)

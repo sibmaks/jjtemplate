@@ -1,8 +1,0 @@
-{
-  "definitions": [
-    {
-      "string": "inlined"
-    }
-  ],
-  "template": "Hello {{ .string }}"
-}
