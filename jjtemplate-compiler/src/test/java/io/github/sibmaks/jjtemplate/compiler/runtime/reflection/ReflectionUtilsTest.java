@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -71,6 +72,17 @@ class ReflectionUtilsTest {
         var map = Map.of("x", 42);
         var actual = ReflectionUtils.getProperty(map, "x");
         assertEquals(42, actual);
+    }
+
+    @Test
+    void getPropertyFromConcurrentHashMapEntry() {
+        var map = new ConcurrentHashMap<String, Person>();
+        var person = new Person();
+        map.put("person", person);
+        var entry = map.entrySet().iterator().next();
+
+        assertEquals("person", ReflectionUtils.getProperty(entry, "key"));
+        assertSame(person, ReflectionUtils.getProperty(entry, "value"));
     }
 
     @Test

@@ -67,6 +67,13 @@ final class ReflectionPropertySupport {
             return getMapProperty(obj, (Map<?, ?>) obj, name);
         }
 
+        if (obj instanceof Map.Entry<?, ?>) {
+            var entryProperty = getMapEntryProperty((Map.Entry<?, ?>) obj, name);
+            if (entryProperty != PROPERTY_NOT_FOUND) {
+                return entryProperty;
+            }
+        }
+
         var indexedProperty = getIndexedProperty(obj, name);
         if (indexedProperty != PROPERTY_NOT_FOUND) {
             return indexedProperty;
@@ -147,6 +154,16 @@ final class ReflectionPropertySupport {
             return fallbackResolver.resolve(name);
         }
         return null;
+    }
+
+    private static Object getMapEntryProperty(Map.Entry<?, ?> entry, String name) {
+        if ("key".equals(name)) {
+            return entry.getKey();
+        }
+        if ("value".equals(name)) {
+            return entry.getValue();
+        }
+        return PROPERTY_NOT_FOUND;
     }
 
     private static Object getIndexedProperty(Object obj, String name) {
