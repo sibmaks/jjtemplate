@@ -8,8 +8,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author sibmaks
@@ -17,7 +15,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class ReflectionMethodSupport {
-    private static final Map<Class<?>, Method[]> METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final ClassValue<Method[]> METHOD_CACHE = new ClassValue<>() {
+        @Override
+        protected Method[] computeValue(Class<?> type) {
+            return type.getMethods();
+        }
+    };
 
     static Object invokeMethodReflective(Object target, String methodName, List<Object> args) {
         if (target == null) {
@@ -30,7 +33,7 @@ final class ReflectionMethodSupport {
         }
 
         var type = target.getClass();
-        var methods = METHOD_CACHE.computeIfAbsent(type, Class::getMethods);
+        var methods = METHOD_CACHE.get(type);
 
         Method bestMatch = null;
         Object[] bestConverted = null;
@@ -113,7 +116,7 @@ final class ReflectionMethodSupport {
             String methodName,
             List<Class<?>> argTypes
     ) {
-        var methods = METHOD_CACHE.computeIfAbsent(type, Class::getMethods);
+        var methods = METHOD_CACHE.get(type);
         var result = new ArrayList<ReflectionUtils.ResolvedMethod>();
         for (var method : methods) {
             if (!method.getName().equals(methodName)) {

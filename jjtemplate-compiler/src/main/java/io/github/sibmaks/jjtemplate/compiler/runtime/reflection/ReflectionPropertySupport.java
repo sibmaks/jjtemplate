@@ -26,8 +26,18 @@ final class ReflectionPropertySupport {
     private static final List<String> GET_METHOD_PREFIX = List.of("get", "is");
     private static final Object PROPERTY_NOT_FOUND = new Object();
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-    private static final Map<Class<?>, Map<String, AccessDescriptor>> PROPERTY_CACHE = new ConcurrentHashMap<>();
-    private static final Map<Class<?>, List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ConcurrentHashMap<>();
+    private static final ClassValue<Map<String, AccessDescriptor>> PROPERTY_CACHE = new ClassValue<>() {
+        @Override
+        protected Map<String, AccessDescriptor> computeValue(Class<?> type) {
+            return new ConcurrentHashMap<>();
+        }
+    };
+    private static final ClassValue<List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ClassValue<>() {
+        @Override
+        protected List<AccessDescriptor> computeValue(Class<?> type) {
+            return buildAllDescriptors(type);
+        }
+    };
 
     static Map<String, Object> getAllProperties(Object obj) {
         if (obj == null) {
@@ -41,7 +51,7 @@ final class ReflectionPropertySupport {
         }
 
         var type = obj.getClass();
-        var descriptors = ALL_PROPERTIES_CACHE.computeIfAbsent(type, ReflectionPropertySupport::buildAllDescriptors);
+        var descriptors = ALL_PROPERTIES_CACHE.get(type);
         var map = new LinkedHashMap<String, Object>(descriptors.size());
         for (var descriptor : descriptors) {
             try {
@@ -184,7 +194,7 @@ final class ReflectionPropertySupport {
     }
 
     private static Object getObjectProperty(Object obj, String name, Class<?> type) {
-        var map = PROPERTY_CACHE.computeIfAbsent(type, key -> new ConcurrentHashMap<>());
+        var map = PROPERTY_CACHE.get(type);
         var descriptor = map.computeIfAbsent(name, propertyName -> buildDescriptor(type, propertyName));
         try {
             return descriptor.get(obj);
