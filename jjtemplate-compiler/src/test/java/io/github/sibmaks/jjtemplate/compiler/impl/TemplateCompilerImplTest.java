@@ -9,7 +9,6 @@ import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -86,48 +85,8 @@ class TemplateCompilerImplTest {
     }
 
     @Test
-    void compileTemplateWithDefinitionFallbackEnabled() {
-        var options = TemplateCompileOptions.builder()
-                .definitionExpressionFallback(true)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
-
-        var source = new Definition();
-        source.put("value", "text");
-        source.put("items", List.of(1, 2));
-
-        var switchDefinition = new Definition();
-        switchDefinition.put("result switch .value", Map.of(
-                "'text'", "matched",
-                "else", "fallback"
-        ));
-
-        var rangeDefinition = new Definition();
-        rangeDefinition.put("list range item,index of .items", "{{ .item }}");
-
-        var script = TemplateScript.builder()
-                .definitions(List.of(source, switchDefinition, rangeDefinition))
-                .template(Map.of(
-                        "switch", "{{ .result }}",
-                        "range", "{{ .list }}"
-                ))
-                .build();
-
-        var compiled = compiler.compile(script);
-        var rendered = compiled.render(Map.of());
-
-        assertEquals(
-                Map.of("switch", "matched", "range", List.of(1, 2)),
-                rendered
-        );
-    }
-
-    @Test
-    void compileTemplateWithDefinitionFallbackDisabled() {
-        var options = TemplateCompileOptions.builder()
-                .definitionExpressionFallback(false)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
+    void compileTemplateTreatsUnwrappedDefinitionExpressionsAsPlainFields() {
+        var compiler = TemplateCompiler.getInstance();
 
         var source = new Definition();
         source.put("value", "text");
@@ -160,122 +119,6 @@ class TemplateCompilerImplTest {
                 expected,
                 rendered
         );
-    }
-
-    @Test
-    void compileTemplateWithDefinitionFallbackEnabledForSwitchInsideRange() {
-        var options = TemplateCompileOptions.builder()
-                .definitionExpressionFallback(true)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
-
-        var source = new Definition();
-        source.put("products", List.of(
-                Map.of("category", "MILK", "price", 0),
-                Map.of("category", "WATER", "price", 42)
-        ));
-
-        var rangeWithSwitch = new Definition();
-        rangeWithSwitch.put("objects range product,index of .products", Map.of(
-                "category", "{{ .product.category }}",
-                "caption switch .product.price | le 0", Map.of(
-                        "then", "Free",
-                        "false", "Price: {{ .product.price }}"
-                )
-        ));
-
-        var script = TemplateScript.builder()
-                .definitions(List.of(source, rangeWithSwitch))
-                .template("{{ .objects }}")
-                .build();
-
-        var compiled = compiler.compile(script);
-        var rendered = compiled.render(Map.of());
-
-        assertEquals(
-                List.of(
-                        Map.of("category", "MILK", "caption", "Free"),
-                        Map.of("category", "WATER", "caption", "Price: 42")
-                ),
-                rendered
-        );
-    }
-
-    @Test
-    void compileTemplateWithDefinitionFallbackEnabledForRangeInsideRange() {
-        var options = TemplateCompileOptions.builder()
-                .definitionExpressionFallback(true)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
-
-        var source = new Definition();
-        source.put("products", List.of(
-                Map.of("category", "MILK", "tags", List.of("ECO", "HEALTHY")),
-                Map.of("category", "WATER", "tags", List.of("PURE"))
-        ));
-
-        var nestedRange = new Definition();
-        nestedRange.put("objects range product,index of .products", Map.of(
-                "category", "{{ .product.category }}",
-                "tags range tag,tagIndex of .product.tags", Map.of(
-                        "name", "{{ .tag }}"
-                )
-        ));
-
-        var script = TemplateScript.builder()
-                .definitions(List.of(source, nestedRange))
-                .template("{{ .objects }}")
-                .build();
-
-        var compiled = compiler.compile(script);
-        var rendered = compiled.render(Map.of());
-
-        assertEquals(
-                List.of(
-                        Map.of(
-                                "category", "MILK",
-                                "tags", List.of(
-                                        Map.of("name", "ECO"),
-                                        Map.of("name", "HEALTHY")
-                                )
-                        ),
-                        Map.of(
-                                "category", "WATER",
-                                "tags", List.of(
-                                        Map.of("name", "PURE")
-                                )
-                        )
-                ),
-                rendered
-        );
-    }
-
-    @Test
-    void compileTemplateWithDefinitionFallbackEnabledElseCaseShouldBeProcessedLast() {
-        var options = TemplateCompileOptions.builder()
-                .definitionExpressionFallback(true)
-                .build();
-        var compiler = TemplateCompiler.getInstance(options);
-
-        var source = new Definition();
-        source.put("value", "text");
-
-        var switchCases = new LinkedHashMap<String, Object>();
-        switchCases.put("else", "fallback");
-        switchCases.put("'text'", "matched");
-
-        var switchDefinition = new Definition();
-        switchDefinition.put("result switch .value", switchCases);
-
-        var script = TemplateScript.builder()
-                .definitions(List.of(source, switchDefinition))
-                .template("{{ .result }}")
-                .build();
-
-        var compiled = compiler.compile(script);
-        var rendered = compiled.render(Map.of());
-
-        assertEquals("matched", rendered);
     }
 
     @Test

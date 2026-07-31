@@ -1,9 +1,0 @@
-{
-  "template": {
-    "attributes": [
-      {
-        "value": "{{ 'REMOTE' | eq .remote | cast:str }}"
-      }
-    ]
-  }
-}

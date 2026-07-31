@@ -30,8 +30,7 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 new TemplateTypeInferenceVisitor(),
                 new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build()),
-                new ExpressionParser(),
-                false
+                new ExpressionParser()
         );
 
         var exception = assertThrows(TemplateParseException.class, () -> factory.compile(List.of("{{")));
@@ -44,8 +43,7 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 new TemplateTypeInferenceVisitor(),
                 new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build()),
-                new ExpressionParser(),
-                false
+                new ExpressionParser()
         );
 
         var exception = assertThrows(TemplateParseException.class, () -> factory.compileObject(Map.of("{{", "value")));
@@ -58,8 +56,7 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 new TemplateTypeInferenceVisitor(),
                 new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build()),
-                new ExpressionParser(),
-                false
+                new ExpressionParser()
         );
 
         var object = factory.compileObject(Map.of("name", "Bob"));
@@ -68,26 +65,25 @@ class RootTemplateExpressionFactoryTest {
     }
 
     @Test
-    void compileDefinitionObjectShouldRequireMapForNestedSwitchCase() {
+    void compileObjectShouldRequireMapForNestedSwitchCase() {
         var factory = new RootTemplateExpressionFactory(
                 new TemplateTypeInferenceVisitor(),
                 new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build()),
-                new ExpressionParser(),
-                true
+                new ExpressionParser()
         );
 
         var exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> factory.compileDefinitionObject(Map.of(
-                        "result switch .value", Map.of("then switch .flag", "not-a-map")
+                () -> factory.compileObject(Map.of(
+                        "{{ result switch .value }}", Map.of("{{ then switch .flag }}", "not-a-map")
                 ))
         );
 
-        assertEquals("Expected a map entry for 'then switch .flag'", exception.getMessage());
+        assertEquals("Expected a map entry for '{{ then switch .flag }}'", exception.getMessage());
     }
 
     @Test
-    void compileDefinitionObjectShouldRejectNonSwitchCompiledKey() {
+    void compileObjectShouldRejectNonSwitchCompiledKey() {
         TemplateTypeInferenceVisitor inferenceVisitor = mock();
         TemplateExpressionFactory expressionFactory = mock();
         ExpressionParser parser = new ExpressionParser();
@@ -101,14 +97,13 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 inferenceVisitor,
                 expressionFactory,
-                parser,
-                true
+                parser
         );
 
         var exception = assertThrows(
                 IllegalStateException.class,
-                () -> factory.compileDefinitionObject(Map.of(
-                        "result switch .value", Map.of("else", "fallback")
+                () -> factory.compileObject(Map.of(
+                        "{{ result switch .value }}", Map.of("{{ else }}", "fallback")
                 ))
         );
 
@@ -126,7 +121,7 @@ class RootTemplateExpressionFactoryTest {
         when(expressionFactory.compile(any(JJTemplateParser.TemplateContext.class)))
                 .thenReturn(new ConstantTemplateExpression("value"));
 
-        var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser, false);
+        var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser);
 
         var exception = assertThrows(IllegalArgumentException.class, () -> factory.compile(List.of("{{ .value }}")));
 
@@ -134,7 +129,7 @@ class RootTemplateExpressionFactoryTest {
     }
 
     @Test
-    void compileDefinitionObjectShouldRejectUnsupportedObjectKeyType() {
+    void compileObjectShouldRejectUnsupportedObjectKeyType() {
         TemplateTypeInferenceVisitor inferenceVisitor = mock();
         TemplateExpressionFactory expressionFactory = mock();
         ExpressionParser parser = new ExpressionParser();
@@ -142,18 +137,18 @@ class RootTemplateExpressionFactoryTest {
         when(inferenceVisitor.infer(any(JJTemplateParser.TemplateContext.class)))
                 .thenReturn(TemplateType.SWITCH_ELSE);
 
-        var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser, true);
+        var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser);
 
         var exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> factory.compileDefinitionObject(Map.of("field", "value"))
+                () -> factory.compileObject(Map.of("field", "value"))
         );
 
         assertEquals("Unknown key type: SWITCH_ELSE", exception.getMessage());
     }
 
     @Test
-    void compileDefinitionObjectShouldRejectNonRangeCompiledKey() {
+    void compileObjectShouldRejectNonRangeCompiledKey() {
         TemplateTypeInferenceVisitor inferenceVisitor = mock();
         TemplateExpressionFactory expressionFactory = mock();
         ExpressionParser parser = new ExpressionParser();
@@ -166,14 +161,13 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 inferenceVisitor,
                 expressionFactory,
-                parser,
-                true
+                parser
         );
 
         var exception = assertThrows(
                 ClassCastException.class,
-                () -> factory.compileDefinitionObject(Map.of(
-                        "items range item,index of .values", "{{ .item }}"
+                () -> factory.compileObject(Map.of(
+                        "{{ items range item,index of .values }}", "{{ .item }}"
                 ))
         );
 
@@ -182,7 +176,7 @@ class RootTemplateExpressionFactoryTest {
     }
 
     @Test
-    void compileDefinitionObjectShouldBuildRangeFromCompiledKey() {
+    void compileObjectShouldBuildRangeFromCompiledKey() {
         var key = new ConstantTemplateExpression("items");
         var source = new ConstantTemplateExpression(List.of("a", "b"));
         RangeTemplateExpression range = RangeTemplateExpression.builder()
@@ -215,12 +209,11 @@ class RootTemplateExpressionFactoryTest {
         var factory = new RootTemplateExpressionFactory(
                 inferenceVisitor,
                 expressionFactory,
-                parser,
-                true
+                parser
         );
 
-        var object = factory.compileDefinitionObject(Map.of(
-                "items range item,index of .values", "{{ .item }}"
+        var object = factory.compileObject(Map.of(
+                "{{ items range item,index of .values }}", "{{ .item }}"
         ));
 
         assertEquals(1, object.getElements().size());

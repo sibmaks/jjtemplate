@@ -46,26 +46,22 @@ public final class RootTemplateExpressionFactory {
     private final TemplateTypeInferenceVisitor typeInferenceVisitor;
     private final TemplateExpressionFactory expressionFactory;
     private final ExpressionParser expressionParser;
-    private final boolean definitionExpressionFallback;
 
     /**
-     * Creates a factory with explicit definition-expression fallback mode.
+     * Creates a root template expression factory.
      *
-     * @param typeInferenceVisitor         type inference strategy
-     * @param expressionFactory            expression compiler for parsed contexts
-     * @param expressionParser             parser for raw template strings
-     * @param definitionExpressionFallback if {@code true}, definition keys can be treated as expressions
+     * @param typeInferenceVisitor type inference strategy
+     * @param expressionFactory    expression compiler for parsed contexts
+     * @param expressionParser     parser for raw template strings
      */
     public RootTemplateExpressionFactory(
             TemplateTypeInferenceVisitor typeInferenceVisitor,
             TemplateExpressionFactory expressionFactory,
-            ExpressionParser expressionParser,
-            boolean definitionExpressionFallback
+            ExpressionParser expressionParser
     ) {
         this.typeInferenceVisitor = typeInferenceVisitor;
         this.expressionFactory = expressionFactory;
         this.expressionParser = expressionParser;
-        this.definitionExpressionFallback = definitionExpressionFallback;
     }
 
     /**
@@ -80,10 +76,6 @@ public final class RootTemplateExpressionFactory {
      * @throws RuntimeException if the template cannot be parsed or compiled
      */
     public TemplateExpression compile(Object object) {
-        return compile(object, false);
-    }
-
-    private TemplateExpression compile(Object object, boolean definitionMode) {
         if (object == null) {
             return new ConstantTemplateExpression(null);
         }
@@ -95,33 +87,33 @@ public final class RootTemplateExpressionFactory {
 
         if (object instanceof Map<?, ?>) {
             var rawExpression = (Map<?, ?>) object;
-            return compileObject(rawExpression, definitionMode);
+            return compileObject(rawExpression);
         }
 
         if (object instanceof Collection<?>) {
             var rawExpression = (Collection<?>) object;
-            return compileList(rawExpression, definitionMode);
+            return compileList(rawExpression);
         }
 
         if (object.getClass().isArray()) {
-            return compileArray(object, definitionMode);
+            return compileArray(object);
         }
 
         return new ConstantTemplateExpression(object);
     }
 
-    private TemplateExpression compileList(Collection<?> rawExpression, boolean definitionMode) {
+    private TemplateExpression compileList(Collection<?> rawExpression) {
         var items = new ArrayList<ListElement>(rawExpression.size());
         for (var item : rawExpression) {
-            compileCollectionItem(items, item, definitionMode);
+            compileCollectionItem(items, item);
         }
 
         return new ListTemplateExpression(items);
     }
 
-    private void compileCollectionItem(ArrayList<ListElement> items, Object item, boolean definitionMode) {
+    private void compileCollectionItem(ArrayList<ListElement> items, Object item) {
         if (!(item instanceof String)) {
-            var compiledItem = compile(item, definitionMode);
+            var compiledItem = compile(item);
             var listElement = new DynamicListElement(compiledItem);
             items.add(listElement);
             return;
@@ -160,12 +152,12 @@ public final class RootTemplateExpressionFactory {
         }
     }
 
-    private TemplateExpression compileArray(Object rawExpression, boolean definitionMode) {
+    private TemplateExpression compileArray(Object rawExpression) {
         var length = Array.getLength(rawExpression);
         var items = new ArrayList<ListElement>(length);
         for (int i = 0; i < length; i++) {
             var item = Array.get(rawExpression, i);
-            compileCollectionItem(items, item, definitionMode);
+            compileCollectionItem(items, item);
         }
 
         return new ListTemplateExpression(items);
@@ -190,28 +182,11 @@ public final class RootTemplateExpressionFactory {
      * @return compiled template expression
      */
     public ObjectTemplateExpression compileObject(Map<?, ?> rawExpression) {
-        return compileObject(rawExpression, false);
-    }
-
-    /**
-     * Compiles a definitions map using definition-expression fallback settings.
-     *
-     * @param rawExpression definitions source map
-     * @return compiled object template expression
-     */
-    public ObjectTemplateExpression compileDefinitionObject(Map<?, ?> rawExpression) {
-        return compileObject(rawExpression, definitionExpressionFallback);
-    }
-
-    private ObjectTemplateExpression compileObject(
-            Map<?, ?> rawExpression,
-            boolean definitionMode
-    ) {
         var elements = new ArrayList<ObjectElement>(rawExpression.size());
 
         for (var entry : rawExpression.entrySet()) {
             var rawKey = entry.getKey();
-            var keyContext = parseObjectKey(String.valueOf(rawKey), definitionMode, false);
+            var keyContext = parseObjectKey(String.valueOf(rawKey));
             var keyType = typeInferenceVisitor.infer(keyContext);
             switch (keyType) {
                 case CONSTANT:
@@ -220,19 +195,19 @@ public final class RootTemplateExpressionFactory {
                     var rawValue = entry.getValue();
                     var element = new ObjectFieldElement(
                             expressionKey,
-                            compile(rawValue, definitionMode)
+                            compile(rawValue)
                     );
                     elements.add(element);
                     break;
                 }
                 case SWITCH: {
                     var switchRawValue = (Map<?, ?>) entry.getValue();
-                    var element = compileSwitch(keyContext, switchRawValue, definitionMode);
+                    var element = compileSwitch(keyContext, switchRawValue);
                     elements.add(element);
                     break;
                 }
                 case RANGE: {
-                    var element = compileRange(keyContext, entry.getValue(), definitionMode);
+                    var element = compileRange(keyContext, entry.getValue());
                     elements.add(element);
                     break;
                 }
@@ -251,59 +226,40 @@ public final class RootTemplateExpressionFactory {
         return new ObjectTemplateExpression(elements);
     }
 
-    private JJTemplateParser.TemplateContext parseObjectKey(
-            String rawKey,
-            boolean definitionMode,
-            boolean forceExpression
-    ) {
-        var expressionCandidate = rawKey;
-        var hasBrackets = containsExpression(rawKey);
-        if (!hasBrackets && (forceExpression || (definitionMode && looksLikeDefinitionExpression(rawKey)))) {
-            expressionCandidate = "{{ " + rawKey + " }}";
-        }
+    private JJTemplateParser.TemplateContext parseObjectKey(String rawKey) {
         try {
-            return expressionParser.parse(expressionCandidate);
+            return expressionParser.parse(rawKey);
         } catch (TemplateParseException e) {
             throw new TemplateParseException(String.format("Parse object field: '%s' failed", rawKey), e);
         }
     }
 
-    private boolean containsExpression(String rawKey) {
-        return rawKey.contains("{{");
-    }
-
-    private boolean looksLikeDefinitionExpression(String rawKey) {
-        var lower = rawKey.trim().toLowerCase();
-        return lower.contains(" switch ") || lower.contains(" range ");
-    }
-
     private ObjectFieldElement compileSwitch(
             JJTemplateParser.TemplateContext keyContext,
-            Map<?, ?> rawValue,
-            boolean definitionMode
+            Map<?, ?> rawValue
     ) {
         var switchCases = new ArrayList<SwitchCase>(rawValue.size());
         var elseSwitchCases = new ArrayList<SwitchCase>(1);
 
         for (var entry : rawValue.entrySet()) {
             var caseKeyRaw = entry.getKey();
-            var caseKeyContext = parseObjectKey(String.valueOf(caseKeyRaw), false, definitionMode);
+            var caseKeyContext = parseObjectKey(String.valueOf(caseKeyRaw));
             var caseKeyType = typeInferenceVisitor.infer(caseKeyContext);
             var caseValueRaw = entry.getValue();
             if (caseKeyType == TemplateType.SWITCH) {
                 if (!(caseValueRaw instanceof Map<?, ?>)) {
                     throw new IllegalArgumentException(String.format("Expected a map entry for '%s'", caseKeyRaw));
                 }
-                var objectValue = compileSwitch(caseKeyContext, (Map<?, ?>) caseValueRaw, definitionMode);
+                var objectValue = compileSwitch(caseKeyContext, (Map<?, ?>) caseValueRaw);
                 var switchCase = new ExpressionSwitchCase(objectValue.getKey(), objectValue.getValue());
                 switchCases.add(switchCase);
             } else if (caseKeyType == TemplateType.SWITCH_ELSE) {
-                var objectValue = compile(caseValueRaw, definitionMode);
+                var objectValue = compile(caseValueRaw);
                 var switchCase = new ElseSwitchCase(objectValue);
                 elseSwitchCases.add(switchCase);
             } else {
                 var objectKey = expressionFactory.compile(caseKeyContext);
-                var objectValue = compile(caseValueRaw, definitionMode);
+                var objectValue = compile(caseValueRaw);
                 var switchCase = new ExpressionSwitchCase(objectKey, objectValue);
                 switchCases.add(switchCase);
             }
@@ -331,12 +287,11 @@ public final class RootTemplateExpressionFactory {
 
     private ObjectFieldElement compileRange(
             JJTemplateParser.TemplateContext keyContext,
-            Object body,
-            boolean definitionMode
+            Object body
     ) {
         var expressionKey = (RangeTemplateExpression) expressionFactory.compile(keyContext);
 
-        var compiledBody = compile(body, definitionMode);
+        var compiledBody = compile(body);
 
         var range = RangeTemplateExpression.builder()
                 .name(expressionKey.getName())

@@ -1,8 +1,0 @@
-{
-  "definitions": [
-    {
-      "valTrue": true
-    }
-  ],
-  "template": "{{ .valTrue ? 'ok' : 'fail' }}"
-}

@@ -1,3 +1,0 @@
-{
-  "template": "{{ .varDate | date:parse 'dd.MM.yyyy' | cast:str }}"
-}

@@ -1,7 +1,0 @@
-{
-  "template": [
-    "prefix",
-    "{{. null }}",
-    "suffix"
-  ]
-}

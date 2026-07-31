@@ -1,6 +1,0 @@
-{
-  "template": {
-    "args": "{{ string:trim ' hello ' }}",
-    "pipe": "{{ ' hello ' | string:trim }}"
-  }
-}

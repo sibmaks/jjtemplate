@@ -1,6 +1,0 @@
-{
-  "template": {
-    "args": "{{ string:indexOf 'hello world ', ' ' }}",
-    "pipe": "{{ 'hello world ' | string:indexOf  ' ' }}"
-  }
-}

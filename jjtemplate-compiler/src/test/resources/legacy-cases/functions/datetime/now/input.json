@@ -1,3 +1,0 @@
-{
-  "template": "{{ datetime:now | date:format 'yyyy' | ge '2025' }}"
-}
