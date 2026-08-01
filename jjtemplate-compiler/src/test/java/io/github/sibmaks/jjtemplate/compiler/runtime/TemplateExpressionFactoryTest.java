@@ -57,9 +57,10 @@ class TemplateExpressionFactoryTest {
     void visitLiteralShouldRejectNonExpressionInterpolationInsideStringLiteral() {
         var factory = new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build());
 
+        var literalExpression = new LiteralExpression("x {{? true }}");
         var exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> factory.visitLiteral(new LiteralExpression("x {{? true }}"))
+                () -> factory.visitLiteral(literalExpression)
         );
 
         assertEquals("Only '{{ ... }}' substitutions are allowed inside string literals", exception.getMessage());

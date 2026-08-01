@@ -89,17 +89,18 @@ class ExpressionParserTest {
                 InvocationTargetException.class,
                 () -> mapInterpolationType.invoke(parser, TokenType.TEXT)
         );
-        assertTrue(mapException.getCause() instanceof TemplateParseException);
-        assertEquals("Unknown interpolation type: TEXT", mapException.getCause().getMessage());
+        var mapCause = assertInstanceOf(TemplateParseException.class, mapException.getCause());
+        assertEquals("Unknown interpolation type: TEXT", mapCause.getMessage());
 
         var findClose = ExpressionParser.class.getDeclaredMethod("findClose", List.class, int.class);
         findClose.setAccessible(true);
+        List<Token> tokens = List.of(new Token(TokenType.OPEN_EXPR, "{{", 0, 2));
         var findCloseException = assertThrows(
                 InvocationTargetException.class,
-                () -> findClose.invoke(parser, List.of(new Token(TokenType.OPEN_EXPR, "{{", 0, 2)), 1)
+                () -> findClose.invoke(parser, tokens, 1)
         );
-        assertTrue(findCloseException.getCause() instanceof TemplateParseException);
-        assertEquals("Missing closing '}}'", findCloseException.getCause().getMessage());
+        var findCause = assertInstanceOf(TemplateParseException.class, findCloseException.getCause());
+        assertEquals("Missing closing '}}'", findCause.getMessage());
     }
 
     @Test

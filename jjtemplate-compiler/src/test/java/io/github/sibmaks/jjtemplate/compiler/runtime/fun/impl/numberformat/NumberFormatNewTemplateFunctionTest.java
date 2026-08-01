@@ -12,13 +12,7 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Currency;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,53 +38,74 @@ class NumberFormatNewTemplateFunctionTest {
 
     @Test
     void invokeWithoutArgumentsShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of()));
+        List<Object> args = List.of();
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("numberFormat:new: at least 1 argument required", exception.getMessage());
     }
 
     @Test
     void pipeInvokeWithoutArgumentsShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of(), Map.of()));
+        List<Object> args = List.of();
+        Map<Object, Object> pipeArg = Map.of();
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args, pipeArg)
+        );
         assertEquals("numberFormat:new: at least 1 argument required", exception.getMessage());
     }
 
     @Test
     void invokeWithTooManyArgumentsShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of(), Map.of())));
+        List<Object> args = List.of(Locale.US, Map.of(), Map.of());
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void pipeInvokeWithTooManyArgumentsShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of()), Map.of()));
+        Map<Object, Object> object = Map.of();
+        List<Object> args = List.of(Locale.US, object);
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args, object)
+        );
         assertEquals("numberFormat:new: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void pipeInvokeWithMoreThanTwoArgumentsShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of(), Map.of()), null));
+        List<Object> args = List.of(Locale.US, Map.of(), Map.of());
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args, null)
+        );
         assertEquals("numberFormat:new: too much arguments passed", exception.getMessage());
     }
 
     @Test
     void firstArgumentMustBeLocale() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(List.of("en-US")));
+        List<Object> args = List.of("en-US");
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("numberFormat:new: 1st argument must be Locale, got: java.lang.String", exception.getMessage());
     }
 
     @Test
     void firstArgumentNullMustFail() {
-        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(Collections.singletonList(null)));
+        List<Object> args = Collections.singletonList(null);
+        var exception = assertThrows(TemplateEvalException.class, () -> function.invoke(args));
         assertEquals("numberFormat:new: 1st argument must be Locale, got null", exception.getMessage());
     }
 
     @Test
     void secondArgumentMustBeMap() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, "bad-settings")));
+        List<Object> args = List.of(Locale.US, "bad-settings");
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: 2nd argument must be Map, got: java.lang.String", exception.getMessage());
     }
 
@@ -106,8 +121,11 @@ class NumberFormatNewTemplateFunctionTest {
 
     @Test
     void pipeSecondArgumentMustBeMap() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US), "bad-settings"));
+        List<Object> args = List.of(Locale.US);
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args, "bad-settings")
+        );
         assertEquals("numberFormat:new: 2nd argument must be Map, got: java.lang.String", exception.getMessage());
     }
 
@@ -156,8 +174,11 @@ class NumberFormatNewTemplateFunctionTest {
 
     @Test
     void invokeWithUnsupportedStyleShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("style", "scientific"))));
+        List<Object> args = List.of(Locale.US, Map.of("style", "scientific"));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: unsupported style: scientific", exception.getMessage());
     }
 
@@ -213,55 +234,73 @@ class NumberFormatNewTemplateFunctionTest {
     void roundingModeAsEnum() {
         var result = function.invoke(List.of(Locale.US, Map.of("roundingMode", RoundingMode.DOWN)));
         assertInstanceOf(DecimalFormat.class, result);
-        assertEquals(RoundingMode.DOWN, ((DecimalFormat) result).getRoundingMode());
+        assertEquals(RoundingMode.DOWN, result.getRoundingMode());
     }
 
     @Test
     void roundingModeAsString() {
         var result = function.invoke(List.of(Locale.US, Map.of("roundingMode", "UP")));
         assertInstanceOf(DecimalFormat.class, result);
-        assertEquals(RoundingMode.UP, ((DecimalFormat) result).getRoundingMode());
+        assertEquals(RoundingMode.UP, result.getRoundingMode());
     }
 
     @Test
     void unsupportedSettingShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("unknown", true))));
+        List<Object> args = List.of(Locale.US, Map.of("unknown", true));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: unsupported setting: unknown", exception.getMessage());
     }
 
     @Test
     void invalidBooleanSettingShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("groupingUsed", "true"))));
+        List<Object> args = List.of(Locale.US, Map.of("groupingUsed", "true"));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: setting 'groupingUsed' must be boolean", exception.getMessage());
     }
 
     @Test
     void invalidNumericSettingShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("maximumFractionDigits", "2"))));
+        List<Object> args = List.of(Locale.US, Map.of("maximumFractionDigits", "2"));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: setting 'maximumFractionDigits' must be numeric", exception.getMessage());
     }
 
     @Test
     void invalidCurrencySettingShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("currency", 123))));
+        List<Object> args = List.of(Locale.US, Map.of("currency", 123));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: setting 'currency' must be Currency or string code", exception.getMessage());
     }
 
     @Test
     void invalidRoundingModeTypeShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("roundingMode", 1))));
+        List<Object> args = List.of(Locale.US, Map.of("roundingMode", 1));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals("numberFormat:new: setting 'roundingMode' must be RoundingMode or string", exception.getMessage());
     }
 
     @Test
     void invalidRoundingModeNameShouldFail() {
-        var exception = assertThrows(TemplateEvalException.class,
-                () -> function.invoke(List.of(Locale.US, Map.of("roundingMode", "INVALID"))));
+        List<Object> args = List.of(Locale.US, Map.of("roundingMode", "INVALID"));
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> function.invoke(args)
+        );
         assertEquals(
                 "numberFormat:new: No enum constant java.math.RoundingMode.INVALID",
                 exception.getMessage()
@@ -274,8 +313,11 @@ class NumberFormatNewTemplateFunctionTest {
                 .getDeclaredMethod("setRoundingMode", NumberFormat.class, Object.class);
         method.setAccessible(true);
 
-        var cause = assertThrows(InvocationTargetException.class,
-                () -> method.invoke(function, new StubNumberFormat(), RoundingMode.DOWN)).getCause();
+        var stubNumberFormat = new StubNumberFormat();
+        var cause = assertThrows(
+                InvocationTargetException.class,
+                () -> method.invoke(function, stubNumberFormat, RoundingMode.DOWN)
+        ).getCause();
 
         assertInstanceOf(TemplateEvalException.class, cause);
         assertEquals("numberFormat:new: roundingMode is supported only by DecimalFormat", cause.getMessage());

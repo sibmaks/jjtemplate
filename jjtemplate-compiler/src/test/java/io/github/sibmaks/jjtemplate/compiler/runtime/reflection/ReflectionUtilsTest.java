@@ -18,6 +18,30 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ReflectionUtilsTest {
 
+    static Stream<Arguments> numericConversionCases() {
+        return Stream.of(
+                Arguments.of("asInt", 7L, 7, Integer.class),
+                Arguments.of("asPrimitiveInt", 7L, 7, Integer.class),
+                Arguments.of("asWrapperInt", 7L, 7, Integer.class),
+                Arguments.of("asLong", 7, 7L, Long.class),
+                Arguments.of("asPrimitiveLong", 7, 7L, Long.class),
+                Arguments.of("asWrapperLong", 7, 7L, Long.class),
+                Arguments.of("asDouble", 7, 7.0d, Double.class),
+                Arguments.of("asPrimitiveDouble", 7, 7.0d, Double.class),
+                Arguments.of("asWrapperDouble", 7, 7.0d, Double.class),
+                Arguments.of("asFloat", 7, 7.0f, Float.class),
+                Arguments.of("asPrimitiveFloat", 7, 7.0f, Float.class),
+                Arguments.of("asWrapperFloat", 7, 7.0f, Float.class),
+                Arguments.of("asShort", 7, (short) 7, Short.class),
+                Arguments.of("asPrimitiveShort", 7, (short) 7, Short.class),
+                Arguments.of("asWrapperShort", 7, (short) 7, Short.class),
+                Arguments.of("asByte", 7, (byte) 7, Byte.class),
+                Arguments.of("asPrimitiveByte", 7, (byte) 7, Byte.class),
+                Arguments.of("asWrapperByte", 7, (byte) 7, Byte.class),
+                Arguments.of("asNumber", 7, 7, Integer.class)
+        );
+    }
+
     @Test
     void getAllPropertiesOfMap() {
         var map = Map.of("a", 1, "b", 2);
@@ -191,9 +215,11 @@ class ReflectionUtilsTest {
     void getPropertyWithResolvedPropertiesShouldWrapAccessorFailure() {
         var resolved = ReflectionUtils.resolveProperty(BrokenProperty.class, "boom").orElseThrow();
 
+        var brokenProperty = new BrokenProperty();
+        var resolvedProperties = List.of(resolved);
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionUtils.getProperty(new BrokenProperty(), "boom", List.of(resolved))
+                () -> ReflectionUtils.getProperty(brokenProperty, "boom", resolvedProperties)
         );
 
         assertEquals(
@@ -241,9 +267,10 @@ class ReflectionUtilsTest {
     @Test
     void invokeEnumMethodWithUnknownEnumConstantThrows() {
         var p = new Person();
+        List<Object> args = List.of("UNKNOWN");
         var ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> ReflectionUtils.invokeMethodReflective(p, "setMode", List.of("UNKNOWN"))
+                () -> ReflectionUtils.invokeMethodReflective(p, "setMode", args)
         );
         assertTrue(ex.getMessage().contains("No enum constant"));
     }
@@ -261,7 +288,8 @@ class ReflectionUtilsTest {
     void invokeMethodWithAssignable() {
         var p = new Person();
         var value = UUID.randomUUID().toString();
-        var actual = ReflectionUtils.invokeMethodReflective(p, "callSupplier", List.of(new StubSupplier(value)));
+        List<Object> args = List.of(new StubSupplier(value));
+        var actual = ReflectionUtils.invokeMethodReflective(p, "callSupplier", args);
         assertEquals(value, actual);
     }
 
@@ -325,9 +353,11 @@ class ReflectionUtilsTest {
 
     @Test
     void invokeMethodShouldWrapReflectiveInvocationFailure() {
+        var brokenMethod = new BrokenMethod();
+        List<Object> args = List.of();
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionUtils.invokeMethodReflective(new BrokenMethod(), "explode", List.of())
+                () -> ReflectionUtils.invokeMethodReflective(brokenMethod, "explode", args)
         );
 
         assertTrue(ex.getMessage().contains("Error invoking method explode"));
@@ -345,11 +375,14 @@ class ReflectionUtilsTest {
 
     @Test
     void invokeMethodWithResolvedMethodsShouldWrapInvocationFailure() {
-        var resolved = ReflectionUtils.resolveMethods(BrokenMethod.class, "explode", List.of());
+        List<Class<?>> argsTypes = List.of();
+        var resolved = ReflectionUtils.resolveMethods(BrokenMethod.class, "explode", argsTypes);
 
+        List<Object> args = List.of();
+        var brokenMethod = new BrokenMethod();
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionUtils.invokeMethodReflective(new BrokenMethod(), "explode", List.of(), resolved)
+                () -> ReflectionUtils.invokeMethodReflective(brokenMethod, "explode", args, resolved)
         );
 
         assertTrue(ex.getMessage().contains("Error invoking method explode"));
@@ -360,9 +393,10 @@ class ReflectionUtilsTest {
     void invokeMethodWithResolvedMethodsNullTargetThrows() {
         var resolved = ReflectionUtils.resolveMethods(Person.class, "greet", List.of(String.class));
 
+        List<Object> args = List.of("Hi");
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionUtils.invokeMethodReflective(null, "greet", List.of("Hi"), resolved)
+                () -> ReflectionUtils.invokeMethodReflective(null, "greet", args, resolved)
         );
 
         assertEquals("Cannot call method on null target", ex.getMessage());
@@ -398,12 +432,14 @@ class ReflectionUtilsTest {
         assertEquals(Boolean.class, ReflectionConversionSupport.wrap(boolean.class));
         assertEquals(Character.class, ReflectionConversionSupport.wrap(char.class));
         assertEquals(void.class, ReflectionConversionSupport.wrap(void.class));
-        assertNull(ReflectionConversionSupport.tryConvertArgs(new Class[]{String.class}, List.of(1)));
+        List<Object> args = List.of(1);
+        assertNull(ReflectionConversionSupport.tryConvertArgs(new Class[]{String.class}, args));
 
         var method = Person.class.getMethod("greet", String.class);
+        var person = new Person();
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of(1))
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, person, args)
         );
         assertEquals("No matching method greet found for args [1]", ex.getMessage());
     }
@@ -411,9 +447,12 @@ class ReflectionUtilsTest {
     @Test
     void methodSupportShouldRejectIncompatibleVarArgsDuringResolvedInvocation() throws NoSuchMethodException {
         var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
+
+        var person = new Person();
+        List<Object> args = List.of(1);
         var ex = assertThrows(
                 TemplateEvalException.class,
-                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of(1))
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, person, args)
         );
         assertEquals("No matching method collectVarargs found for args [1]", ex.getMessage());
     }
@@ -422,7 +461,9 @@ class ReflectionUtilsTest {
     void methodSupportShouldInvokeResolvedVarArgsMethod() throws ReflectiveOperationException {
         var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
 
-        var result = ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of("sum", 1, 2, 3));
+        var person = new Person();
+        List<Object> args = List.of("sum", 1, 2, 3);
+        var result = ReflectionMethodSupport.invokeResolvedMethod(method, person, args);
 
         assertEquals(6, result);
     }
@@ -430,9 +471,11 @@ class ReflectionUtilsTest {
     @Test
     void methodSupportShouldRejectResolvedVarArgsWithIncompatibleElementType() throws NoSuchMethodException {
         var method = Person.class.getMethod("collectVarargs", String.class, Integer[].class);
+        var person = new Person();
+        List<Object> args = List.of("sum", "bad");
         var ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> ReflectionMethodSupport.invokeResolvedMethod(method, new Person(), List.of("sum", "bad"))
+                () -> ReflectionMethodSupport.invokeResolvedMethod(method, person, args)
         );
         assertNotNull(ex.getMessage());
     }
@@ -509,7 +552,6 @@ class ReflectionUtilsTest {
         }
     }
 
-
     static class StubSupplier implements Supplier<String> {
         private final String value;
 
@@ -568,30 +610,6 @@ class ReflectionUtilsTest {
         public Object resolve(String fieldName) {
             return "map-fallback:" + fieldName;
         }
-    }
-
-    static Stream<Arguments> numericConversionCases() {
-        return Stream.of(
-                Arguments.of("asInt", 7L, 7, Integer.class),
-                Arguments.of("asPrimitiveInt", 7L, 7, Integer.class),
-                Arguments.of("asWrapperInt", 7L, 7, Integer.class),
-                Arguments.of("asLong", 7, 7L, Long.class),
-                Arguments.of("asPrimitiveLong", 7, 7L, Long.class),
-                Arguments.of("asWrapperLong", 7, 7L, Long.class),
-                Arguments.of("asDouble", 7, 7.0d, Double.class),
-                Arguments.of("asPrimitiveDouble", 7, 7.0d, Double.class),
-                Arguments.of("asWrapperDouble", 7, 7.0d, Double.class),
-                Arguments.of("asFloat", 7, 7.0f, Float.class),
-                Arguments.of("asPrimitiveFloat", 7, 7.0f, Float.class),
-                Arguments.of("asWrapperFloat", 7, 7.0f, Float.class),
-                Arguments.of("asShort", 7, (short) 7, Short.class),
-                Arguments.of("asPrimitiveShort", 7, (short) 7, Short.class),
-                Arguments.of("asWrapperShort", 7, (short) 7, Short.class),
-                Arguments.of("asByte", 7, (byte) 7, Byte.class),
-                Arguments.of("asPrimitiveByte", 7, (byte) 7, Byte.class),
-                Arguments.of("asWrapperByte", 7, (byte) 7, Byte.class),
-                Arguments.of("asNumber", 7, 7, Integer.class)
-        );
     }
 
     static class NumericConversionTarget {

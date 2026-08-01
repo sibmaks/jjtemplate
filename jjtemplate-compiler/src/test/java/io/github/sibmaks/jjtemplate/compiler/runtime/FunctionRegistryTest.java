@@ -10,7 +10,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -27,7 +28,7 @@ class FunctionRegistryTest {
 
         var function = registry.getFunction("string", "upper");
 
-        assertEquals("\u0130", function.invoke(List.of("i")));
+        assertEquals("İ", function.invoke(List.of("i")));
     }
 
     @Test
@@ -129,7 +130,8 @@ class FunctionRegistryTest {
                 .functions(List.of(function1, function2))
                 .build();
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> new FunctionRegistry(options)
         );
     }

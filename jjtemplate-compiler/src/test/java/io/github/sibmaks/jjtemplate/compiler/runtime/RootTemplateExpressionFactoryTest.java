@@ -33,7 +33,8 @@ class RootTemplateExpressionFactoryTest {
                 new ExpressionParser()
         );
 
-        var exception = assertThrows(TemplateParseException.class, () -> factory.compile(List.of("{{")));
+        var rawExpression = List.of("{{");
+        var exception = assertThrows(TemplateParseException.class, () -> factory.compile(rawExpression));
 
         assertEquals("Parse collection item: '{{' failed", exception.getMessage());
     }
@@ -46,7 +47,8 @@ class RootTemplateExpressionFactoryTest {
                 new ExpressionParser()
         );
 
-        var exception = assertThrows(TemplateParseException.class, () -> factory.compileObject(Map.of("{{", "value")));
+        var rawExpression = Map.of("{{", "value");
+        var exception = assertThrows(TemplateParseException.class, () -> factory.compileObject(rawExpression));
 
         assertEquals("Parse object field: '{{' failed", exception.getMessage());
     }
@@ -71,12 +73,13 @@ class RootTemplateExpressionFactoryTest {
                 new TemplateExpressionFactory(TemplateEvaluationOptions.builder().build()),
                 new ExpressionParser()
         );
-
+        Map<String, Map<String, String>> rawExpression = Map.of(
+                "{{ result switch .value }}",
+                Map.of("{{ then switch .flag }}", "not-a-map")
+        );
         var exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> factory.compileObject(Map.of(
-                        "{{ result switch .value }}", Map.of("{{ then switch .flag }}", "not-a-map")
-                ))
+                () -> factory.compileObject(rawExpression)
         );
 
         assertEquals("Expected a map entry for '{{ then switch .flag }}'", exception.getMessage());
@@ -100,11 +103,12 @@ class RootTemplateExpressionFactoryTest {
                 parser
         );
 
+        Map<String, Map<String, String>> rawExpression = Map.of(
+                "{{ result switch .value }}", Map.of("{{ else }}", "fallback")
+        );
         var exception = assertThrows(
                 IllegalStateException.class,
-                () -> factory.compileObject(Map.of(
-                        "{{ result switch .value }}", Map.of("{{ else }}", "fallback")
-                ))
+                () -> factory.compileObject(rawExpression)
         );
 
         assertEquals("Switch definition expression expected", exception.getMessage());
@@ -123,7 +127,8 @@ class RootTemplateExpressionFactoryTest {
 
         var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser);
 
-        var exception = assertThrows(IllegalArgumentException.class, () -> factory.compile(List.of("{{ .value }}")));
+        List<String> object = List.of("{{ .value }}");
+        var exception = assertThrows(IllegalArgumentException.class, () -> factory.compile(object));
 
         assertEquals("Unknown key type: SWITCH", exception.getMessage());
     }
@@ -139,9 +144,10 @@ class RootTemplateExpressionFactoryTest {
 
         var factory = new RootTemplateExpressionFactory(inferenceVisitor, expressionFactory, parser);
 
+        Map<String, String> rawExpression = Map.of("field", "value");
         var exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> factory.compileObject(Map.of("field", "value"))
+                () -> factory.compileObject(rawExpression)
         );
 
         assertEquals("Unknown key type: SWITCH_ELSE", exception.getMessage());
@@ -164,11 +170,12 @@ class RootTemplateExpressionFactoryTest {
                 parser
         );
 
+        Map<String, String> rawExpression = Map.of(
+                "{{ items range item,index of .values }}", "{{ .item }}"
+        );
         var exception = assertThrows(
                 ClassCastException.class,
-                () -> factory.compileObject(Map.of(
-                        "{{ items range item,index of .values }}", "{{ .item }}"
-                ))
+                () -> factory.compileObject(rawExpression)
         );
 
         assertTrue(exception.getMessage().contains("ConstantTemplateExpression"));
@@ -218,6 +225,7 @@ class RootTemplateExpressionFactoryTest {
 
         assertEquals(1, object.getElements().size());
         var field = assertInstanceOf(ObjectFieldElement.class, object.getElements().get(0));
-        assertEquals("items", ((ConstantTemplateExpression) field.getKey()).getValue());
+        var keyExpression = assertInstanceOf(ConstantTemplateExpression.class, field.getKey());
+        assertEquals("items", keyExpression.getValue());
     }
 }

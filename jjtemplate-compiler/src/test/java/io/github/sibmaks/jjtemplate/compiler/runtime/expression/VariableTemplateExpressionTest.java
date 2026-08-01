@@ -122,7 +122,8 @@ class VariableTemplateExpressionTest {
                 .thenReturn(argValue);
 
         try (MockedStatic<ReflectionUtils> utilities = mockStatic(ReflectionUtils.class)) {
-            utilities.when(() -> ReflectionUtils.invokeMethodReflective(rootValue, "compute", List.of(argValue)))
+            List<Object> args = List.of(argValue);
+            utilities.when(() -> ReflectionUtils.invokeMethodReflective(rootValue, "compute", args))
                     .thenReturn(resultValue);
 
             var chain = List.<VariableTemplateExpression.Chain>of(

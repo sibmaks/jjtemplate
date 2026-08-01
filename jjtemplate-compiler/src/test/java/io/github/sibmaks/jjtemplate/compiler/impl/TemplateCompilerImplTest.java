@@ -204,7 +204,8 @@ class TemplateCompilerImplTest {
 
         var compiled = compiler.compile(script);
 
-        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(Map.of("value", 1)));
+        Map<String, Object> context = Map.of("value", 1);
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(context));
         assertEquals("Failed execute: \".value ? 'yes' : 'no'\"", exception.getMessage());
         assertEquals(
                 "Cannot evaluate expression: .value ? 'yes' : 'no', condition is not boolean: 1",
@@ -221,7 +222,8 @@ class TemplateCompilerImplTest {
 
         var compiled = compiler.compile(script);
 
-        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(Map.of("value", "text")));
+        Map<String, Object> context = Map.of("value", "text");
+        var exception = assertThrows(TemplateEvalException.class, () -> compiled.render(context));
         assertEquals("Failed execute: \".value.missing()\"", exception.getMessage());
         assertNotNull(exception.getCause());
     }
