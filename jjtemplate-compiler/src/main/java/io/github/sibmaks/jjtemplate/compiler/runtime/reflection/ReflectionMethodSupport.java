@@ -34,40 +34,7 @@ final class ReflectionMethodSupport {
 
         var type = target.getClass();
         var methods = METHOD_CACHE.get(type);
-
-        Method bestMatch = null;
-        Object[] bestConverted = null;
-        var bestScore = Integer.MAX_VALUE;
-        for (var method : methods) {
-            if (!method.getName().equals(methodName)) {
-                continue;
-            }
-            var params = method.getParameterTypes();
-            var varArgs = method.isVarArgs();
-            if (!(varArgs ? args.size() >= params.length - 1 : params.length == args.size())) {
-                continue;
-            }
-
-            var argsToConvert = args;
-            if (varArgs) {
-                var fixedCount = params.length - 1;
-                var varargType = params[fixedCount].getComponentType();
-                var varargArray = Array.newInstance(varargType, args.size() - fixedCount);
-                for (int i = fixedCount; i < args.size(); i++) {
-                    Array.set(varargArray, i - fixedCount, args.get(i));
-                }
-                var merged = new ArrayList<>(args.subList(0, fixedCount));
-                merged.add(varargArray);
-                argsToConvert = merged;
-            }
-
-            var conversion = ReflectionConversionSupport.tryConvertArgs(params, argsToConvert);
-            if (conversion != null && conversion.getScore() < bestScore) {
-                bestMatch = method;
-                bestConverted = conversion.getValues();
-                bestScore = conversion.getScore();
-            }
-        }
+        var bestMatch = findBestMatch(methods, methodName, args);
 
         if (bestMatch == null) {
             if (target instanceof MethodFallbackResolver) {
@@ -77,16 +44,55 @@ final class ReflectionMethodSupport {
             throw new TemplateEvalException("No matching method " + methodName + " found for args " + args);
         }
 
-        if (bestMatch.isVarArgs()) {
-            bestConverted = ReflectionConversionSupport.convertVarArgs(args, bestMatch, bestConverted);
+        var method = bestMatch.method;
+        var converted = bestMatch.converted;
+        if (method.isVarArgs()) {
+            converted = ReflectionConversionSupport.convertVarArgs(args, method, converted);
         }
 
         try {
-            bestMatch.setAccessible(true);
-            return bestMatch.invoke(target, bestConverted);
+            method.setAccessible(true);
+            return method.invoke(target, converted);
         } catch (ReflectiveOperationException exception) {
             throw ReflectionUtils.methodInvocationError(methodName, exception);
         }
+    }
+
+    private static MethodMatch findBestMatch(Method[] methods, String methodName, List<Object> args) {
+        MethodMatch bestMatch = null;
+        for (var method : methods) {
+            var candidate = matchMethod(method, methodName, args);
+            if (candidate != null && (bestMatch == null || candidate.score < bestMatch.score)) {
+                bestMatch = candidate;
+            }
+        }
+        return bestMatch;
+    }
+
+    private static MethodMatch matchMethod(Method method, String methodName, List<Object> args) {
+        if (!method.getName().equals(methodName) || !acceptsArgumentCount(method, args.size())) {
+            return null;
+        }
+        var params = method.getParameterTypes();
+        var argsToConvert = prepareArguments(method, args);
+        var conversion = ReflectionConversionSupport.tryConvertArgs(params, argsToConvert);
+        if (conversion == null) {
+            return null;
+        }
+        return new MethodMatch(method, conversion.getValues(), conversion.getScore());
+    }
+
+    private static boolean acceptsArgumentCount(Method method, int argumentCount) {
+        var parameterCount = method.getParameterCount();
+        return method.isVarArgs() ? argumentCount >= parameterCount - 1 : parameterCount == argumentCount;
+    }
+
+    private static List<Object> prepareArguments(Method method, List<Object> args) {
+        if (!method.isVarArgs()) {
+            return args;
+        }
+        var params = method.getParameterTypes();
+        return mergeVarArgs(args, params);
     }
 
     static Object invokeMethodReflective(
@@ -135,14 +141,7 @@ final class ReflectionMethodSupport {
         var params = method.getParameterTypes();
         Object[] converted;
         if (method.isVarArgs()) {
-            var fixedCount = params.length - 1;
-            var varargType = params[fixedCount].getComponentType();
-            var varargArray = Array.newInstance(varargType, args.size() - fixedCount);
-            for (int i = fixedCount; i < args.size(); i++) {
-                Array.set(varargArray, i - fixedCount, args.get(i));
-            }
-            var merged = new ArrayList<>(args.subList(0, fixedCount));
-            merged.add(varargArray);
+            var merged = mergeVarArgs(args, params);
             var conversion = ReflectionConversionSupport.tryConvertArgs(params, merged);
             if (conversion == null) {
                 throw new TemplateEvalException("No matching method " + method.getName() + " found for args " + args);
@@ -157,6 +156,18 @@ final class ReflectionMethodSupport {
         }
         method.setAccessible(true);
         return method.invoke(target, converted);
+    }
+
+    private static List<Object> mergeVarArgs(List<Object> args, Class<?>[] params) {
+        var fixedCount = params.length - 1;
+        var varargType = params[fixedCount].getComponentType();
+        var varargArray = Array.newInstance(varargType, args.size() - fixedCount);
+        for (int i = fixedCount; i < args.size(); i++) {
+            Array.set(varargArray, i - fixedCount, args.get(i));
+        }
+        var merged = new ArrayList<>(args.subList(0, fixedCount));
+        merged.add(varargArray);
+        return merged;
     }
 
     private static boolean isMethodCompatible(Method method, List<Class<?>> argTypes) {
@@ -204,5 +215,17 @@ final class ReflectionMethodSupport {
                 || wrappedParameterType.isAssignableFrom(wrappedArgType)
                 || ReflectionConversionSupport.isNumeric(wrappedParameterType)
                 && ReflectionConversionSupport.isNumeric(wrappedArgType);
+    }
+
+    private static final class MethodMatch {
+        private final Method method;
+        private final Object[] converted;
+        private final int score;
+
+        private MethodMatch(Method method, Object[] converted, int score) {
+            this.method = method;
+            this.converted = converted;
+            this.score = score;
+        }
     }
 }

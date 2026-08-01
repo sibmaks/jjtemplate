@@ -134,33 +134,42 @@ public final class TemplateLexer {
         }
 
         if (peek() == '{' && peek2() == '{') {
-            pos += 2;
-            var c = peek();
-            if (c == '?') {
-                pos++;
-                expressionDepth++;
-                return new Token(TokenType.OPEN_COND, "{{?", start, pos);
-            }
-            if (c == '.') {
-                pos++;
-                expressionDepth++;
-                return new Token(TokenType.OPEN_SPREAD, "{{.", start, pos);
-            }
-            expressionDepth++;
-            return new Token(TokenType.OPEN_EXPR, "{{", start, pos);
+            return lexExpressionOpening(start);
         }
 
-        // Close delimiter
         if (peek() == '}' && peek2() == '}') {
-            pos += 2;
-            expressionDepth--;
-            if (expressionDepth < 0) {
-                throw new TemplateLexerException(input, "Unexpected closing '}}'", start);
-            }
-            return new Token(TokenType.CLOSE, "}}", start, pos);
+            return lexExpressionClosing(start);
         }
 
-        char c = peek();
+        return lexExpressionValue(start);
+    }
+
+    private Token lexExpressionOpening(int start) {
+        pos += 2;
+        expressionDepth++;
+        var c = peek();
+        if (c == '?') {
+            pos++;
+            return new Token(TokenType.OPEN_COND, "{{?", start, pos);
+        }
+        if (c == '.') {
+            pos++;
+            return new Token(TokenType.OPEN_SPREAD, "{{.", start, pos);
+        }
+        return new Token(TokenType.OPEN_EXPR, "{{", start, pos);
+    }
+
+    private Token lexExpressionClosing(int start) {
+        pos += 2;
+        expressionDepth--;
+        if (expressionDepth < 0) {
+            throw new TemplateLexerException(input, "Unexpected closing '}}'", start);
+        }
+        return new Token(TokenType.CLOSE, "}}", start, pos);
+    }
+
+    private Token lexExpressionValue(int start) {
+        var c = peek();
         switch (c) {
             case '|':
                 pos++;
@@ -201,113 +210,122 @@ public final class TemplateLexer {
         var start = pos;
         pos++; // opening '
         var sb = new StringBuilder();
-        var closed = false;
         int nestedExpressionDepth = 0;
-        while (pos < n) {
-            if (nestedExpressionDepth == 0 && peek() == '\'') {
-                pos++;
-                closed = true;
-                break;
-            }
-
-            if (peek() == '{' && peek2() == '{') {
-                sb.append('{').append('{');
-                pos += 2;
-                var opener = peek();
-                if (opener == '?' || opener == '.') {
-                    sb.append(opener);
-                    pos++;
-                }
-                nestedExpressionDepth++;
-                continue;
-            }
-
-            if (nestedExpressionDepth > 0 && peek() == '}' && peek2() == '}') {
-                sb.append('}').append('}');
-                pos += 2;
-                nestedExpressionDepth--;
-                continue;
-            }
-
-            var c = input.charAt(pos++);
-            if (c == '\\' && pos < n) {
-                var e = input.charAt(pos++);
-                switch (e) {
-                    case '\\':
-                        sb.append('\\');
-                        break;
-                    case '\'':
-                        sb.append('\'');
-                        break;
-                    case '"':
-                        sb.append('"');
-                        break;
-                    case 'n':
-                        sb.append('\n');
-                        break;
-                    case 'r':
-                        sb.append('\r');
-                        break;
-                    case 't':
-                        sb.append('\t');
-                        break;
-                    case 'b':
-                        sb.append('\b');
-                        break;
-                    case 'f':
-                        sb.append('\f');
-                        break;
-                    default:
-                        sb.append(e);
-                        break; // unknown escape -> passthrough
-                }
-            } else {
-                sb.append(c);
-            }
+        while (pos < n && (nestedExpressionDepth > 0 || peek() != '\'')) {
+            nestedExpressionDepth = lexStringCharacter(sb, nestedExpressionDepth);
         }
-        if (!closed) {
+        if (pos >= n) {
             throw new TemplateLexerException(input, "Unterminated string literal", pos);
         }
+        pos++;
         return new Token(TokenType.STRING, sb.toString(), start, pos);
+    }
+
+    private int lexStringCharacter(StringBuilder sb, int nestedExpressionDepth) {
+        if (peek() == '{' && peek2() == '{') {
+            appendNestedExpressionOpening(sb);
+            return nestedExpressionDepth + 1;
+        }
+        if (nestedExpressionDepth > 0 && peek() == '}' && peek2() == '}') {
+            sb.append('}').append('}');
+            pos += 2;
+            return nestedExpressionDepth - 1;
+        }
+        appendStringCharacter(sb);
+        return nestedExpressionDepth;
+    }
+
+    private void appendNestedExpressionOpening(StringBuilder sb) {
+        sb.append('{').append('{');
+        pos += 2;
+        var opener = peek();
+        if (opener == '?' || opener == '.') {
+            sb.append(opener);
+            pos++;
+        }
+    }
+
+    private void appendStringCharacter(StringBuilder sb) {
+        var c = input.charAt(pos++);
+        if (c != '\\' || pos >= n) {
+            sb.append(c);
+            return;
+        }
+        appendEscapedCharacter(sb, input.charAt(pos++));
+    }
+
+    private void appendEscapedCharacter(StringBuilder sb, char escaped) {
+        switch (escaped) {
+            case '\\':
+                sb.append('\\');
+                break;
+            case '\'':
+                sb.append('\'');
+                break;
+            case '"':
+                sb.append('"');
+                break;
+            case 'n':
+                sb.append('\n');
+                break;
+            case 'r':
+                sb.append('\r');
+                break;
+            case 't':
+                sb.append('\t');
+                break;
+            case 'b':
+                sb.append('\b');
+                break;
+            case 'f':
+                sb.append('\f');
+                break;
+            default:
+                sb.append(escaped);
+                break;
+        }
     }
 
     private Token lexNumber() {
         var start = pos;
+        consumeNumberSign();
+        consumeDecimalNumber();
+        consumeExponent();
+        var num = input.substring(start, pos);
+        return new Token(TokenType.NUMBER, num, start, pos);
+    }
+
+    private void consumeNumberSign() {
         if (peek() == '+' || peek() == '-') {
             pos++;
         }
-        var hasDot = false;
-        while (pos < n) {
-            var c = peek();
-            if (isDigit(c)) {
-                pos++;
-                continue;
-            }
-            if (c == '.' && !hasDot) {
-                hasDot = true;
-                pos++;
-                continue;
-            }
-            break;
-        }
-        // exponent
-        if (pos < n && (peek() == 'e' || peek() == 'E')) {
-            var save = pos;
+    }
+
+    private void consumeDecimalNumber() {
+        consumeDigits();
+        if (peek() == '.') {
             pos++;
-            if (pos < n && (peek() == '+' || peek() == '-')) {
-                pos++;
-            }
-            if (pos < n && isDigit(peek())) {
-                while (pos < n && isDigit(peek())) {
-                    pos++;
-                }
-            } else {
-                // not a valid exponent, roll back to save
-                pos = save;
-            }
+            consumeDigits();
         }
-        var num = input.substring(start, pos);
-        return new Token(TokenType.NUMBER, num, start, pos);
+    }
+
+    private void consumeExponent() {
+        if (pos >= n || peek() != 'e' && peek() != 'E') {
+            return;
+        }
+        var exponentStart = pos++;
+        consumeNumberSign();
+        if (pos >= n || !isDigit(peek())) {
+            pos = exponentStart;
+            return;
+        }
+        consumeDigits();
+    }
+
+    private void consumeDigits() {
+        while (pos < n && isDigit(peek())) {
+            pos++;
+        }
     }
 
     private Token lexWord() {
