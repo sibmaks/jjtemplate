@@ -377,6 +377,14 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void resolvePropertyShouldReuseResolvedAccessor() {
+        var first = ReflectionUtils.resolveProperty(Person.class, "name").orElseThrow();
+        var second = ReflectionUtils.resolveProperty(Person.class, "name").orElseThrow();
+
+        assertSame(first, second);
+    }
+
+    @Test
     void isSoftlyExtensibleShouldHandleFinalAndSpecialTypes() {
         assertTrue(ReflectionUtils.isSoftlyExtensible(Person.class));
         assertFalse(ReflectionUtils.isSoftlyExtensible(String.class));

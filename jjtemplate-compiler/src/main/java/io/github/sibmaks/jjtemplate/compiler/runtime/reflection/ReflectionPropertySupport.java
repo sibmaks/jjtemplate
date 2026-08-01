@@ -4,6 +4,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalExcep
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -28,13 +29,20 @@ final class ReflectionPropertySupport {
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final ClassValue<Map<String, AccessDescriptor>> PROPERTY_CACHE = new ClassValue<>() {
         @Override
-        protected Map<String, AccessDescriptor> computeValue(Class<?> type) {
+        protected Map<String, AccessDescriptor> computeValue(@NonNull Class<?> type) {
             return new ConcurrentHashMap<>();
         }
     };
+    private static final ClassValue<Map<String, ReflectionUtils.ResolvedProperty>> RESOLVED_PROPERTY_CACHE =
+            new ClassValue<>() {
+                @Override
+                protected Map<String, ReflectionUtils.ResolvedProperty> computeValue(@NonNull Class<?> type) {
+                    return buildResolvedProperties(type);
+                }
+            };
     private static final ClassValue<List<AccessDescriptor>> ALL_PROPERTIES_CACHE = new ClassValue<>() {
         @Override
-        protected List<AccessDescriptor> computeValue(Class<?> type) {
+        protected List<AccessDescriptor> computeValue(@NonNull Class<?> type) {
             return buildAllDescriptors(type);
         }
     };
@@ -129,12 +137,7 @@ final class ReflectionPropertySupport {
         if (type == null || type.isArray() || Map.class.isAssignableFrom(type) || List.class.isAssignableFrom(type)) {
             return Optional.empty();
         }
-        var descriptors = buildDescriptorMap(type);
-        var descriptor = descriptors.get(propertyName);
-        if (descriptor == null) {
-            return Optional.empty();
-        }
-        return Optional.of(new ReflectionUtils.ResolvedProperty(type, propertyName, descriptor.getter, descriptor.valueType));
+        return Optional.ofNullable(RESOLVED_PROPERTY_CACHE.get(type).get(propertyName));
     }
 
     private static Map<String, Object> getMapProperties(Map<?, ?> source) {
@@ -247,6 +250,21 @@ final class ReflectionPropertySupport {
 
     private static List<AccessDescriptor> buildAllDescriptors(Class<?> type) {
         return new ArrayList<>(buildDescriptorMap(type).values());
+    }
+
+    private static Map<String, ReflectionUtils.ResolvedProperty> buildResolvedProperties(Class<?> type) {
+        var descriptors = buildDescriptorMap(type);
+        var properties = new HashMap<String, ReflectionUtils.ResolvedProperty>(descriptors.size());
+        for (var descriptor : descriptors.values()) {
+            var property = new ReflectionUtils.ResolvedProperty(
+                    type,
+                    descriptor.name,
+                    descriptor.getter,
+                    descriptor.valueType
+            );
+            properties.put(descriptor.name, property);
+        }
+        return properties;
     }
 
     private static String decapitalize(String value) {
