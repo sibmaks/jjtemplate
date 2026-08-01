@@ -14,11 +14,12 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * Compares dynamic lookup with genuinely bound DTO property and method paths.
+ * Measures when explicit type binding repays its additional compilation cost.
  */
 @Fork(3)
 @State(Scope.Benchmark)
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 7, time = 1, timeUnit = TimeUnit.SECONDS)
-public class TypeBindingBenchmark {
+public class TypeBindingLifecycleBenchmark {
     /** Type resolution path under test. */
     @Param({"DTO_PROPERTY", "DTO_METHOD", "POLYMORPHIC_PROPERTY", "MAP_FALLBACK"})
     public TypeBindingScenario scenario;
@@ -35,36 +36,31 @@ public class TypeBindingBenchmark {
     @Param({"DYNAMIC", "EXPLICIT_CONTEXT"})
     public TypeBindingMode binding;
 
+    /** Number of renders performed after each compilation. */
+    @Param({"1", "10", "100", "1000"})
+    public int renders;
+
     private TypeBindingCase benchmarkCase;
     private TemplateCompiler compiler;
-    private CompiledTemplate compiledTemplate;
 
-    /** Builds the DTO or Map fixture and compiles the render target. */
+    /** Prepares the compiler and DTO or Map fixture. */
     @Setup(Level.Trial)
     public void setup() {
         benchmarkCase = TypeBindingFixtures.create(scenario);
         compiler = TemplateCompiler.getInstance();
-        compiledTemplate = compileTemplate();
     }
 
     /**
-     * Compiles with or without type information.
+     * Compiles once and renders the configured number of times.
      *
-     * @return compiled template
+     * @param blackhole consumes every render result
      */
     @Benchmark
-    public CompiledTemplate compile() {
-        return compileTemplate();
-    }
-
-    /**
-     * Renders the typed or dynamic compiled template.
-     *
-     * @return rendered value
-     */
-    @Benchmark
-    public Object render() {
-        return compiledTemplate.render(benchmarkCase.getContext());
+    public void compileAndRender(Blackhole blackhole) {
+        var compiled = compileTemplate();
+        for (int i = 0; i < renders; i++) {
+            blackhole.consume(compiled.render(benchmarkCase.getContext()));
+        }
     }
 
     private CompiledTemplate compileTemplate() {

@@ -109,7 +109,12 @@ def render(results, baseline_results):
 
 def variant_comparisons(results):
     rows = []
-    for variant in ("optimize", "typed"):
+    variants = (
+        ("optimize", "false", "true"),
+        ("binding", "DYNAMIC", "EXPLICIT_CONTEXT"),
+        ("typed", "false", "true"),
+    )
+    for variant, disabled_name, enabled_name in variants:
         grouped = {}
         for item in results:
             params = item.get("params", {})
@@ -119,8 +124,8 @@ def variant_comparisons(results):
             group_key = item["benchmark"], fixed
             grouped.setdefault(group_key, {})[params[variant]] = item
         for (benchmark, fixed), values in sorted(grouped.items()):
-            disabled = values.get("false")
-            enabled = values.get("true")
+            disabled = values.get(disabled_name)
+            enabled = values.get(enabled_name)
             if not disabled or not enabled:
                 continue
             disabled_metric = disabled["primaryMetric"]

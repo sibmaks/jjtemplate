@@ -67,33 +67,27 @@ class BenchmarkScenarioSemanticsTest {
 
     @ParameterizedTest
     @EnumSource(TypeBindingScenario.class)
-    void typedAndUntypedScenariosShouldBeEquivalent(TypeBindingScenario scenario) {
+    void dynamicAndExplicitContextScenariosShouldBeEquivalent(TypeBindingScenario scenario) {
         var benchmarkCase = TypeBindingFixtures.create(scenario);
         var compiler = TemplateCompiler.getInstance();
 
-        var untyped = compiler.compile(benchmarkCase.getScript());
-        var typed = compiler.compile(
-                benchmarkCase.getScript(),
-                benchmarkCase.getCompileContext()
-        );
+        var dynamic = benchmarkCase.compile(compiler, TypeBindingMode.DYNAMIC);
+        var explicitContext = benchmarkCase.compile(compiler, TypeBindingMode.EXPLICIT_CONTEXT);
 
-        assertEquals(benchmarkCase.getExpected(), untyped.render(benchmarkCase.getContext()));
-        assertEquals(benchmarkCase.getExpected(), typed.render(benchmarkCase.getContext()));
-        assertDynamicFirstChain(untyped);
+        assertEquals(benchmarkCase.getExpected(), dynamic.render(benchmarkCase.getContext()));
+        assertEquals(benchmarkCase.getExpected(), explicitContext.render(benchmarkCase.getContext()));
+        assertDynamicFirstChain(dynamic);
 
-        var typedVariable = variableExpression(typed);
+        var explicitVariable = variableExpression(explicitContext);
         if (benchmarkCase.isBoundPathExpected()) {
             assertTrue(
-                    typedVariable.getCallChain().get(0)
+                    explicitVariable.getCallChain().get(0)
                             instanceof VariableTemplateExpression.BoundPropertyChain
-                            || typedVariable.getCallChain().get(0)
+                            || explicitVariable.getCallChain().get(0)
                             instanceof VariableTemplateExpression.BoundMethodChain
             );
         } else {
-            assertTrue(
-                    typedVariable.getCallChain().get(0)
-                            instanceof VariableTemplateExpression.GetPropertyChain
-            );
+            assertInstanceOf(VariableTemplateExpression.GetPropertyChain.class, explicitVariable.getCallChain().get(0));
         }
     }
 

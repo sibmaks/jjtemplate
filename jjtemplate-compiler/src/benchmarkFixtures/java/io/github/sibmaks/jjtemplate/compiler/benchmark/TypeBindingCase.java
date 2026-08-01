@@ -1,6 +1,8 @@
 package io.github.sibmaks.jjtemplate.compiler.benchmark;
 
+import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompileContext;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
 import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 
 import java.util.Map;
@@ -81,5 +83,22 @@ public final class TypeBindingCase {
      */
     public boolean isBoundPathExpected() {
         return boundPathExpected;
+    }
+
+    /**
+     * Compiles this case using the selected source of root variable types.
+     *
+     * @param compiler compiler instance
+     * @param binding binding mode
+     * @return compiled template
+     */
+    public CompiledTemplate compile(
+            TemplateCompiler compiler,
+            TypeBindingMode binding
+    ) {
+        if (binding == TypeBindingMode.EXPLICIT_CONTEXT) {
+            return compiler.compile(script, compileContext);
+        }
+        return compiler.compile(script);
     }
 }

@@ -13,6 +13,7 @@ for the explicitly concurrent benchmark.
 | `RenderBenchmark` | How expensive is one render after compilation? |
 | `LifecycleBenchmark` | Does optimization pay off after 1, 10 or 1000 renders? |
 | `TypeBindingBenchmark` | What do bound DTO properties and methods cost compared with dynamic lookup? |
+| `TypeBindingLifecycleBenchmark` | After how many renders does explicit type binding repay its compilation cost? |
 | `ScalingBenchmark` | How do compile and render costs change with range input cardinality and inline versus external data? |
 | `ConcurrentRenderBenchmark` | How does one compiled template behave under shared concurrent rendering? |
 
@@ -30,11 +31,15 @@ equivalence, scaling cardinality and the actual bound or dynamic expression path
 
 ## Run profiles
 
-Use JDK 21 for reproducible local runs:
+Benchmark classes and production code continue to compile with Java 11 bytecode.
+The `jmhQuick` and `jmhFull` execution tasks use a JDK 21 Gradle toolchain so the
+measured JVM cannot silently fall back to the JVM that launched Gradle.
+
+Run the quick profile with:
 
 ```shell
 JAVA_HOME=/Users/sibmaks/Library/Java/JavaVirtualMachines/openjdk-21/Contents/Home \
-  ./gradlew :jjtemplate-compiler:jmhQuick
+  ./gradlew --no-daemon :jjtemplate-compiler:jmhQuick
 ```
 
 `jmhQuick` runs compile and render for a small and realistic scenario with one
@@ -43,7 +48,7 @@ measurement.
 
 ```shell
 JAVA_HOME=/Users/sibmaks/Library/Java/JavaVirtualMachines/openjdk-21/Contents/Home \
-  ./gradlew :jjtemplate-compiler:jmhFull
+  ./gradlew --no-daemon :jjtemplate-compiler:jmhFull
 ```
 
 `jmhFull` respects the benchmark annotations and enables the JMH GC profiler.
@@ -67,6 +72,10 @@ Compare a result with a saved baseline:
   -PjmhBaseline=/path/to/baseline.json \
   -PjmhResults=/path/to/current.json
 ```
+
+Type-binding results use `binding=DYNAMIC` when no root type is supplied and
+`binding=EXPLICIT_CONTEXT` when a `TemplateCompileContext` supplies it. Once the
+root type is known, the compiler resolves the remaining property or method chain.
 
 The report records the commit and host, displays normalized GC allocation when
 available, compares matching results with the baseline, and calculates in-run

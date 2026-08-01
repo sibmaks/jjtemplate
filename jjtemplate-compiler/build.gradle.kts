@@ -3,6 +3,8 @@ import java.util.Date
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.jvm.tasks.Jar
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
 
 plugins {
     id("me.champeau.jmh") version "0.7.3"
@@ -44,6 +46,10 @@ tasks.named<Jar>("jmhJar") {
     from(benchmarkFixtures.output)
 }
 
+val jmhJavaLauncher = extensions.getByType<JavaToolchainService>().launcherFor {
+    languageVersion.set(JavaLanguageVersion.of(21))
+}
+
 fun registerJmhRun(
     taskName: String,
     benchmarkPattern: String,
@@ -56,6 +62,7 @@ fun registerJmhRun(
         dependsOn(tasks.named("jmhJar"))
         classpath(tasks.named<Jar>("jmhJar").flatMap { it.archiveFile })
         mainClass.set("org.openjdk.jmh.Main")
+        javaLauncher.set(jmhJavaLauncher)
         doFirst {
             layout.buildDirectory.dir("reports/jmh").get().asFile.mkdirs()
         }
