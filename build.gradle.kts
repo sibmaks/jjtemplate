@@ -3,6 +3,12 @@ import java.util.*
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
 plugins {
     id("maven-publish")
     id("java")
@@ -13,6 +19,10 @@ plugins {
 allprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
+
+    dependencyLocking {
+        lockAllConfigurations()
+    }
 
     repositories {
         mavenCentral()
