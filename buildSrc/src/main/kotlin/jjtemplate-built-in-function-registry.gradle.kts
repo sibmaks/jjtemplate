@@ -1,7 +1,10 @@
 import org.gradle.api.tasks.SourceSetContainer
 
 val generatedBuiltInFunctionsDir = layout.buildDirectory.dir("generated/sources/builtInFunctionRegistry/main/java")
-val builtInFunctionSources = fileTree("src/main/java/io/github/sibmaks/jjtemplate/compiler/runtime/fun/impl") {
+val builtInFunctionSourceRoot = layout.projectDirectory.dir(
+    "src/main/java/io/github/sibmaks/jjtemplate/compiler/runtime/fun/impl"
+)
+val builtInFunctionSources = fileTree(builtInFunctionSourceRoot) {
     include("**/*.java")
 }
 val googleJavaFormat by configurations.creating
@@ -12,6 +15,7 @@ dependencies {
 
 val generateBuiltInFunctionRegistry by tasks.registering(GenerateBuiltInFunctionRegistryTask::class) {
     sourceFiles.from(builtInFunctionSources)
+    sourceRoot.set(builtInFunctionSourceRoot)
     formatterClasspath.from(googleJavaFormat)
     basePackage.set("io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl")
     outputPackage.set("io.github.sibmaks.jjtemplate.compiler.runtime")

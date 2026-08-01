@@ -14,7 +14,6 @@ import java.util.Map;
 
 /**
  * Implementation of {@link CompiledTemplate} that executes a compiled template node.
- * <p>
  *
  * @author sibmaks
  * @since 0.0.1

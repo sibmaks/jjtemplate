@@ -1,6 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+com.github.siom79.japicmp:japicmp:0.23.1=classpath
 com.google.code.gson:gson:2.11.0=classpath
 com.google.errorprone:error_prone_annotations:2.27.0=classpath
 com.squareup.okhttp3:logging-interceptor:4.12.0=classpath
@@ -8,17 +9,27 @@ com.squareup.okhttp3:okhttp-urlconnection:4.12.0=classpath
 com.squareup.okhttp3:okhttp:4.12.0=classpath
 com.squareup.okio:okio-jvm:3.6.0=classpath
 com.squareup.okio:okio:3.6.0=classpath
+com.sun.istack:istack-commons-runtime:3.0.8=classpath
+com.sun.xml.fastinfoset:FastInfoset:1.2.16=classpath
 commons-codec:commons-codec:1.17.1=classpath
 commons-io:commons-io:2.16.1=classpath
 io.github.hakky54:sslcontext-kickstart:8.3.6=classpath
+jakarta.activation:jakarta.activation-api:1.2.1=classpath
+jakarta.xml.bind:jakarta.xml.bind-api:2.3.2=classpath
+me.champeau.gradle.japicmp:me.champeau.gradle.japicmp.gradle.plugin:0.4.6=classpath
+me.champeau.gradle:japicmp-gradle-plugin:0.4.6=classpath
 org.apache.commons:commons-compress:1.27.1=classpath
 org.apache.commons:commons-lang3:3.17.0=classpath
 org.bouncycastle:bcprov-jdk18on:1.78.1=classpath
+org.glassfish.jaxb:jaxb-runtime:2.3.2=classpath
+org.glassfish.jaxb:txw2:2.3.2=classpath
+org.javassist:javassist:3.30.2-GA=classpath
 org.jetbrains.kotlin:kotlin-stdlib-common:2.0.21=classpath
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10=classpath
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10=classpath
 org.jetbrains.kotlin:kotlin-stdlib:2.0.21=classpath
 org.jetbrains:annotations:13.0=classpath
+org.jvnet.staxex:stax-ex:1.8.1=classpath
 org.slf4j:slf4j-api:2.0.13=classpath
 org.sonarqube:org.sonarqube.gradle.plugin:7.0.1.6134=classpath
 org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.0.1.6134=classpath

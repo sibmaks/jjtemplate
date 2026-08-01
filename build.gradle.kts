@@ -1,7 +1,13 @@
 import java.text.SimpleDateFormat
 import java.util.*
+import me.champeau.gradle.japicmp.JapicmpTask
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
+import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
 buildscript {
     configurations.classpath {
@@ -13,8 +19,11 @@ plugins {
     id("maven-publish")
     id("java")
     id("jacoco")
+    id("me.champeau.gradle.japicmp") version "0.4.6" apply false
     id("org.sonarqube") version "7.0.1.6134"
 }
+
+val apiBaselineVersion = providers.gradleProperty("api_baseline_version")
 
 allprojects {
     apply(plugin = "java")
@@ -38,6 +47,7 @@ allprojects {
 subprojects {
     apply(plugin = "jacoco")
     apply(plugin = "checkstyle")
+    apply(plugin = "me.champeau.gradle.japicmp")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -46,9 +56,25 @@ subprojects {
         create("deployerJars")
     }
 
+    val apiBaseline = configurations.create("apiBaseline") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+        isTransitive = true
+    }
+
+    dependencies.add(
+        apiBaseline.name,
+        "${project.group}:${project.name}:${apiBaselineVersion.get()}"
+    )
+
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release = targetJavaVersion
+    }
+
+    tasks.withType<Javadoc>().configureEach {
+        (options as StandardJavadocDocletOptions)
+            .addStringOption("Xdoclint:all,-missing", "-quiet")
     }
 
     extensions.configure<CheckstyleExtension> {
@@ -87,6 +113,53 @@ subprojects {
         }
     }
 
+    val apiPackages = when (project.name) {
+        "jjtemplate-lexer" -> listOf(
+            "io.github.sibmaks.jjtemplate.lexer",
+            "io.github.sibmaks.jjtemplate.lexer.api"
+        )
+        "jjtemplate-parser" -> listOf(
+            "io.github.sibmaks.jjtemplate.parser",
+            "io.github.sibmaks.jjtemplate.parser.api",
+            "io.github.sibmaks.jjtemplate.parser.exception"
+        )
+        "jjtemplate-compiler" -> listOf(
+            "io.github.sibmaks.jjtemplate.compiler.api",
+            "io.github.sibmaks.jjtemplate.compiler.exception",
+            "io.github.sibmaks.jjtemplate.compiler.runtime",
+            "io.github.sibmaks.jjtemplate.compiler.runtime.exception",
+            "io.github.sibmaks.jjtemplate.compiler.runtime.fun"
+        )
+        else -> emptyList()
+    }
+
+    val baselineArchive = apiBaseline.incoming.artifactView {
+        componentFilter { component ->
+            component is ModuleComponentIdentifier
+                    && component.group == project.group.toString()
+                    && component.module == project.name
+        }
+    }.files
+
+    val apiCompatibilityCheck = tasks.register<JapicmpTask>("apiCompatibilityCheck") {
+        group = "verification"
+        description = "Checks the supported public API against version ${apiBaselineVersion.get()}."
+        dependsOn(tasks.named("jar"))
+        oldClasspath.from(apiBaseline)
+        oldArchives.from(baselineArchive)
+        newClasspath.from(configurations.runtimeClasspath)
+        newArchives.from(tasks.named<Jar>("jar").flatMap { it.archiveFile })
+        packageIncludes = apiPackages
+        onlyModified = true
+        failOnSourceIncompatibility = true
+        txtOutputFile = layout.buildDirectory.file("reports/japicmp/report.txt")
+        htmlOutputFile = layout.buildDirectory.file("reports/japicmp/report.html")
+    }
+
+    tasks.named("check") {
+        dependsOn(apiCompatibilityCheck)
+    }
+
     tasks.jar {
         from("LICENSE") {
             rename { "${it}_${project.property("project_name")}" }
@@ -117,6 +190,18 @@ subprojects {
                 }
             }
         }
+    }
+}
+
+val releaseCheck = tasks.register("releaseCheck") {
+    group = "verification"
+    description = "Runs all quality gates required before publishing release artifacts."
+    dependsOn(subprojects.map { it.tasks.named("check") })
+}
+
+allprojects {
+    tasks.withType<AbstractPublishToMaven>().configureEach {
+        dependsOn(releaseCheck)
     }
 }
 

@@ -16,6 +16,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -32,6 +33,10 @@ abstract class GenerateBuiltInFunctionRegistryTask : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val sourceFiles: ConfigurableFileCollection
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sourceRoot: DirectoryProperty
 
     @get:Classpath
     abstract val formatterClasspath: ConfigurableFileCollection
@@ -119,7 +124,7 @@ abstract class GenerateBuiltInFunctionRegistryTask : DefaultTask() {
             return null
         }
 
-        val relativePath = file.relativeTo(project.file("src/main/java/${basePackage.replace('.', '/')}"))
+        val relativePath = file.relativeTo(sourceRoot.get().asFile)
             .invariantSeparatorsPath
             .removeSuffix(".java")
             .replace('/', '.')

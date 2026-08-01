@@ -23,7 +23,7 @@
 <dependency>
     <groupId>io.github.sibmaks.jjtemplate</groupId>
     <artifactId>jjtemplate</artifactId>
-    <version>0.5.0</version>
+    <version>{version}</version>
     <type>pom</type>
 </dependency>
 ```
@@ -31,7 +31,7 @@
 ### Gradle
 
 ```kotlin
-implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.5.0")
+implementation("io.github.sibmaks.jjtemplate:jjtemplate:{version}")
 ```
 
 ## Пример использования
@@ -220,6 +220,10 @@ implementation("io.github.sibmaks.jjtemplate:jjtemplate:0.5.0")
   { "upperName": "{{ .name | string:upper }}" }
   ```
 * Разделение по пространствам имен предотвращает конфликты имен и улучшает читаемость.
+* `default`, `and` и `or` вычисляют аргументы лениво. `default` вычисляет резервное
+  значение только при `null`, а `and` и `or` используют короткое замыкание.
+* Пользовательские реализации `TemplateFunction` могут включить такое же поведение,
+  переопределив `isLazy()` и обращаясь только к необходимым аргументам переданного `List`.
 
 ---
 
