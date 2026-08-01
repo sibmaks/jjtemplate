@@ -25,6 +25,10 @@ release:
     name: jjtemplate
     tagName: v{{projectVersion}}
     releaseName: Release {{projectVersion}}
+    prerelease:
+      enabled: true
+      pattern: .*-.*
+    makeLatest: legacy
 
 deploy:
   active: ALWAYS
