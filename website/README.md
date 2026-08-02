@@ -24,6 +24,7 @@ the **Deploy website to GitHub Pages** workflow from the Actions tab.
 - `index.html` — content and semantic structure;
 - `styles.css` — responsive layout and light/dark themes;
 - `app.js` — navigation, copy buttons, examples, and function filtering;
+- `favicon.svg` — browser icon matching the site brand mark;
 - `assets/og.png` — social preview image;
 - `_config.yml` — Jekyll and GitHub Pages metadata.
 
