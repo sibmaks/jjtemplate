@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="JJTemplate — a fast Java JSON Template engine with compile-time optimization and predictable JSON output.">
+  <meta name="theme-color" content="#0b1020">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="JJTemplate — Java JSON Template">
+  <meta property="og:description" content="Compile once. Render fast. Learn JJTemplate through practical examples and production guidance.">
+  <meta property="og:url" content="https://sibmaks.github.io/jjtemplate/">
+  <meta property="og:image" content="https://sibmaks.github.io/jjtemplate/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://sibmaks.github.io/jjtemplate/">
+  <title>JJTemplate — Java JSON Template</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="JJTemplate home">
+      <span class="brand-mark" aria-hidden="true">{ }</span>
+      <span>JJTemplate</span>
+    </a>
+    <nav class="topnav" aria-label="Primary navigation">
+      <a href="#quick-start">Quick start</a>
+      <a href="#syntax">Syntax</a>
+      <a href="#examples">Examples</a>
+      <a href="#functions">Functions</a>
+      <a href="#guidance">Guidance</a>
+    </nav>
+    <div class="top-actions">
+      <a class="text-link language-link" href="https://github.com/sibmaks/jjtemplate/blob/main/README.ru.md">RU</a>
+      <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch color theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+      </button>
+      <a class="button button-compact button-ghost" href="https://github.com/sibmaks/jjtemplate">GitHub ↗</a>
+      <button class="menu-button" id="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span><span></span><span></span><span class="sr-only">Open navigation</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+    <a href="#quick-start">Quick start</a>
+    <a href="#syntax">Syntax</a>
+    <a href="#examples">Examples</a>
+    <a href="#functions">Functions</a>
+    <a href="#custom-functions">Custom functions</a>
+    <a href="#guidance">Guidance</a>
+    <a href="#architecture">Architecture</a>
+  </nav>
+
+  <main id="content">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="status-dot"></span> Java 11+ · v1.0.0-rc2 · JSON-compatible output</div>
+        <h1>Templates that stay<br><span>close to the data.</span></h1>
+        <p class="hero-lead"><strong>JJT</strong> means <strong>Java JSON Template</strong>: a compact template language
+          that compiles JSON-shaped documents into optimized expression trees for fast, repeatable rendering.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#quick-start">Start building <span aria-hidden="true">↓</span></a>
+          <a class="button button-ghost" href="https://github.com/sibmaks/jjtemplate-plugin">IDEA plugin ↗</a>
+        </div>
+        <div class="hero-facts" aria-label="Project highlights">
+          <div><strong>Compile once</strong><span>Reuse the optimized template</span></div>
+          <div><strong>Typed values</strong><span>Not string-only substitution</span></div>
+          <div><strong>Extensible</strong><span>Add namespaced Java functions</span></div>
+        </div>
+      </div>
+
+      <div class="hero-code" aria-label="JJTemplate example">
+        <div class="window-bar">
+          <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span>invoice.jjt</span>
+          <button class="copy-button" data-copy-target="hero-snippet" type="button">Copy</button>
+        </div>
+        <pre id="hero-snippet"><code><span class="tok-punc">{</span>
+  <span class="tok-key">"definitions"</span><span class="tok-punc">:</span> <span class="tok-punc">[</span>
+    <span class="tok-punc">{</span> <span class="tok-key">"name"</span><span class="tok-punc">:</span> <span class="tok-string">"Ada"</span> <span class="tok-punc">}</span><span class="tok-punc">,</span>
+    <span class="tok-punc">{</span> <span class="tok-key">"price"</span><span class="tok-punc">:</span> <span class="tok-number">420</span> <span class="tok-punc">}</span><span class="tok-punc">,</span>
+    <span class="tok-punc">{</span> <span class="tok-key">"quantity"</span><span class="tok-punc">:</span> <span class="tok-number">3</span> <span class="tok-punc">}</span><span class="tok-punc">,</span>
+    <span class="tok-punc">{</span>
+      <span class="tok-key">"total"</span><span class="tok-punc">:</span> <span class="tok-expr">"{{ math:mul .price, .quantity }}"</span>
+    <span class="tok-punc">}</span>
+  <span class="tok-punc">]</span><span class="tok-punc">,</span>
+  <span class="tok-key">"template"</span><span class="tok-punc">:</span> <span class="tok-punc">{</span>
+    <span class="tok-key">"customer"</span><span class="tok-punc">:</span> <span class="tok-expr">"{{ .name | string:trim }}"</span><span class="tok-punc">,</span>
+    <span class="tok-key">"total"</span><span class="tok-punc">:</span> <span class="tok-expr">"{{ .total }}"</span><span class="tok-punc">,</span>
+    <span class="tok-key">"tier"</span><span class="tok-punc">:</span> <span class="tok-expr">"{{ .total | gt 1000 ? 'priority' : 'standard' }}"</span>
+  <span class="tok-punc">}</span>
+<span class="tok-punc">}</span></code></pre>
+        <div class="code-result">
+          <span class="result-label">result</span>
+          <code>{ "customer": "Ada", "total": 1260, "tier": "priority" }</code>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="quick-start">
+      <div class="section-heading">
+        <div><span class="section-index">01</span><h2>Quick start</h2></div>
+        <p>Add the library, compile a JSON-shaped script, then render it with a context map.</p>
+      </div>
+
+      <div class="install-layout">
+        <div class="install-panel panel">
+          <div class="tabs" role="tablist" aria-label="Dependency manager">
+            <button class="tab is-active" type="button" role="tab" aria-selected="true" data-tab-group="install" data-tab="gradle">Gradle</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab-group="install" data-tab="maven">Maven</button>
+          </div>
+          <div class="tab-panel is-active" data-tab-panel="install:gradle">
+            <pre id="gradle-install"><code>implementation(<span class="tok-string">"io.github.sibmaks.jjtemplate:jjtemplate:1.0.0-rc2"</span>)</code></pre>
+            <button class="copy-button floating-copy" data-copy-target="gradle-install" type="button">Copy</button>
+          </div>
+          <div class="tab-panel" data-tab-panel="install:maven">
+            <pre id="maven-install"><code><span class="tok-punc">&lt;dependency&gt;</span>
+  <span class="tok-punc">&lt;groupId&gt;</span>io.github.sibmaks.jjtemplate<span class="tok-punc">&lt;/groupId&gt;</span>
+  <span class="tok-punc">&lt;artifactId&gt;</span>jjtemplate<span class="tok-punc">&lt;/artifactId&gt;</span>
+  <span class="tok-punc">&lt;version&gt;</span>1.0.0-rc2<span class="tok-punc">&lt;/version&gt;</span>
+  <span class="tok-punc">&lt;type&gt;</span>pom<span class="tok-punc">&lt;/type&gt;</span>
+<span class="tok-punc">&lt;/dependency&gt;</span></code></pre>
+            <button class="copy-button floating-copy" data-copy-target="maven-install" type="button">Copy</button>
+          </div>
+        </div>
+
+        <ol class="steps" aria-label="Compilation workflow">
+          <li>
+            <span class="step-number">1</span>
+            <div><strong>Describe the script</strong><p>Pass definitions and a JSON-compatible template to <code>TemplateScript</code>.</p></div>
+          </li>
+          <li>
+            <span class="step-number">2</span>
+            <div><strong>Compile once</strong><p>Let the compiler fold constants and prepare the expression tree.</p></div>
+          </li>
+          <li>
+            <span class="step-number">3</span>
+            <div><strong>Render with context</strong><p>Supply request-specific values without recompiling the template.</p></div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="panel code-panel wide-code">
+        <div class="window-bar"><span>Java</span><button class="copy-button" data-copy-target="java-start" type="button">Copy</button></div>
+        <pre id="java-start"><code><span class="tok-type">var</span> script = TemplateScript.builder()
+        .template(Map.of(
+                <span class="tok-string">"message"</span>, <span class="tok-string">"{{ string:concat 'Hello, ', .name }}"</span>,
+                <span class="tok-string">"active"</span>, <span class="tok-string">"{{ .enabled }}"</span>))
+        .build();
+
+<span class="tok-type">var</span> compiler = TemplateCompiler.getInstance();
+<span class="tok-type">var</span> compiled = compiler.compile(script);
+
+<span class="tok-comment">// Reuse compiled for every context.</span>
+<span class="tok-type">var</span> result = compiled.render(Map.of(
+        <span class="tok-string">"name"</span>, <span class="tok-string">"Alice"</span>,
+        <span class="tok-string">"enabled"</span>, <span class="tok-bool">true</span>));</code></pre>
+      </div>
+    </section>
+
+    <section class="section surface-section" id="syntax">
+      <div class="section-heading">
+        <div><span class="section-index">02</span><h2>The small syntax</h2></div>
+        <p>JJT keeps JSON structure visible. Four interpolation forms cover substitution, conditional insertion, and spreading.</p>
+      </div>
+
+      <div class="syntax-grid">
+        <article class="syntax-card"><code>.user.name</code><h3>Variable access</h3><p>Read root or nested values from the render context and definitions.</p></article>
+        <article class="syntax-card"><code>{{ expression }}</code><h3>Substitution</h3><p>Insert a typed result directly: boolean stays boolean, number stays number.</p></article>
+        <article class="syntax-card"><code>{{? expression }}</code><h3>Conditional insert</h3><p>Skip an object field or array item when the expression evaluates to <code>null</code>.</p></article>
+        <article class="syntax-card"><code>{{. expression }}</code><h3>Spread</h3><p>Expand an object into an object or collection values into an array.</p></article>
+        <article class="syntax-card"><code>.value | string:trim</code><h3>Pipe</h3><p>Pass the left-hand value into a function and compose transformations.</p></article>
+        <article class="syntax-card"><code>.ready ? 'yes' : 'no'</code><h3>Ternary</h3><p>Choose a value inline; branches may contain calls, pipes, and nested expressions.</p></article>
+      </div>
+
+      <div class="callout">
+        <span class="callout-icon" aria-hidden="true">!</span>
+        <div><strong>Keep expression keys explicit.</strong><p>Definition keys for <code>switch</code> and <code>range</code> use the same <code>{{ ... }}</code> delimiters as other expressions. This keeps the source unambiguous.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="examples">
+      <div class="section-heading">
+        <div><span class="section-index">03</span><h2>Learn by transformation</h2></div>
+        <p>Each example pairs a JJT document with the JSON value produced by the runtime.</p>
+      </div>
+
+      <div class="example-picker" role="tablist" aria-label="Example selection">
+        <button class="example-chip is-active" type="button" role="tab" aria-selected="true" data-example="conditional">Conditional</button>
+        <button class="example-chip" type="button" role="tab" aria-selected="false" data-example="spread">Spread</button>
+        <button class="example-chip" type="button" role="tab" aria-selected="false" data-example="range">Range</button>
+        <button class="example-chip" type="button" role="tab" aria-selected="false" data-example="switch">Switch</button>
+      </div>
+
+      <div class="example-stage panel">
+        <div class="example-column">
+          <div class="window-bar"><span>template.jjt</span><button class="copy-button" data-copy-target="example-input" type="button">Copy</button></div>
+          <pre id="example-input" aria-live="polite"></pre>
+        </div>
+        <div class="transform-arrow" aria-hidden="true"><span>render</span>→</div>
+        <div class="example-column">
+          <div class="window-bar"><span>output.json</span><button class="copy-button" data-copy-target="example-output" type="button">Copy</button></div>
+          <pre id="example-output" aria-live="polite"></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section surface-section" id="functions">
+      <div class="section-heading">
+        <div><span class="section-index">04</span><h2>Function reference</h2></div>
+        <p>Functions are grouped by namespace. Global logic functions deliberately omit a namespace.</p>
+      </div>
+
+      <div class="function-toolbar">
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <span class="sr-only">Search functions</span>
+          <input id="function-search" type="search" placeholder="Search by name or purpose…" autocomplete="off">
+        </label>
+        <div class="filter-row" aria-label="Filter by namespace">
+          <button class="filter-button is-active" type="button" data-filter="all">All</button>
+          <button class="filter-button" type="button" data-filter="string">string</button>
+          <button class="filter-button" type="button" data-filter="list">list</button>
+          <button class="filter-button" type="button" data-filter="map">map</button>
+          <button class="filter-button" type="button" data-filter="math">math</button>
+          <button class="filter-button" type="button" data-filter="date">date/time</button>
+          <button class="filter-button" type="button" data-filter="logic">logic</button>
+        </div>
+      </div>
+
+      <div class="function-grid" id="function-grid">
+        <article class="function-card" data-category="cast" data-search="cast str int float boolean conversions"><span>cast</span><h3>str · int · float · boolean</h3><p>Convert values with <code>cast:str</code>, <code>cast:int</code>, <code>cast:float</code>, or <code>cast:boolean</code>.</p></article>
+        <article class="function-card" data-category="string" data-search="string concat join joinNotEmpty format concatenate"><span>string</span><h3>concat · join · format</h3><p>Compose and format strings, optionally with a locale.</p></article>
+        <article class="function-card" data-category="string" data-search="string lower upper trim case whitespace"><span>string</span><h3>lower · upper · trim</h3><p>Normalize case and remove leading or trailing whitespace.</p></article>
+        <article class="function-card" data-category="string" data-search="string len empty contains length"><span>string</span><h3>len · empty · contains</h3><p>Inspect string length, emptiness, and contained substrings.</p></article>
+        <article class="function-card" data-category="string" data-search="string split substr indexOf lastIndexOf search"><span>string</span><h3>split · substr · indexOf</h3><p>Split, slice, and locate content, including negative substring indexes.</p></article>
+        <article class="function-card" data-category="string" data-search="string replace replaceAll regex"><span>string</span><h3>replace · replaceAll</h3><p>Replace literal targets or regular-expression matches.</p></article>
+        <article class="function-card" data-category="list" data-search="list new concat create merge"><span>list</span><h3>new · concat</h3><p>Create a list or concatenate arrays and collections.</p></article>
+        <article class="function-card" data-category="list" data-search="list len empty contains head tail join"><span>list</span><h3>len · head · tail · join</h3><p>Inspect, select, and join list values.</p></article>
+        <article class="function-card" data-category="map" data-search="map new collapse create merge object"><span>map</span><h3>new · collapse</h3><p>Create key-value maps or collapse object properties.</p></article>
+        <article class="function-card" data-category="map" data-search="map len empty contains keys"><span>map</span><h3>len · empty · contains</h3><p>Inspect map size, emptiness, and key presence.</p></article>
+        <article class="function-card" data-category="math" data-search="math sum sub mul div neg scale number arithmetic"><span>math</span><h3>sum · sub · mul · div</h3><p>Perform decimal-safe arithmetic, negation, and scale adjustment.</p></article>
+        <article class="function-card" data-category="date" data-search="date datetime now parse format time"><span>date/time</span><h3>now · parse · format</h3><p>Create, parse, and format date and date-time values.</p></article>
+        <article class="function-card" data-category="date" data-search="locale new numberFormat currency percent"><span>locale</span><h3>locale:new · numberFormat:new</h3><p>Build locale-aware number and currency formatters.</p></article>
+        <article class="function-card" data-category="logic" data-search="logic eq neq lt le gt ge compare equality"><span>global</span><h3>eq · neq · lt · le · gt · ge</h3><p>Compare values without a namespace.</p></article>
+        <article class="function-card" data-category="logic" data-search="logic not and or xor boolean short circuit lazy"><span>global</span><h3>not · and · or · xor</h3><p>Compose boolean logic; <code>and</code> and <code>or</code> short-circuit.</p></article>
+        <article class="function-card" data-category="logic" data-search="default fallback null lazy"><span>global</span><h3>default</h3><p>Return a fallback only when the primary value is <code>null</code>.</p></article>
+      </div>
+      <p class="empty-state" id="function-empty" hidden>No functions match this filter.</p>
+    </section>
+
+    <section class="section" id="custom-functions">
+      <div class="section-heading">
+        <div><span class="section-index">05</span><h2>Bring your own function</h2></div>
+        <p>Implement the public <code>TemplateFunction</code> contract, register the instance, and call it by namespace and name.</p>
+      </div>
+
+      <div class="custom-layout">
+        <div class="panel code-panel">
+          <div class="window-bar"><span>ReverseTemplateFunction.java</span><button class="copy-button" data-copy-target="custom-function-code" type="button">Copy</button></div>
+          <pre id="custom-function-code"><code><span class="tok-keyword">public final class</span> ReverseTemplateFunction
+        <span class="tok-keyword">implements</span> TemplateFunction&lt;String&gt; {
+
+    <span class="tok-keyword">public</span> String invoke(List&lt;Object&gt; args) {
+        <span class="tok-keyword">if</span> (args.size() != 1) {
+            <span class="tok-keyword">throw</span> fail(<span class="tok-string">"exactly 1 argument required"</span>);
+        }
+        <span class="tok-keyword">return</span> reverse(args.get(0));
+    }
+
+    <span class="tok-keyword">public</span> String invoke(List&lt;Object&gt; args, Object pipeArg) {
+        <span class="tok-keyword">if</span> (!args.isEmpty()) {
+            <span class="tok-keyword">throw</span> fail(<span class="tok-string">"no arguments expected"</span>);
+        }
+        <span class="tok-keyword">return</span> reverse(pipeArg);
+    }
+
+    <span class="tok-keyword">public</span> String getNamespace() { <span class="tok-keyword">return</span> <span class="tok-string">"custom"</span>; }
+    <span class="tok-keyword">public</span> String getName() { <span class="tok-keyword">return</span> <span class="tok-string">"reverse"</span>; }
+    <span class="tok-keyword">public boolean</span> isDynamic() { <span class="tok-keyword">return false</span>; }
+
+    <span class="tok-keyword">private</span> String reverse(Object value) {
+        <span class="tok-keyword">return</span> value == <span class="tok-keyword">null</span> ? <span class="tok-keyword">null</span>
+                : <span class="tok-keyword">new</span> StringBuilder(value.toString()).reverse().toString();
+    }
+}</code></pre>
+        </div>
+
+        <div class="custom-steps">
+          <article><span>01</span><h3>Register</h3><pre id="register-code"><code><span class="tok-type">var</span> evaluation = TemplateEvaluationOptions.builder()
+    .functions(List.of(<span class="tok-keyword">new</span> ReverseTemplateFunction()))
+    .build();
+
+<span class="tok-type">var</span> options = TemplateCompileOptions.builder()
+    .evaluationOptions(evaluation)
+    .build();
+
+<span class="tok-type">var</span> compiler = TemplateCompiler.getInstance(options);</code></pre><button class="copy-button" data-copy-target="register-code" type="button">Copy</button></article>
+          <article><span>02</span><h3>Call</h3><pre><code><span class="tok-expr">"{{ custom:reverse .value }}"</span>
+<span class="tok-expr">"{{ .value | custom:reverse }}"</span></code></pre></article>
+          <article class="tip-card"><span>TIP</span><h3>Make optimization honest</h3><p>Return <code>false</code> from <code>isDynamic()</code> only for deterministic, side-effect-free functions. JJTemplate may fold calls whose inputs are constant.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section surface-section" id="guidance">
+      <div class="section-heading">
+        <div><span class="section-index">06</span><h2>Production guidance</h2></div>
+        <p>A few deliberate choices keep templates fast, testable, and unsurprising.</p>
+      </div>
+
+      <div class="guidance-grid">
+        <article><span class="guidance-number">01</span><h3>Compile outside the hot path</h3><p>Build <code>CompiledTemplate</code> when configuration changes, then reuse it across render calls with request-specific contexts.</p></article>
+        <article><span class="guidance-number">02</span><h3>Keep functions pure</h3><p>Custom functions should be thread-safe and side-effect free. Mark a function static only when identical inputs always produce identical outputs.</p></article>
+        <article><span class="guidance-number">03</span><h3>Own a namespace</h3><p>Use a stable namespace such as <code>billing:tax</code>. Names must be unique within a namespace, including built-ins.</p></article>
+        <article><span class="guidance-number">04</span><h3>Use lazy evaluation narrowly</h3><p>Override <code>isLazy()</code> only for short-circuit behavior. Access the supplied arguments on demand instead of iterating or copying them.</p></article>
+        <article><span class="guidance-number">05</span><h3>Test template → output pairs</h3><p>Keep representative <code>.jjt</code>, context, and expected JSON fixtures together. Assert semantic values, not formatting.</p></article>
+        <article><span class="guidance-number">06</span><h3>Keep JSON visible</h3><p>Prefer small definitions and pipes over deeply nested expressions. The source should still read like the output it creates.</p></article>
+      </div>
+    </section>
+
+    <section class="section architecture" id="architecture">
+      <div class="section-heading">
+        <div><span class="section-index">07</span><h2>From source to value</h2></div>
+        <p>JJTemplate separates parsing, optimization, and evaluation so runtime work stays focused.</p>
+      </div>
+
+      <div class="pipeline" aria-label="JJTemplate architecture">
+        <div><span>01</span><strong>Lexer</strong><p>Tokenizes JJT expressions.</p></div>
+        <i aria-hidden="true">→</i>
+        <div><span>02</span><strong>Parser</strong><p>Builds expression syntax trees.</p></div>
+        <i aria-hidden="true">→</i>
+        <div><span>03</span><strong>Compiler</strong><p>Creates executable nodes.</p></div>
+        <i aria-hidden="true">→</i>
+        <div><span>04</span><strong>Optimizer</strong><p>Folds and simplifies once.</p></div>
+        <i aria-hidden="true">→</i>
+        <div><span>05</span><strong>Runtime</strong><p>Renders JSON-compatible values.</p></div>
+      </div>
+
+      <div class="api-note">
+        <div><span class="badge">1.0 policy</span><h3>Compatibility is part of the release gate.</h3></div>
+        <p>Supported lexer, parser, compiler API, runtime, exception, and function packages are checked against the published baseline during verification.</p>
+        <a class="text-link" href="https://github.com/sibmaks/jjtemplate/blob/main/API_COMPATIBILITY.md">Read the policy →</a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <p class="eyebrow">Ready to shape some JSON?</p>
+      <h2>Keep the template readable.<br><span>Let the compiler do the work.</span></h2>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#quick-start">Open quick start</a>
+        <a class="button button-ghost" href="https://github.com/sibmaks/jjtemplate">Browse source ↗</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">{ }</span><span>JJTemplate</span></a>
+    <p><a href="https://github.com/sibmaks/jjtemplate/releases/tag/v1.0.0-rc2">v1.0.0-rc2</a> · Java JSON Template · Apache-2.0</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://github.com/sibmaks/jjtemplate">Repository</a>
+      <a href="https://github.com/sibmaks/jjtemplate-plugin">IDEA plugin</a>
+      <a href="https://github.com/sibmaks/jjtemplate/blob/main/README.ru.md">Русский README</a>
+    </nav>
+  </footer>
+</body>
+</html>

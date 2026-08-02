@@ -1,0 +1,11 @@
+title: JJTemplate
+description: Fast Java JSON templates with compile-time optimization and predictable output.
+url: https://sibmaks.github.io
+baseurl: /jjtemplate
+repository: sibmaks/jjtemplate
+
+encoding: utf-8
+strict_front_matter: true
+
+exclude:
+  - README.md
