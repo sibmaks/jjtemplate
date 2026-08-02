@@ -1,19 +1,66 @@
-import java.text.SimpleDateFormat
-import java.util.Date
-import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.SourceSetContainer
+import me.champeau.gradle.japicmp.JapicmpTask
 import org.gradle.jvm.tasks.Jar
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JavaToolchainService
+import java.text.SimpleDateFormat
+import java.util.*
 
 plugins {
     id("me.champeau.jmh") version "0.7.3"
+    id("me.champeau.gradle.japicmp")
     id("jjtemplate-built-in-function-registry")
 }
 
 val benchmarkFixtures = extensions.getByType<SourceSetContainer>().create("benchmarkFixtures")
 benchmarkFixtures.compileClasspath += sourceSets.main.get().output
 benchmarkFixtures.runtimeClasspath += benchmarkFixtures.output + benchmarkFixtures.compileClasspath
+
+val apiBaselineVersion = providers.gradleProperty("api_baseline_version")
+
+val apiPackages = listOf(
+    "io.github.sibmaks.jjtemplate.compiler.api",
+    "io.github.sibmaks.jjtemplate.compiler.exception",
+    "io.github.sibmaks.jjtemplate.compiler.runtime",
+    "io.github.sibmaks.jjtemplate.compiler.runtime.exception",
+    "io.github.sibmaks.jjtemplate.compiler.runtime.fun"
+)
+
+val apiBaseline = rootProject.configurations.create("${project.name}ApiBaseline") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = true
+    resolutionStrategy.useGlobalDependencySubstitutionRules.set(false)
+}
+
+rootProject.dependencies.add(
+    apiBaseline.name,
+    "${project.group}:${project.name}:${apiBaselineVersion.get()}"
+)
+
+val baselineArchive = apiBaseline.incoming.artifactView {
+    componentFilter { component ->
+        component is ModuleComponentIdentifier
+                && component.group == project.group.toString()
+                && component.module == project.name
+    }
+}.files
+
+val apiCompatibilityCheck = tasks.register<JapicmpTask>("apiCompatibilityCheck") {
+    group = "verification"
+    description = "Checks the supported public API against version ${apiBaselineVersion.get()}."
+    dependsOn(tasks.named("jar"))
+    oldClasspath.from(apiBaseline)
+    oldArchives.from(baselineArchive)
+    newClasspath.from(configurations.runtimeClasspath)
+    newArchives.from(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
+    packageIncludes = apiPackages
+    onlyModified = true
+    failOnSourceIncompatibility = true
+    txtOutputFile = layout.buildDirectory.file("reports/japicmp/report.txt")
+    htmlOutputFile = layout.buildDirectory.file("reports/japicmp/report.html")
+}
+
+tasks.named("check") {
+    dependsOn(apiCompatibilityCheck)
+}
 
 sourceSets.test {
     compileClasspath += benchmarkFixtures.output

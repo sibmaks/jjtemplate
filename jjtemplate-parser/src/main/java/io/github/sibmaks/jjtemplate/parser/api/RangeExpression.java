@@ -29,20 +29,6 @@ public final class RangeExpression implements Expression {
      */
     public final String secondVariableName;
     /**
-     * Legacy alias for {@link #firstVariableName}.
-     *
-     * @deprecated use {@link #firstVariableName}
-     */
-    @Deprecated
-    public final String itemVariableName;
-    /**
-     * Legacy alias for {@link #secondVariableName}.
-     *
-     * @deprecated use {@link #secondVariableName}
-     */
-    @Deprecated
-    public final String indexVariableName;
-    /**
      * The source expression providing the collection, array, or map to iterate.
      */
     public final Expression source;
@@ -50,10 +36,10 @@ public final class RangeExpression implements Expression {
     /**
      * Creates a range expression.
      *
-     * @param name range result name
-     * @param firstVariableName item variable for collections and arrays, key variable for maps
+     * @param name               range result name
+     * @param firstVariableName  item variable for collections and arrays, key variable for maps
      * @param secondVariableName index variable for collections and arrays, value variable for maps
-     * @param source range source expression
+     * @param source             range source expression
      */
     public RangeExpression(
             Expression name,
@@ -64,8 +50,6 @@ public final class RangeExpression implements Expression {
         this.name = name;
         this.firstVariableName = firstVariableName;
         this.secondVariableName = secondVariableName;
-        this.itemVariableName = firstVariableName;
-        this.indexVariableName = secondVariableName;
         this.source = source;
     }
 

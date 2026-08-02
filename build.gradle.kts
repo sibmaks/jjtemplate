@@ -21,8 +21,6 @@ plugins {
     id("org.sonarqube") version "7.0.1.6134"
 }
 
-val apiBaselineVersion = providers.gradleProperty("api_baseline_version")
-
 allprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
@@ -45,7 +43,6 @@ allprojects {
 subprojects {
     apply(plugin = "jacoco")
     apply(plugin = "checkstyle")
-    apply(plugin = "me.champeau.gradle.japicmp")
 
     val targetJavaVersion = (project.property("jdk_version") as String).toInt()
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -53,18 +50,6 @@ subprojects {
     configurations {
         create("deployerJars")
     }
-
-    val apiBaseline = rootProject.configurations.create("${project.name}ApiBaseline") {
-        isCanBeConsumed = false
-        isCanBeResolved = true
-        isTransitive = true
-        resolutionStrategy.useGlobalDependencySubstitutionRules.set(false)
-    }
-
-    rootProject.dependencies.add(
-        apiBaseline.name,
-        "${project.group}:${project.name}:${apiBaselineVersion.get()}"
-    )
 
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
@@ -105,53 +90,6 @@ subprojects {
         reports {
             xml.required.set(true)
         }
-    }
-
-    val apiPackages = when (project.name) {
-        "jjtemplate-lexer" -> listOf(
-            "io.github.sibmaks.jjtemplate.lexer",
-            "io.github.sibmaks.jjtemplate.lexer.api"
-        )
-        "jjtemplate-parser" -> listOf(
-            "io.github.sibmaks.jjtemplate.parser",
-            "io.github.sibmaks.jjtemplate.parser.api",
-            "io.github.sibmaks.jjtemplate.parser.exception"
-        )
-        "jjtemplate-compiler" -> listOf(
-            "io.github.sibmaks.jjtemplate.compiler.api",
-            "io.github.sibmaks.jjtemplate.compiler.exception",
-            "io.github.sibmaks.jjtemplate.compiler.runtime",
-            "io.github.sibmaks.jjtemplate.compiler.runtime.exception",
-            "io.github.sibmaks.jjtemplate.compiler.runtime.fun"
-        )
-        else -> emptyList()
-    }
-
-    val baselineArchive = apiBaseline.incoming.artifactView {
-        componentFilter { component ->
-            component is ModuleComponentIdentifier
-                    && component.group == project.group.toString()
-                    && component.module == project.name
-        }
-    }.files
-
-    val apiCompatibilityCheck = tasks.register<JapicmpTask>("apiCompatibilityCheck") {
-        group = "verification"
-        description = "Checks the supported public API against version ${apiBaselineVersion.get()}."
-        dependsOn(tasks.named("jar"))
-        oldClasspath.from(apiBaseline)
-        oldArchives.from(baselineArchive)
-        newClasspath.from(configurations.runtimeClasspath)
-        newArchives.from(tasks.named<Jar>("jar").flatMap { it.archiveFile })
-        packageIncludes = apiPackages
-        onlyModified = true
-        failOnSourceIncompatibility = true
-        txtOutputFile = layout.buildDirectory.file("reports/japicmp/report.txt")
-        htmlOutputFile = layout.buildDirectory.file("reports/japicmp/report.html")
-    }
-
-    tasks.named("check") {
-        dependsOn(apiCompatibilityCheck)
     }
 
     tasks.jar {

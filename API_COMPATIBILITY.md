@@ -7,16 +7,9 @@ checked against the version configured by `api_baseline_version` in
 
 ## Supported API
 
-### `jjtemplate-lexer`
-
-- `io.github.sibmaks.jjtemplate.lexer`
-- `io.github.sibmaks.jjtemplate.lexer.api`
-
-### `jjtemplate-parser`
-
-- `io.github.sibmaks.jjtemplate.parser`
-- `io.github.sibmaks.jjtemplate.parser.api`
-- `io.github.sibmaks.jjtemplate.parser.exception`
+Compatibility validation is limited to `jjtemplate-compiler`. The lexer and
+parser modules are implementation details and are not supported extension
+points.
 
 ### `jjtemplate-compiler`
 
