@@ -513,19 +513,19 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         var foldedName = name.visit(this);
         anyFolded |= name != foldedName;
 
-        var indexVariableName = expression.getIndexVariableName();
-        var itemVariableName = expression.getItemVariableName();
+        var firstVariableName = expression.getFirstVariableName();
+        var secondVariableName = expression.getSecondVariableName();
         if (foldedSource instanceof ConstantTemplateExpression) {
             var variableUsageCollector = new VariableUsageCollector();
             foldedBody.visit(variableUsageCollector);
             var variables = variableUsageCollector.getVariables();
-            variables.remove(indexVariableName);
-            variables.remove(itemVariableName);
+            variables.remove(firstVariableName);
+            variables.remove(secondVariableName);
             if (variables.isEmpty()) {
                 var staticRange = RangeTemplateExpression.builder()
                         .name(foldedName)
-                        .indexVariableName(indexVariableName)
-                        .itemVariableName(itemVariableName)
+                        .firstVariableName(firstVariableName)
+                        .secondVariableName(secondVariableName)
                         .source(foldedSource)
                         .body(foldedBody)
                         .sourceExpression(expression.getSourceExpression())
@@ -538,8 +538,8 @@ public final class TemplateExpressionFolder implements TemplateExpressionVisitor
         if (anyFolded) {
             return RangeTemplateExpression.builder()
                     .name(foldedName)
-                    .indexVariableName(indexVariableName)
-                    .itemVariableName(itemVariableName)
+                    .firstVariableName(firstVariableName)
+                    .secondVariableName(secondVariableName)
                     .source(foldedSource)
                     .body(foldedBody)
                     .sourceExpression(expression.getSourceExpression())

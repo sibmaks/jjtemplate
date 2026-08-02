@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "{{ entries range key,value of .source }}": {
+        "key": "{{ .key }}",
+        "value": "{{ .value }}"
+      }
+    }
+  ],
+  "template": "{{ .entries }}"
+}

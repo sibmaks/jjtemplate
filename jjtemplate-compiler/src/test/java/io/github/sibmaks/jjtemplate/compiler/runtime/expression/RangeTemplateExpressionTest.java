@@ -5,7 +5,10 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalExcep
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,12 +36,12 @@ class RangeTemplateExpressionTest {
         when(body.apply(context))
                 .thenReturn(bodyItem);
 
-        var itemVariableName = UUID.randomUUID().toString();
-        var indexVariableName = UUID.randomUUID().toString();
+        var firstVariableName = UUID.randomUUID().toString();
+        var secondVariableName = UUID.randomUUID().toString();
         var expression = RangeTemplateExpression.builder()
                 .source(source)
-                .itemVariableName(itemVariableName)
-                .indexVariableName(indexVariableName)
+                .firstVariableName(firstVariableName)
+                .secondVariableName(secondVariableName)
                 .body(body)
                 .name(name)
                 .build();
@@ -71,12 +74,12 @@ class RangeTemplateExpressionTest {
         when(body.apply(context))
                 .thenReturn(bodyItem);
 
-        var itemVariableName = UUID.randomUUID().toString();
-        var indexVariableName = UUID.randomUUID().toString();
+        var firstVariableName = UUID.randomUUID().toString();
+        var secondVariableName = UUID.randomUUID().toString();
         var expression = RangeTemplateExpression.builder()
                 .source(source)
-                .itemVariableName(itemVariableName)
-                .indexVariableName(indexVariableName)
+                .firstVariableName(firstVariableName)
+                .secondVariableName(secondVariableName)
                 .body(body)
                 .name(name)
                 .build();
@@ -92,11 +95,55 @@ class RangeTemplateExpressionTest {
         var layer = layerArgsCaptor.getValue();
         assertNotNull(layer);
 
-        assertEquals(0, layer.get(indexVariableName));
-        assertEquals(sourceItem, layer.get(itemVariableName));
+        assertEquals(sourceItem, layer.get(firstVariableName));
+        assertEquals(0, layer.get(secondVariableName));
 
         verify(context)
                 .out();
+    }
+
+    @Test
+    void applyShouldIterateOverMapKeyAndValueInSourceOrder() {
+        Context context = mock();
+
+        TemplateExpression source = mock("source");
+        TemplateExpression body = mock("body");
+        TemplateExpression name = mock("name");
+
+        var sourceMap = new LinkedHashMap<String, Object>();
+        sourceMap.put("first", 1);
+        sourceMap.put("second", null);
+        when(source.apply(context))
+                .thenReturn(sourceMap);
+        when(body.apply(context))
+                .thenReturn("first-result", "second-result");
+
+        var firstVariableName = UUID.randomUUID().toString();
+        var secondVariableName = UUID.randomUUID().toString();
+        var iterationScopes = new ArrayList<Map<String, Object>>();
+        doAnswer(invocation -> {
+            iterationScopes.add(new HashMap<>(invocation.getArgument(0)));
+            return null;
+        }).when(context).in(any());
+
+        var expression = RangeTemplateExpression.builder()
+                .source(source)
+                .firstVariableName(firstVariableName)
+                .secondVariableName(secondVariableName)
+                .body(body)
+                .name(name)
+                .build();
+
+        var result = expression.apply(context);
+
+        assertEquals(List.of("first-result", "second-result"), result);
+        assertEquals(2, iterationScopes.size());
+        assertEquals("first", iterationScopes.get(0).get(firstVariableName));
+        assertEquals(1, iterationScopes.get(0).get(secondVariableName));
+        assertEquals("second", iterationScopes.get(1).get(firstVariableName));
+        assertTrue(iterationScopes.get(1).containsKey(secondVariableName));
+        assertNull(iterationScopes.get(1).get(secondVariableName));
+        verify(context, times(2)).out();
     }
 
     @Test
@@ -115,12 +162,12 @@ class RangeTemplateExpressionTest {
         when(body.apply(context))
                 .thenReturn(bodyItem);
 
-        var itemVariableName = UUID.randomUUID().toString();
-        var indexVariableName = UUID.randomUUID().toString();
+        var firstVariableName = UUID.randomUUID().toString();
+        var secondVariableName = UUID.randomUUID().toString();
         var expression = RangeTemplateExpression.builder()
                 .source(source)
-                .itemVariableName(itemVariableName)
-                .indexVariableName(indexVariableName)
+                .firstVariableName(firstVariableName)
+                .secondVariableName(secondVariableName)
                 .body(body)
                 .name(name)
                 .build();
@@ -136,8 +183,8 @@ class RangeTemplateExpressionTest {
         var layer = layerArgsCaptor.getValue();
         assertNotNull(layer);
 
-        assertEquals(0, layer.get(indexVariableName));
-        assertEquals(sourceItem, layer.get(itemVariableName));
+        assertEquals(sourceItem, layer.get(firstVariableName));
+        assertEquals(0, layer.get(secondVariableName));
 
         verify(context)
                 .out();
@@ -155,12 +202,12 @@ class RangeTemplateExpressionTest {
         when(source.apply(context))
                 .thenReturn(value);
 
-        var itemVariableName = UUID.randomUUID().toString();
-        var indexVariableName = UUID.randomUUID().toString();
+        var firstVariableName = UUID.randomUUID().toString();
+        var secondVariableName = UUID.randomUUID().toString();
         var expression = RangeTemplateExpression.builder()
                 .source(source)
-                .itemVariableName(itemVariableName)
-                .indexVariableName(indexVariableName)
+                .firstVariableName(firstVariableName)
+                .secondVariableName(secondVariableName)
                 .body(body)
                 .name(name)
                 .build();

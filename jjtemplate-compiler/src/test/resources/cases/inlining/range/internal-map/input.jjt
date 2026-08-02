@@ -1,0 +1,18 @@
+{
+  "definitions": [
+    {
+      "someMap": {
+        "first": 42,
+        "second": "text",
+        "empty": null
+      }
+    },
+    {
+      "{{ defResult range key,value of .someMap }}": {
+        "key": "{{ .key }}",
+        "value": "{{ .value }}"
+      }
+    }
+  ],
+  "template": "{{ .defResult }}"
+}

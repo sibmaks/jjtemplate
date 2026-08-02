@@ -21,15 +21,29 @@ public final class RangeExpression implements Expression {
      */
     public final Expression name;
     /**
-     * Variable name for the current item.
+     * First iteration variable: item for collections and arrays, key for maps.
      */
+    public final String firstVariableName;
+    /**
+     * Second iteration variable: index for collections and arrays, value for maps.
+     */
+    public final String secondVariableName;
+    /**
+     * Legacy alias for {@link #firstVariableName}.
+     *
+     * @deprecated use {@link #firstVariableName}
+     */
+    @Deprecated
     public final String itemVariableName;
     /**
-     * Variable name for the current index.
+     * Legacy alias for {@link #secondVariableName}.
+     *
+     * @deprecated use {@link #secondVariableName}
      */
+    @Deprecated
     public final String indexVariableName;
     /**
-     * The source expression providing the collection to iterate.
+     * The source expression providing the collection, array, or map to iterate.
      */
     public final Expression source;
 
@@ -37,19 +51,21 @@ public final class RangeExpression implements Expression {
      * Creates a range expression.
      *
      * @param name range result name
-     * @param itemVariableName current-item variable name
-     * @param indexVariableName current-index variable name
-     * @param source collection expression
+     * @param firstVariableName item variable for collections and arrays, key variable for maps
+     * @param secondVariableName index variable for collections and arrays, value variable for maps
+     * @param source range source expression
      */
     public RangeExpression(
             Expression name,
-            String itemVariableName,
-            String indexVariableName,
+            String firstVariableName,
+            String secondVariableName,
             Expression source
     ) {
         this.name = name;
-        this.itemVariableName = itemVariableName;
-        this.indexVariableName = indexVariableName;
+        this.firstVariableName = firstVariableName;
+        this.secondVariableName = secondVariableName;
+        this.itemVariableName = firstVariableName;
+        this.indexVariableName = secondVariableName;
         this.source = source;
     }
 

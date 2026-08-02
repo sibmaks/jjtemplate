@@ -256,8 +256,8 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         if (anyInlined) {
             return RangeTemplateExpression.builder()
                     .name(inlinedName)
-                    .indexVariableName(expression.getIndexVariableName())
-                    .itemVariableName(expression.getItemVariableName())
+                    .firstVariableName(expression.getFirstVariableName())
+                    .secondVariableName(expression.getSecondVariableName())
                     .source(inlinedSource)
                     .body(inlinedBody)
                     .sourceExpression(expression.getSourceExpression())

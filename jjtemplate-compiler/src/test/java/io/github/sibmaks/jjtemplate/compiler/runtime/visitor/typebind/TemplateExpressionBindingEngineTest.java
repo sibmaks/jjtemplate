@@ -95,13 +95,30 @@ class TemplateExpressionBindingEngineTest {
     }
 
     @Test
-    void inferRangeItemTypeShouldReturnUnknownForNonArray() {
+    void inferRangeFirstTypeShouldReturnUnknownForNonArray() {
         var context = new MapTemplateCompileContext(Map.of(), TemplateTypeValidationMode.SOFT);
         var engine = new TemplateExpressionBindingEngine(context);
 
-        var inferred = engine.inferRangeItemType(CompileTypeSet.known(List.class));
+        var inferred = engine.inferRangeFirstType(CompileTypeSet.known(List.class));
 
         assertFalse(inferred.isKnown());
+    }
+
+    @Test
+    void inferRangeSecondTypeShouldUseIntegerOnlyForCollectionsAndArrays() {
+        var context = new MapTemplateCompileContext(Map.of(), TemplateTypeValidationMode.SOFT);
+        var engine = new TemplateExpressionBindingEngine(context);
+
+        assertEquals(
+                List.of(Integer.class),
+                engine.inferRangeSecondType(CompileTypeSet.known(List.class)).types()
+        );
+        assertEquals(
+                List.of(Integer.class),
+                engine.inferRangeSecondType(CompileTypeSet.known(String[].class)).types()
+        );
+        assertFalse(engine.inferRangeSecondType(CompileTypeSet.known(Map.class)).isKnown());
+        assertFalse(engine.inferRangeSecondType(CompileTypeSet.unknown()).isKnown());
     }
 
     @Test
@@ -128,8 +145,8 @@ class TemplateExpressionBindingEngineTest {
         ));
         var range = RangeTemplateExpression.builder()
                 .name(new ConstantTemplateExpression("items"))
-                .itemVariableName("item")
-                .indexVariableName("index")
+                .firstVariableName("item")
+                .secondVariableName("index")
                 .source(new VariableTemplateExpression("items", List.of(), ".items"))
                 .body(new VariableTemplateExpression("item", List.of(new VariableTemplateExpression.GetPropertyChain("name")), ".item.name"))
                 .sourceExpression("range")
@@ -182,8 +199,8 @@ class TemplateExpressionBindingEngineTest {
 
         var range = RangeTemplateExpression.builder()
                 .name(new ConstantTemplateExpression("items"))
-                .itemVariableName("item")
-                .indexVariableName("index")
+                .firstVariableName("item")
+                .secondVariableName("index")
                 .source(new ConstantTemplateExpression(new String[]{"a"}))
                 .body(new ConstantTemplateExpression("body"))
                 .sourceExpression("range")

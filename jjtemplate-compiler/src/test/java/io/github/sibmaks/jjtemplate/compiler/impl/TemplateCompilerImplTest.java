@@ -9,6 +9,7 @@ import io.github.sibmaks.jjtemplate.parser.exception.TemplateParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -387,6 +388,33 @@ class TemplateCompilerImplTest {
                                 }
                         )
                 )
+        );
+    }
+
+    @Test
+    void compileShouldIterateOverMapKeyAndValue() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template(Map.of(
+                        "{{ entries range key,value of .values }}",
+                        Map.of("key", "{{ .key }}", "value", "{{ .value }}")
+                ))
+                .build();
+        var values = new LinkedHashMap<String, Integer>();
+        values.put("first", 1);
+        values.put("second", 2);
+
+        var compiled = compiler.compile(script);
+
+        assertEquals(
+                Map.of(
+                        "entries",
+                        List.of(
+                                Map.of("key", "first", "value", 1),
+                                Map.of("key", "second", "value", 2)
+                        )
+                ),
+                compiled.render(Map.of("values", values))
         );
     }
 

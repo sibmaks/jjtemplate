@@ -95,7 +95,7 @@ public final class ExpressionSourceRenderer implements ExpressionVisitor<String>
 
     @Override
     public String visitRange(RangeExpression expr) {
-        return render(expr.name) + " range " + expr.itemVariableName + "," + expr.indexVariableName + " of "
+        return render(expr.name) + " range " + expr.firstVariableName + "," + expr.secondVariableName + " of "
                 + render(expr.source);
     }
 

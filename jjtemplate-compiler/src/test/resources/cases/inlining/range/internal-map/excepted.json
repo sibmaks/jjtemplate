@@ -1,0 +1,14 @@
+[
+  {
+    "key": "first",
+    "value": 42
+  },
+  {
+    "key": "second",
+    "value": "text"
+  },
+  {
+    "key": "empty",
+    "value": null
+  }
+]

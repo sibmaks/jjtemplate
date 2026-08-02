@@ -295,8 +295,8 @@ public final class RootTemplateExpressionFactory {
 
         var range = RangeTemplateExpression.builder()
                 .name(expressionKey.getName())
-                .itemVariableName(expressionKey.getItemVariableName())
-                .indexVariableName(expressionKey.getIndexVariableName())
+                .firstVariableName(expressionKey.getFirstVariableName())
+                .secondVariableName(expressionKey.getSecondVariableName())
                 .source(expressionKey.getSource())
                 .body(compiledBody)
                 .sourceExpression(expressionKey.getSourceExpression())

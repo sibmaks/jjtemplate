@@ -161,6 +161,27 @@ Templates may contain:
 ]
 ```
 
+For collections and arrays, the first range variable is the item and the second is its zero-based index. For maps,
+the first variable is the key and the second is the value; iteration follows the source map's entry order:
+
+```json
+{
+  "definitions": [
+    {
+      "labels": {
+        "first": "One",
+        "second": "Two"
+      },
+      "{{ entries range key,value of .labels }}": {
+        "key": "{{ .key }}",
+        "value": "{{ .value }}"
+      }
+    }
+  ],
+  "template": "{{ .entries }}"
+}
+```
+
 ---
 
 ## Switch definition

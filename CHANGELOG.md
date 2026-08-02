@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- Added map iteration to range expressions, exposing each entry as `key,value`; collection and array ranges continue
+  to expose `item,index`.
+
 ## [1.0.0-rc2] - 2026-08-02
 
 ### Added

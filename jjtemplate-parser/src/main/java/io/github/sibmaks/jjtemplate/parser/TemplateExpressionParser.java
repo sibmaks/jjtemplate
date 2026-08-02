@@ -197,12 +197,12 @@ final class TemplateExpressionParser {
     }
 
     private Expression parseRangeExpression(Expression nameExpression) {
-        var item = cursor.expect(TokenType.IDENT, "range item name");
+        var firstVariable = cursor.expect(TokenType.IDENT, "first range variable name");
         cursor.expect(TokenType.COMMA, ",");
-        var index = cursor.expect(TokenType.IDENT, "range index name");
+        var secondVariable = cursor.expect(TokenType.IDENT, "second range variable name");
         cursor.expectKeyword(Keyword.OF, "of");
         var source = parseExpression();
-        return new RangeExpression(nameExpression, item.lexeme, index.lexeme, source);
+        return new RangeExpression(nameExpression, firstVariable.lexeme, secondVariable.lexeme, source);
     }
 
     /**

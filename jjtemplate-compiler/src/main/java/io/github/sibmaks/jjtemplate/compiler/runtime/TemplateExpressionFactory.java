@@ -215,8 +215,8 @@ public final class TemplateExpressionFactory implements ExpressionVisitor<Templa
     public TemplateExpression visitRange(RangeExpression expr) {
         return RangeTemplateExpression.builder()
                 .name(compile(expr.name))
-                .itemVariableName(expr.itemVariableName)
-                .indexVariableName(expr.indexVariableName)
+                .firstVariableName(expr.firstVariableName)
+                .secondVariableName(expr.secondVariableName)
                 .source(compile(expr.source))
                 .sourceExpression(sourceRenderer.render(expr))
                 .build();

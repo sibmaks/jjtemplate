@@ -28,6 +28,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.Swit
 import io.github.sibmaks.jjtemplate.compiler.impl.CompiledTemplateImpl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +129,7 @@ final class TemplateExpressionBindingEngine {
         return CompileTypeSet.unknown();
     }
 
-    CompileTypeSet inferRangeItemType(CompileTypeSet sourceType) {
+    CompileTypeSet inferRangeFirstType(CompileTypeSet sourceType) {
         if (!sourceType.isKnown()) {
             return CompileTypeSet.unknown();
         }
@@ -140,6 +141,18 @@ final class TemplateExpressionBindingEngine {
             itemTypes.add(type.getComponentType());
         }
         return CompileTypeSet.known(itemTypes);
+    }
+
+    CompileTypeSet inferRangeSecondType(CompileTypeSet sourceType) {
+        if (!sourceType.isKnown()) {
+            return CompileTypeSet.unknown();
+        }
+        for (var type : sourceType.types()) {
+            if (!type.isArray() && !Collection.class.isAssignableFrom(type)) {
+                return CompileTypeSet.unknown();
+            }
+        }
+        return CompileTypeSet.known(Integer.class);
     }
 
     private TemplateExpression bindConcatExpression(
@@ -215,10 +228,12 @@ final class TemplateExpressionBindingEngine {
     ) {
         var name = bindExpression(range.getName(), scope);
         var source = bindExpression(range.getSource(), scope);
-        var itemType = inferRangeItemType(inferExpressionType(source, scope));
+        var sourceType = inferExpressionType(source, scope);
+        var firstType = inferRangeFirstType(sourceType);
+        var secondType = inferRangeSecondType(sourceType);
         var childScope = scope.child(Map.of(
-                range.getIndexVariableName(), CompileTypeSet.known(Integer.class),
-                range.getItemVariableName(), itemType
+                range.getFirstVariableName(), firstType,
+                range.getSecondVariableName(), secondType
         ));
         var body = bindExpression(range.getBody(), childScope);
         if (name == range.getName() && source == range.getSource() && body == range.getBody()) {
@@ -226,8 +241,8 @@ final class TemplateExpressionBindingEngine {
         }
         return RangeTemplateExpression.builder()
                 .name(name)
-                .itemVariableName(range.getItemVariableName())
-                .indexVariableName(range.getIndexVariableName())
+                .firstVariableName(range.getFirstVariableName())
+                .secondVariableName(range.getSecondVariableName())
                 .source(source)
                 .body(body)
                 .sourceExpression(range.getSourceExpression())

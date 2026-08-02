@@ -166,7 +166,8 @@ Supports expressions, pipe calls (`|`), and ternary operators (`?`, `:`), functi
 - `.varName` - Access variable values from context
 - Supports nested object access (e.g., `.user.profile.name`)
 
-Variable definitions: static, conditional (`switch`), and range-based (`range`)
+Variable definitions: static, conditional (`switch`), and range-based (`range`). A range exposes `item,index` for
+collections and arrays, and `key,value` for maps.
 
 ## Built-in Functions
 

@@ -7,14 +7,16 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Template expression that iterates over a collection or array and produces a list of results.
+ * Template expression that iterates over a collection, array, or map and produces a list of results.
  * <p>
- * The source expression is evaluated first and must yield either a
- * {@link java.util.Collection} or an array. For each element, a new temporary
- * scope is pushed into the {@link Context}, exposing iteration variables,
- * and the body expression is evaluated.
+ * The source expression is evaluated first and must yield a {@link java.util.Map},
+ * {@link java.util.Collection}, or an array. For collections and arrays the
+ * iteration variables represent item and index; for maps they represent key and
+ * value. For each element, a new temporary scope is pushed into the
+ * {@link Context}, exposing iteration variables, and the body expression is evaluated.
  * </p>
  *
  * <p>
@@ -31,8 +33,8 @@ import java.util.HashMap;
 @EqualsAndHashCode
 public final class RangeTemplateExpression implements TemplateExpression {
     private final TemplateExpression name;
-    private final String itemVariableName;
-    private final String indexVariableName;
+    private final String firstVariableName;
+    private final String secondVariableName;
     private final TemplateExpression source;
     private final TemplateExpression body;
     private final String sourceExpression;
@@ -41,23 +43,23 @@ public final class RangeTemplateExpression implements TemplateExpression {
      * Creates a range expression.
      *
      * @param name result-name expression
-     * @param itemVariableName item variable name
-     * @param indexVariableName index variable name
+     * @param firstVariableName item variable for collections and arrays, key variable for maps
+     * @param secondVariableName index variable for collections and arrays, value variable for maps
      * @param source range source
      * @param body expression evaluated for each item
      * @param sourceExpression original source expression
      */
     public RangeTemplateExpression(
             TemplateExpression name,
-            String itemVariableName,
-            String indexVariableName,
+            String firstVariableName,
+            String secondVariableName,
             TemplateExpression source,
             TemplateExpression body,
             String sourceExpression
     ) {
         this.name = name;
-        this.itemVariableName = itemVariableName;
-        this.indexVariableName = indexVariableName;
+        this.firstVariableName = firstVariableName;
+        this.secondVariableName = secondVariableName;
         this.source = source;
         this.body = body;
         this.sourceExpression = sourceExpression;
@@ -70,8 +72,11 @@ public final class RangeTemplateExpression implements TemplateExpression {
             if (sourceObject == null) {
                 return null;
             }
+            if (sourceObject instanceof Map) {
+                return evaluateMap(context, (Map<?, ?>) sourceObject);
+            }
             if (sourceObject instanceof Collection) {
-                return evaluateRange(context, (Collection<?>) sourceObject);
+                return evaluateCollection(context, (Collection<?>) sourceObject);
             }
             if (sourceObject.getClass().isArray()) {
                 return evaluateArray(context, sourceObject);
@@ -88,8 +93,8 @@ public final class RangeTemplateExpression implements TemplateExpression {
         var iteration = new HashMap<String, Object>(2, 1);
         for (var i = 0; i < length; i++) {
             var rawItem = Array.get(sourceObject, i);
-            iteration.put(itemVariableName, rawItem);
-            iteration.put(indexVariableName, i);
+            iteration.put(firstVariableName, rawItem);
+            iteration.put(secondVariableName, i);
             try {
                 context.in(iteration);
                 var item = body.apply(context);
@@ -101,13 +106,30 @@ public final class RangeTemplateExpression implements TemplateExpression {
         return out;
     }
 
-    private ArrayList<Object> evaluateRange(Context context, Collection<?> sourceObject) {
+    private ArrayList<Object> evaluateCollection(Context context, Collection<?> sourceObject) {
         var out = new ArrayList<>(sourceObject.size());
         var iteration = new HashMap<String, Object>(2, 1);
         var index = 0;
         for (var o : sourceObject) {
-            iteration.put(itemVariableName, o);
-            iteration.put(indexVariableName, index++);
+            iteration.put(firstVariableName, o);
+            iteration.put(secondVariableName, index++);
+            try {
+                context.in(iteration);
+                var item = body.apply(context);
+                out.add(item);
+            } finally {
+                context.out();
+            }
+        }
+        return out;
+    }
+
+    private ArrayList<Object> evaluateMap(Context context, Map<?, ?> sourceObject) {
+        var out = new ArrayList<>(sourceObject.size());
+        var iteration = new HashMap<String, Object>(2, 1);
+        for (var entry : sourceObject.entrySet()) {
+            iteration.put(firstVariableName, entry.getKey());
+            iteration.put(secondVariableName, entry.getValue());
             try {
                 context.in(iteration);
                 var item = body.apply(context);

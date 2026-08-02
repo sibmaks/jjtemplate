@@ -417,8 +417,8 @@ class TemplateParserTest {
                 List.of(new VariableExpression.Segment("items")),
                 assertInstanceOf(VariableExpression.class, expression.name).segments
         );
-        assertEquals("item", expression.itemVariableName);
-        assertEquals("index", expression.indexVariableName);
+        assertEquals("item", expression.firstVariableName);
+        assertEquals("index", expression.secondVariableName);
         assertEquals(
                 List.of(new VariableExpression.Segment("values")),
                 assertInstanceOf(VariableExpression.class, expression.source).segments
@@ -442,8 +442,8 @@ class TemplateParserTest {
         var expression = assertInstanceOf(RangeExpression.class, parser.parseExpression());
 
         assertEquals("entries", assertInstanceOf(LiteralExpression.class, expression.name).value);
-        assertEquals("item", expression.itemVariableName);
-        assertEquals("idx", expression.indexVariableName);
+        assertEquals("item", expression.firstVariableName);
+        assertEquals("idx", expression.secondVariableName);
     }
 
     @Test

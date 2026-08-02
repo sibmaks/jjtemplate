@@ -188,8 +188,8 @@ class RootTemplateExpressionFactoryTest {
         var source = new ConstantTemplateExpression(List.of("a", "b"));
         RangeTemplateExpression range = RangeTemplateExpression.builder()
                 .name(key)
-                .itemVariableName("item")
-                .indexVariableName("index")
+                .firstVariableName("item")
+                .secondVariableName("index")
                 .source(source)
                 .body(new ConstantTemplateExpression(null))
                 .sourceExpression("items range item,index of .values")
