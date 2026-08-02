@@ -38,8 +38,7 @@ measured JVM cannot silently fall back to the JVM that launched Gradle.
 Run the quick profile with:
 
 ```shell
-JAVA_HOME=/Users/sibmaks/Library/Java/JavaVirtualMachines/openjdk-21/Contents/Home \
-  ./gradlew --no-daemon :jjtemplate-compiler:jmhQuick
+./gradlew --no-daemon :jjtemplate-compiler:jmhQuick
 ```
 
 `jmhQuick` runs compile and render for a small and realistic scenario with one
@@ -47,8 +46,7 @@ fork and short iterations. It is intended as a smoke test, not a publishable
 measurement.
 
 ```shell
-JAVA_HOME=/Users/sibmaks/Library/Java/JavaVirtualMachines/openjdk-21/Contents/Home \
-  ./gradlew --no-daemon :jjtemplate-compiler:jmhFull
+./gradlew --no-daemon :jjtemplate-compiler:jmhFull
 ```
 
 `jmhFull` respects the benchmark annotations and enables the JMH GC profiler.
