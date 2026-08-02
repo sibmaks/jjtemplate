@@ -6,6 +6,7 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=bugs)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
+[![Maven](https://badges.mvnrepository.com/badge/io.github.sibmaks.jjtemplate/jjtemplate/badge.svg?label=Maven)](https://mvnrepository.com/artifact/io.github.sibmaks.jjtemplate/jjtemplate)
 
 **JJTemplate** is a lightweight templating engine designed for **minimal render time** and **JSON-compatible
 input/output**. **JJT** stands for **Java JSON Template**. JJTemplate compiles templates into optimized abstract syntax
