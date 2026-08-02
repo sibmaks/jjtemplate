@@ -22,8 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,48 +49,26 @@ class TemplateCompilerImplIntegrationTest {
                 context = OBJECT_MAPPER.readValue(contextPath, new TypeReference<>() {
                 });
             }
-            var excepted = OBJECT_MAPPER.readValue(it.resolve("excepted.json").toFile(), Object.class);
+            var expected = OBJECT_MAPPER.readValue(it.resolve("expected.json").toFile(), Object.class);
             var path = root.toAbsolutePath().normalize().toString();
             return Arguments.of(
                     it.toAbsolutePath().normalize().toString().substring(path.length() + 1),
                     templateScript,
                     context,
-                    excepted
+                    expected
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static <T, R> Stream<R> expand(
-            Stream<T> stream,
-            BiConsumer<T, Consumer<R>> expander
-    ) {
-        return stream.flatMap(item -> {
-            List<R> result = new ArrayList<>();
-            expander.accept(item, result::add);
-            return result.stream();
-        });
-    }
-
     private static List<Path> getCases(Path resourcesDir) {
-        try (var paths = Files.list(resourcesDir)) {
-            var pathStream = paths
-                    .filter(Files::isDirectory)
-                    .map(Path::toAbsolutePath);
-            return TemplateCompilerImplIntegrationTest.<Path, Path>expand(
-                            pathStream, (it, consumer) -> {
-                                try (var subFiles = Files.list(it)) {
-                                    var isCase = subFiles.allMatch(Files::isRegularFile);
-                                    if (isCase) {
-                                        consumer.accept(it);
-                                    } else {
-                                        getCases(it).forEach(consumer);
-                                    }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            })
+        try (var paths = Files.walk(resourcesDir)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(it -> "input.jjt".equals(it.getFileName().toString()))
+                    .map(Path::getParent)
+                    .map(Path::toAbsolutePath)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -115,7 +91,7 @@ class TemplateCompilerImplIntegrationTest {
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var compiler = TemplateCompiler.getInstance();
         var begin = System.nanoTime();
@@ -125,7 +101,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -140,7 +116,7 @@ class TemplateCompilerImplIntegrationTest {
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var compiler = TemplateCompiler.getInstance();
         var compileContext = new MapTemplateCompileContext(buildTypesFromContext(context));
@@ -151,7 +127,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         System.out.printf(
                 "Case '%s', compiled with typed context: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -161,12 +137,12 @@ class TemplateCompilerImplIntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("inliningCases")
-    void testInliningScenario(
+    @MethodSource("staticCompilationCases")
+    void testStaticCompilationScenario(
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var compiler = TemplateCompiler.getInstance();
         var begin = System.nanoTime();
@@ -175,7 +151,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         assertInstanceOf(StaticCompiledTemplateImpl.class, compiled);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
@@ -191,7 +167,7 @@ class TemplateCompilerImplIntegrationTest {
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var options = TemplateCompileOptions.builder()
                 .optimize(false)
@@ -204,7 +180,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(context);
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -219,7 +195,7 @@ class TemplateCompilerImplIntegrationTest {
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var compiler = TemplateCompiler.getInstance();
         var modifiedDefinitions = new ArrayList<Definition>();
@@ -241,7 +217,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(listsToArrays(context));
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -256,7 +232,7 @@ class TemplateCompilerImplIntegrationTest {
             String caseName,
             TemplateScript templateScript,
             Map<String, Object> context,
-            Object excepted
+            Object expected
     ) {
         var options = TemplateCompileOptions.builder()
                 .optimize(false)
@@ -281,7 +257,7 @@ class TemplateCompilerImplIntegrationTest {
         var rendered = compiled.render(listsToArrays(context));
         var renderedAt = System.nanoTime();
         var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-        assertEquals(excepted, renderedJson);
+        assertEquals(expected, renderedJson);
         System.out.printf(
                 "Case '%s', compiled: %.4f ms, rendered: %.4f ms%n",
                 caseName,
@@ -296,7 +272,7 @@ class TemplateCompilerImplIntegrationTest {
     void testScenarioWithLoad(String caseName,
                               TemplateScript templateScript,
                               Map<String, Object> context,
-                              Object excepted) {
+                              Object expected) {
         var compiler = TemplateCompiler.getInstance();
         var measurementsAmount = 10_000;
         var measurementsCompiled = new double[measurementsAmount];
@@ -309,7 +285,7 @@ class TemplateCompilerImplIntegrationTest {
             var rendered = compiled.render(context);
             var renderedAt = System.nanoTime();
             var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-            assertEquals(excepted, renderedJson);
+            assertEquals(expected, renderedJson);
             measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
             measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
         }
@@ -334,7 +310,7 @@ class TemplateCompilerImplIntegrationTest {
     void testScenarioWithLoadWithoutOptimization(String caseName,
                                                  TemplateScript templateScript,
                                                  Map<String, Object> context,
-                                                 Object excepted) {
+                                                 Object expected) {
         var options = TemplateCompileOptions.builder()
                 .optimize(false)
                 .build();
@@ -350,7 +326,7 @@ class TemplateCompilerImplIntegrationTest {
             var rendered = compiled.render(context);
             var renderedAt = System.nanoTime();
             var renderedJson = OBJECT_MAPPER.convertValue(rendered, Object.class);
-            assertEquals(excepted, renderedJson);
+            assertEquals(expected, renderedJson);
             measurementsCompiled[i] = (compiledAt - begin) / 1000000.0;
             measurementsRendered[i] = (renderedAt - compiledAt) / 1000000.0;
         }
@@ -380,8 +356,10 @@ class TemplateCompilerImplIntegrationTest {
                 .map(it -> buildArguments(resourcesDir, it));
     }
 
-    public static Stream<Arguments> inliningCases() {
-        var resourcesDir = Paths.get("src", "test", "resources", "cases", "inlining");
+    public static Stream<Arguments> staticCompilationCases() {
+        var resourcesDir = Paths.get(
+                "src", "test", "resources", "cases", "optimization", "static-compilation"
+        );
 
         var cases = getCases(resourcesDir);
 
