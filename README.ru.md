@@ -33,18 +33,32 @@
 implementation("io.github.sibmaks.jjtemplate:jjtemplate:{version}")
 ```
 
-## Пример использования
+## Полный пример использования
 
-1. **Скомпилировать шаблон**
-   ```java
-   var compiler = TemplateCompiler.getInstance();
-   var script = new TemplateScript(...);
-   var compiled = compiler.compile(script);
-   ```
-2. Отрендерить с данными
-    ```java
-    var result = compiled.render(Map.of("name", "Alice"));
-    ```
+Следующий класс можно скопировать и запустить без дополнительных изменений:
+
+```java
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) {
+        var script = TemplateScript.builder()
+                .template(Map.of(
+                        "message", "{{ string:concat 'Hello, ', .name }}"
+                ))
+                .build();
+
+        var compiler = TemplateCompiler.getInstance();
+        var compiled = compiler.compile(script);
+        var result = compiled.render(Map.of("name", "Alice"));
+
+        System.out.println(result); // {message=Hello, Alice}
+    }
+}
+```
 
 ## Собственные функции
 

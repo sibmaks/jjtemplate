@@ -33,18 +33,32 @@ IDEA plugin: [here](https://github.com/sibmaks/jjtemplate-plugin).
 implementation("io.github.sibmaks.jjtemplate:jjtemplate:{version}")
 ```
 
-## Example Workflow
+## Complete Example
 
-1. **Compile a template**
-   ```java
-   var compiler = TemplateCompiler.getInstance();
-   var script = new TemplateScript(...);
-   var compiled = compiler.compile(script);
-   ```
-2. Render with data
-    ```java
-    var result = compiled.render(Map.of("name", "Alice"));
-    ```
+The following class can be copied and run as-is:
+
+```java
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateCompiler;
+import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
+
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) {
+        var script = TemplateScript.builder()
+                .template(Map.of(
+                        "message", "{{ string:concat 'Hello, ', .name }}"
+                ))
+                .build();
+
+        var compiler = TemplateCompiler.getInstance();
+        var compiled = compiler.compile(script);
+        var result = compiled.render(Map.of("name", "Alice"));
+
+        System.out.println(result); // {message=Hello, Alice}
+    }
+}
+```
 
 ## Custom Functions
 
