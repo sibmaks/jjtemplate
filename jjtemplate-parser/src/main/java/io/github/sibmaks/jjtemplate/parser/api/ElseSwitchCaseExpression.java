@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -15,12 +14,20 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class ElseSwitchCaseExpression implements Expression {
     /**
      * Optional condition expression.
      */
     public final Expression condition;
+
+    /**
+     * Creates an else-case expression.
+     *
+     * @param condition optional condition expression
+     */
+    public ElseSwitchCaseExpression(Expression condition) {
+        this.condition = condition;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {

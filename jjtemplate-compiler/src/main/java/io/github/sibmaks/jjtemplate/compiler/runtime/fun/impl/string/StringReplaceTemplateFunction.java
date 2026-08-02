@@ -16,6 +16,12 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.string;
  */
 public final class StringReplaceTemplateFunction extends AbstractStringReplaceTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringReplaceTemplateFunction() {
+    }
+
     @Override
     protected String replace(String value, String target, String replacement) {
         var string = String.valueOf(value);

@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class NegTemplateFunction extends MathTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public NegTemplateFunction() {
+    }
+
     private Number neg(Object value) {
         if (value == null) {
             return null;

@@ -38,7 +38,6 @@ import java.util.Locale;
  */
 @Getter
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TemplateEvaluationOptions {
     private static final TemplateEvaluationOptions INSTANCE = TemplateEvaluationOptions.builder().build();
 
@@ -60,6 +59,17 @@ public final class TemplateEvaluationOptions {
      */
     @Builder.Default
     private final List<TemplateFunction<?>> functions = List.of();
+
+    /**
+     * Creates evaluation options for the builder.
+     *
+     * @param locale default locale
+     * @param functions custom functions
+     */
+    private TemplateEvaluationOptions(Locale locale, List<TemplateFunction<?>> functions) {
+        this.locale = locale;
+        this.functions = functions;
+    }
 
     /**
      * Get default instance of evaluation options. Without additional functions.

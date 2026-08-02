@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.list;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
@@ -26,9 +25,17 @@ import java.util.List;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class DynamicListElement implements ListElement {
     private final TemplateExpression value;
+
+    /**
+     * Creates a dynamic list element.
+     *
+     * @param value expression evaluated for the element
+     */
+    public DynamicListElement(TemplateExpression value) {
+        this.value = value;
+    }
 
     @Override
     public void apply(Context context, List<Object> target) {

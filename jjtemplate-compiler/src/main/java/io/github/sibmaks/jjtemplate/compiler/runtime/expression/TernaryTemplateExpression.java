@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -19,7 +18,6 @@ import lombok.ToString;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class TernaryTemplateExpression implements TemplateExpression {
@@ -27,6 +25,26 @@ public final class TernaryTemplateExpression implements TemplateExpression {
     private final TemplateExpression thenTrue;
     private final TemplateExpression thenFalse;
     private final String sourceExpression;
+
+    /**
+     * Creates a ternary expression.
+     *
+     * @param condition condition expression
+     * @param thenTrue true branch
+     * @param thenFalse false branch
+     * @param sourceExpression original source expression
+     */
+    public TernaryTemplateExpression(
+            TemplateExpression condition,
+            TemplateExpression thenTrue,
+            TemplateExpression thenFalse,
+            String sourceExpression
+    ) {
+        this.condition = condition;
+        this.thenTrue = thenTrue;
+        this.thenFalse = thenFalse;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {

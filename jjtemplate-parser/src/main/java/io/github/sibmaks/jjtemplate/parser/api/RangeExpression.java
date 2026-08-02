@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -16,7 +15,6 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class RangeExpression implements Expression {
     /**
      * The name or key expression of the range.
@@ -34,6 +32,26 @@ public final class RangeExpression implements Expression {
      * The source expression providing the collection to iterate.
      */
     public final Expression source;
+
+    /**
+     * Creates a range expression.
+     *
+     * @param name range result name
+     * @param itemVariableName current-item variable name
+     * @param indexVariableName current-index variable name
+     * @param source collection expression
+     */
+    public RangeExpression(
+            Expression name,
+            String itemVariableName,
+            String indexVariableName,
+            Expression source
+    ) {
+        this.name = name;
+        this.itemVariableName = itemVariableName;
+        this.indexVariableName = indexVariableName;
+        this.source = source;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {

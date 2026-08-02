@@ -20,6 +20,12 @@ import java.util.List;
  */
 public final class ScaleTemplateFunction extends MathTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public ScaleTemplateFunction() {
+    }
+
     private Number scale(Object value, int scale, RoundingMode roundingMode) {
         if (value == null) {
             return null;

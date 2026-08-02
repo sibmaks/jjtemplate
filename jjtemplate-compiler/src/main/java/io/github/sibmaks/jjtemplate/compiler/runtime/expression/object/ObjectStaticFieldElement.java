@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.object;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Map;
@@ -23,10 +22,20 @@ import java.util.Map;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class ObjectStaticFieldElement implements ObjectElement {
     private final String key;
     private final Object value;
+
+    /**
+     * Creates a static object field.
+     *
+     * @param key field name
+     * @param value field value
+     */
+    public ObjectStaticFieldElement(String key, Object value) {
+        this.key = key;
+        this.value = value;
+    }
 
     @Override
     public void apply(Context context, Map<String, Object> target) {

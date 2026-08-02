@@ -16,6 +16,12 @@ import java.util.List;
  */
 public final class ListLengthTemplateFunction implements TemplateFunction<Integer> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public ListLengthTemplateFunction() {
+    }
+
     private int getLength(Object value) {
         if (value == null) {
             return 0;

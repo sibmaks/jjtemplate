@@ -23,6 +23,12 @@ import java.util.stream.Collectors;
  */
 public final class UnusedVariableNodeEliminator implements TemplateOptimizer {
 
+    /**
+     * Creates an instance.
+     */
+    public UnusedVariableNodeEliminator() {
+    }
+
     @Override
     public CompiledTemplateImpl optimize(CompiledTemplateImpl compiledTemplate) {
         var internalVariables = compiledTemplate.getInternalVariables();

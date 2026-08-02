@@ -14,13 +14,29 @@ import lombok.*;
  */
 @Getter
 @Builder
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class SwitchDefinitionTemplateExpression implements TemplateExpression {
     private final TemplateExpression key;
     private final TemplateExpression condition;
     private final String sourceExpression;
+
+    /**
+     * Creates a compile-time switch definition.
+     *
+     * @param key definition key expression
+     * @param condition switch condition
+     * @param sourceExpression original source expression
+     */
+    public SwitchDefinitionTemplateExpression(
+            TemplateExpression key,
+            TemplateExpression condition,
+            String sourceExpression
+    ) {
+        this.key = key;
+        this.condition = condition;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {

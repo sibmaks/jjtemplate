@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -20,11 +19,19 @@ import java.util.List;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class TemplateConcatTemplateExpression implements TemplateExpression {
     private final List<TemplateExpression> expressions;
+
+    /**
+     * Creates a concatenation expression.
+     *
+     * @param expressions expressions concatenated in order
+     */
+    public TemplateConcatTemplateExpression(List<TemplateExpression> expressions) {
+        this.expressions = expressions;
+    }
 
     @Override
     public String apply(final Context context) {

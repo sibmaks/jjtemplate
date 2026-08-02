@@ -23,6 +23,12 @@ import java.util.HashMap;
  */
 public final class VariableNodeInliner implements TemplateOptimizer {
 
+    /**
+     * Creates an instance.
+     */
+    public VariableNodeInliner() {
+    }
+
     @Override
     public CompiledTemplateImpl optimize(CompiledTemplateImpl compiledTemplate) {
         var internalVariables = compiledTemplate.getInternalVariables();

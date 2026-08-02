@@ -17,6 +17,12 @@ import java.util.List;
  */
 public final class StringSubstringTemplateFunction implements TemplateFunction<String> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringSubstringTemplateFunction() {
+    }
+
     private String substr(Object value, int beginIndex, Integer endIndex) {
         var string = String.valueOf(value);
         var len = string.length();

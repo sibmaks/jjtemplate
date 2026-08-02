@@ -20,6 +20,12 @@ import java.util.List;
  */
 public final class StringIndexOfTemplateFunction implements TemplateFunction<Integer> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringIndexOfTemplateFunction() {
+    }
+
     private Integer indexOf(Object value, String str) {
         var string = String.valueOf(value);
         return string.indexOf(str);

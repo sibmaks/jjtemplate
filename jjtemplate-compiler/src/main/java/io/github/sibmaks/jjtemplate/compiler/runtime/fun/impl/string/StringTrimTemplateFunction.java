@@ -21,6 +21,12 @@ import java.util.List;
  */
 public final class StringTrimTemplateFunction implements TemplateFunction<String> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringTrimTemplateFunction() {
+    }
+
     private String trim(Object value) {
         if (value == null) {
             return null;

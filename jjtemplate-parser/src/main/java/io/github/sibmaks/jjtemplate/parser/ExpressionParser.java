@@ -22,6 +22,12 @@ import java.util.List;
  */
 public class ExpressionParser {
     /**
+     * Creates an expression parser.
+     */
+    public ExpressionParser() {
+    }
+
+    /**
      * Parses the given expression text into a template context.
      *
      * @param input expression string to parse

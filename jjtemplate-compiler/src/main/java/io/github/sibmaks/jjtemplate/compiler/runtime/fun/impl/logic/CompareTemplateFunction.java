@@ -16,6 +16,21 @@ import java.math.BigInteger;
  */
 public abstract class CompareTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public CompareTemplateFunction() {
+    }
+
+    /**
+     * Compares two numeric values in the requested direction.
+     *
+     * @param x left value
+     * @param y right value
+     * @param dir negative for less-than comparison, non-negative for greater-than comparison
+     * @param eq whether equality satisfies the comparison
+     * @return comparison result
+     */
     protected boolean fnCmp(Object x, Object y, int dir, boolean eq) {
         var nx = asNum(x);
         var ny = asNum(y);
@@ -26,6 +41,12 @@ public abstract class CompareTemplateFunction implements TemplateFunction<Boolea
         return eq ? c >= 0 : c > 0;
     }
 
+    /**
+     * Converts a supported value to a decimal number.
+     *
+     * @param value value to convert
+     * @return decimal representation
+     */
     protected BigDecimal asNum(Object value) {
         if (value instanceof BigDecimal) {
             return (BigDecimal) value;

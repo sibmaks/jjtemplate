@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.compiler.api.CompiledTemplate;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.ObjectFieldElement;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -20,7 +19,6 @@ import java.util.Map;
  */
 @Getter
 @ToString
-@AllArgsConstructor
 public final class CompiledTemplateImpl implements CompiledTemplate {
 
     /**
@@ -32,6 +30,20 @@ public final class CompiledTemplateImpl implements CompiledTemplate {
      * The root abstract syntax tree node representing the compiled template.
      */
     private final TemplateExpression compiledTemplate;
+
+    /**
+     * Creates a compiled template backed by an expression tree.
+     *
+     * @param internalVariables compiled definition expressions
+     * @param compiledTemplate root template expression
+     */
+    public CompiledTemplateImpl(
+            List<ObjectFieldElement> internalVariables,
+            TemplateExpression compiledTemplate
+    ) {
+        this.internalVariables = internalVariables;
+        this.compiledTemplate = compiledTemplate;
+    }
 
     @Override
     public Object render(Map<String, Object> context) {

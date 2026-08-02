@@ -13,6 +13,12 @@ import java.util.List;
  */
 public final class GTCompareTemplateFunction extends CompareTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public GTCompareTemplateFunction() {
+    }
+
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 1) {

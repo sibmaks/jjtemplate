@@ -17,8 +17,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum Reserved {
+    /** Boolean true literal. */
     TRUE("true"),
+    /** Boolean false literal. */
     FALSE("false"),
+    /** Null literal. */
     NULL("null");
 
     /**

@@ -9,10 +9,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Returns all list elements except the first one.
+ *
  * @author sibmaks
  * @since 0.4.0
  */
 public final class ListTailTemplateFunction implements TemplateFunction<List<Object>> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public ListTailTemplateFunction() {
+    }
 
     private List<Object> getTail(Object value) {
         if (value == null) {

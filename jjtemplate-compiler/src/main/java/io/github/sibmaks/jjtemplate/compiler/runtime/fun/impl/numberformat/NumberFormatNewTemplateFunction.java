@@ -20,6 +20,12 @@ import java.util.Map;
  */
 public final class NumberFormatNewTemplateFunction implements TemplateFunction<NumberFormat> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public NumberFormatNewTemplateFunction() {
+    }
+
     @Override
     public NumberFormat invoke(List<Object> args, Object pipeArg) {
         if (args.isEmpty()) {

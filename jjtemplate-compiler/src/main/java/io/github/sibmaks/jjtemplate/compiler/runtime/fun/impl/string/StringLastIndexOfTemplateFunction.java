@@ -21,6 +21,12 @@ import java.util.List;
  */
 public final class StringLastIndexOfTemplateFunction implements TemplateFunction<Integer> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringLastIndexOfTemplateFunction() {
+    }
+
     private Integer lastIndexOf(Object value, String str) {
         var string = String.valueOf(value);
         return string.lastIndexOf(str);

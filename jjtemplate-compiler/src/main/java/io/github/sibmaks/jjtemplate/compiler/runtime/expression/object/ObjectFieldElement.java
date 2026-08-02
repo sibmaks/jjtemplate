@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Map;
@@ -27,10 +26,20 @@ import java.util.Map;
 @Getter
 @ToString
 @Builder
-@RequiredArgsConstructor
 public final class ObjectFieldElement implements ObjectElement {
     private final TemplateExpression key;
     private final TemplateExpression value;
+
+    /**
+     * Creates a dynamic object field.
+     *
+     * @param key key expression
+     * @param value value expression
+     */
+    public ObjectFieldElement(TemplateExpression key, TemplateExpression value) {
+        this.key = key;
+        this.value = value;
+    }
 
     @Override
     public void apply(Context context, Map<String, Object> target) {

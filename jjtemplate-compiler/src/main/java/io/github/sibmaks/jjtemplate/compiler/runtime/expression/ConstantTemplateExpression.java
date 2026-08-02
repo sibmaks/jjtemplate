@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -19,11 +18,19 @@ import lombok.ToString;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class ConstantTemplateExpression implements TemplateExpression {
     private final Object value;
+
+    /**
+     * Creates a constant expression.
+     *
+     * @param value constant value
+     */
+    public ConstantTemplateExpression(Object value) {
+        this.value = value;
+    }
 
     @Override
     public Object apply(final Context context) {

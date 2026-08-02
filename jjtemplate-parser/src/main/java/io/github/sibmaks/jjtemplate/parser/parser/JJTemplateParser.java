@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.parser.parser;
 
 import io.github.sibmaks.jjtemplate.parser.api.Expression;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
@@ -24,8 +23,11 @@ public final class JJTemplateParser {
      * Supported interpolation kinds.
      */
     public enum InterpolationType {
+        /** Direct expression interpolation. */
         EXPRESSION,
+        /** Conditional interpolation. */
         CONDITION,
+        /** Spread interpolation. */
         SPREAD
     }
 
@@ -57,18 +59,36 @@ public final class JJTemplateParser {
      * Text template part.
      */
     @Getter
-    @AllArgsConstructor
     public static final class TextPart implements TemplatePart {
         private final String text;
+
+        /**
+         * Creates a literal text part.
+         *
+         * @param text literal template text
+         */
+        public TextPart(String text) {
+            this.text = text;
+        }
     }
 
     /**
      * Interpolation template part.
      */
     @Getter
-    @AllArgsConstructor
     public static final class InterpolationPart implements TemplatePart {
         private final InterpolationType type;
         private final Expression expression;
+
+        /**
+         * Creates an interpolation part.
+         *
+         * @param type interpolation kind
+         * @param expression parsed expression
+         */
+        public InterpolationPart(InterpolationType type, Expression expression) {
+            this.type = type;
+            this.expression = expression;
+        }
     }
 }

@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressionVisitor;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -19,13 +18,29 @@ import java.util.List;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class DynamicFunctionCallTemplateExpression implements FunctionCallTemplateExpression {
     private final TemplateFunction<?> function;
     private final ListTemplateExpression argExpression;
     private final String sourceExpression;
+
+    /**
+     * Creates a function call with runtime-evaluated arguments.
+     *
+     * @param function function to call
+     * @param argExpression argument expression
+     * @param sourceExpression original source expression
+     */
+    public DynamicFunctionCallTemplateExpression(
+            TemplateFunction<?> function,
+            ListTemplateExpression argExpression,
+            String sourceExpression
+    ) {
+        this.function = function;
+        this.argExpression = argExpression;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public List<Object> getArguments(Context context) {

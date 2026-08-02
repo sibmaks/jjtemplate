@@ -1,16 +1,24 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.*;
-import lombok.RequiredArgsConstructor;
 
 /**
+ * Inlines variables referenced by list elements.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class ListElementVariableInliner implements ListElementVisitor<ListElement> {
     private final TemplateExpressionVariableInliner inliner;
+
+    /**
+     * Creates a list-element variable inliner.
+     *
+     * @param inliner expression inliner used for nested expressions
+     */
+    public ListElementVariableInliner(TemplateExpressionVariableInliner inliner) {
+        this.inliner = inliner;
+    }
 
     @Override
     public ListElement visit(ConditionListElement element) {

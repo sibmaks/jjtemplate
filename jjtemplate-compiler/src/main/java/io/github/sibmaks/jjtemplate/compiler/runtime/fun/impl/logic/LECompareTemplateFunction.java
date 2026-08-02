@@ -14,6 +14,12 @@ import java.util.List;
  */
 public final class LECompareTemplateFunction extends CompareTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public LECompareTemplateFunction() {
+    }
+
     @Override
     public Boolean invoke(List<Object> args, Object pipeArg) {
         if (args.size() != 1) {

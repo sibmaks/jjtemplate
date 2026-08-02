@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -16,7 +15,6 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class SwitchExpression implements Expression {
     /**
      * The key expression used by the switch.
@@ -26,6 +24,17 @@ public final class SwitchExpression implements Expression {
      * The condition expression to evaluate.
      */
     public final Expression condition;
+
+    /**
+     * Creates a switch expression.
+     *
+     * @param key switch result key
+     * @param condition branch-selection expression
+     */
+    public SwitchExpression(Expression key, Expression condition) {
+        this.key = key;
+        this.condition = condition;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {

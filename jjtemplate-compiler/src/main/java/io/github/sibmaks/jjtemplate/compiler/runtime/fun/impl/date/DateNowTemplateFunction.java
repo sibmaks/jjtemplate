@@ -7,10 +7,18 @@ import java.time.ZoneId;
 import java.util.List;
 
 /**
+ * Returns the current local date.
+ *
  * @author sibmaks
  * @since 0.4.1
  */
 public final class DateNowTemplateFunction implements TemplateFunction<LocalDate> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public DateNowTemplateFunction() {
+    }
 
     @Override
     public LocalDate invoke(List<Object> args, Object pipeArg) {

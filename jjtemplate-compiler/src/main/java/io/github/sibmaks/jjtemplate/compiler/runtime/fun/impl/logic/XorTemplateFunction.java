@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class XorTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates an instance.
+     */
+    public XorTemplateFunction() {
+    }
+
     private boolean xor(Object left, Object right) {
         if (!(left instanceof Boolean)) {
             throw fail("all arguments must be a boolean");

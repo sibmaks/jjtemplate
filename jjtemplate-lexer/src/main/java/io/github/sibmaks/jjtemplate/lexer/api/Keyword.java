@@ -16,10 +16,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum Keyword {
+    /** Switch-definition keyword. */
     SWITCH("switch"),
+    /** Switch-branch keyword. */
     THEN("then"),
+    /** Fallback-branch keyword. */
     ELSE("else"),
+    /** Range-definition keyword. */
     RANGE("range"),
+    /** Range-source keyword. */
     OF("of");
 
     /**

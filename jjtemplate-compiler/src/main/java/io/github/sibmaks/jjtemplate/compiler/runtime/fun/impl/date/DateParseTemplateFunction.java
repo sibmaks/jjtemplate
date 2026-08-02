@@ -16,6 +16,12 @@ import java.util.List;
  */
 public final class DateParseTemplateFunction implements TemplateFunction<LocalDate> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public DateParseTemplateFunction() {
+    }
+
     private LocalDate parseDate(String format, String date) {
         if (date == null) {
             return null;

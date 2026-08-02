@@ -13,6 +13,12 @@ import java.util.stream.Collectors;
 public final class ExpressionSourceRenderer implements ExpressionVisitor<String> {
 
     /**
+     * Creates an instance.
+     */
+    public ExpressionSourceRenderer() {
+    }
+
+    /**
      * Render expression to source.
      *
      * @param expression source expression

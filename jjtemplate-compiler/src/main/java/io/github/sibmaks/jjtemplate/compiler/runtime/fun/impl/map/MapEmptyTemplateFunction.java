@@ -16,6 +16,12 @@ import java.util.Map;
  */
 public final class MapEmptyTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public MapEmptyTemplateFunction() {
+    }
+
     private boolean isEmpty(Object value) {
         if (value == null) {
             return true;

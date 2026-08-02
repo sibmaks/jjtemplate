@@ -16,12 +16,20 @@ import java.util.List;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class VariableExpression implements Expression {
     /**
      * The ordered list of segments that form this variable expression.
      */
     public final List<Segment> segments;
+
+    /**
+     * Creates a variable expression from its access chain.
+     *
+     * @param segments ordered access-chain segments
+     */
+    public VariableExpression(List<Segment> segments) {
+        this.segments = segments;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {
@@ -77,4 +85,3 @@ public final class VariableExpression implements Expression {
         }
     }
 }
-

@@ -30,7 +30,6 @@ import java.util.Locale;
  */
 @Getter
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TemplateCompileOptions {
     /**
      * Whether the compiler should perform static optimization passes.
@@ -50,4 +49,18 @@ public final class TemplateCompileOptions {
     @NonNull
     @Builder.Default
     private final TemplateEvaluationOptions evaluationOptions = TemplateEvaluationOptions.getDefault();
+
+    /**
+     * Creates compiler options for the builder.
+     *
+     * @param optimize whether optimization is enabled
+     * @param evaluationOptions runtime evaluation options
+     */
+    private TemplateCompileOptions(
+            boolean optimize,
+            TemplateEvaluationOptions evaluationOptions
+    ) {
+        this.optimize = optimize;
+        this.evaluationOptions = evaluationOptions;
+    }
 }

@@ -12,6 +12,12 @@ import java.util.List;
  * @since 0.0.1
  */
 public final class FloatTemplateFunction implements TemplateFunction<BigDecimal> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public FloatTemplateFunction() {
+    }
     private BigDecimal toFloat(Object arg) {
         if (arg == null) {
             return null;

@@ -20,6 +20,12 @@ import java.math.BigInteger;
  */
 public final class MultiplyTemplateFunction extends MathTemplateBiFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public MultiplyTemplateFunction() {
+    }
+
     @Override
     public String getName() {
         return "mul";

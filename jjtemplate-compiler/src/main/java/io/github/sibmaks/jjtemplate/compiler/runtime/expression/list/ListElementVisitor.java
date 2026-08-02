@@ -8,6 +8,7 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.list;
  * coupling logic to concrete element implementations.
  * </p>
  *
+ * @param <T> result type produced by the visitor
  * @author sibmaks
  * @since 0.5.0
  */

@@ -18,6 +18,12 @@ import java.util.Set;
  */
 public final class MapContainsTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public MapContainsTemplateFunction() {
+    }
+
     private static boolean containsMap(
             Map<?, ?> collection,
             Set<Object> all

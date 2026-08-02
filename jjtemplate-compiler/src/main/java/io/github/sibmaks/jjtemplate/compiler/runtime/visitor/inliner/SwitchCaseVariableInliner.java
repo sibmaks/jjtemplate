@@ -1,16 +1,24 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.*;
-import lombok.RequiredArgsConstructor;
 
 /**
+ * Inlines variables referenced by switch cases.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class SwitchCaseVariableInliner implements SwitchCaseVisitor<SwitchCase> {
     private final TemplateExpressionVariableInliner inliner;
+
+    /**
+     * Creates a switch-case variable inliner.
+     *
+     * @param inliner expression inliner used for nested expressions
+     */
+    public SwitchCaseVariableInliner(TemplateExpressionVariableInliner inliner) {
+        this.inliner = inliner;
+    }
 
     @Override
     public SwitchCase visit(ExpressionSwitchCase expressionSwitchCase) {

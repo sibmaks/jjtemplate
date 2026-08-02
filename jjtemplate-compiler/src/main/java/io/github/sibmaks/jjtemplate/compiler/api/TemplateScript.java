@@ -20,8 +20,6 @@ import java.util.List;
 @Builder
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
 public class TemplateScript {
     /**
      * The list of variable and function definitions available in the template.
@@ -32,5 +30,22 @@ public class TemplateScript {
      * The parsed or raw representation of the template content.
      */
     private Object template;
+
+    /**
+     * Creates an empty template script.
+     */
+    public TemplateScript() {
+    }
+
+    /**
+     * Creates a template script.
+     *
+     * @param definitions template definitions
+     * @param template template body
+     */
+    public TemplateScript(List<Definition> definitions, Object template) {
+        this.definitions = definitions;
+        this.template = template;
+    }
 
 }

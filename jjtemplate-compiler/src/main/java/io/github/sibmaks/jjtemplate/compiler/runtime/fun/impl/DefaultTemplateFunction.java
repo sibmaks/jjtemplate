@@ -15,6 +15,12 @@ import java.util.List;
  * @since 0.0.1
  */
 public final class DefaultTemplateFunction implements TemplateFunction<Object> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public DefaultTemplateFunction() {
+    }
     @Override
     public Object invoke(List<Object> args, Object pipeArg) {
         if (args.isEmpty()) {

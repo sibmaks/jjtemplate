@@ -24,10 +24,18 @@ import java.util.Locale;
 public abstract class StringCaseTemplateFunction implements LocaleConfigurableTemplateFunction<String> {
     private final Locale defaultLocale;
 
+    /**
+     * Creates a function using the system default locale.
+     */
     protected StringCaseTemplateFunction() {
         this(Locale.getDefault());
     }
 
+    /**
+     * Creates a function using the supplied default locale.
+     *
+     * @param defaultLocale locale used when a call does not provide one
+     */
     protected StringCaseTemplateFunction(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
     }

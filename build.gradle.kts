@@ -5,8 +5,6 @@ import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.external.javadoc.StandardJavadocDocletOptions
-import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
 buildscript {
@@ -70,11 +68,6 @@ subprojects {
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release = targetJavaVersion
-    }
-
-    tasks.withType<Javadoc>().configureEach {
-        (options as StandardJavadocDocletOptions)
-            .addStringOption("Xdoclint:all,-missing", "-quiet")
     }
 
     extensions.configure<CheckstyleExtension> {

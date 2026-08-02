@@ -32,6 +32,12 @@ public final class VariableUsageCollector implements
         SwitchCaseVisitor<Void> {
     private final Set<String> variables = new HashSet<>();
 
+    /**
+     * Creates an empty variable-usage collector.
+     */
+    public VariableUsageCollector() {
+    }
+
     @Override
     public Void visit(ConstantFunctionCallTemplateExpression expression) {
         return null;

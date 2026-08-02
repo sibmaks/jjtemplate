@@ -27,7 +27,6 @@ import java.util.HashMap;
  */
 @Getter
 @Builder
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class RangeTemplateExpression implements TemplateExpression {
@@ -37,6 +36,32 @@ public final class RangeTemplateExpression implements TemplateExpression {
     private final TemplateExpression source;
     private final TemplateExpression body;
     private final String sourceExpression;
+
+    /**
+     * Creates a range expression.
+     *
+     * @param name result-name expression
+     * @param itemVariableName item variable name
+     * @param indexVariableName index variable name
+     * @param source range source
+     * @param body expression evaluated for each item
+     * @param sourceExpression original source expression
+     */
+    public RangeTemplateExpression(
+            TemplateExpression name,
+            String itemVariableName,
+            String indexVariableName,
+            TemplateExpression source,
+            TemplateExpression body,
+            String sourceExpression
+    ) {
+        this.name = name;
+        this.itemVariableName = itemVariableName;
+        this.indexVariableName = indexVariableName;
+        this.source = source;
+        this.body = body;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {

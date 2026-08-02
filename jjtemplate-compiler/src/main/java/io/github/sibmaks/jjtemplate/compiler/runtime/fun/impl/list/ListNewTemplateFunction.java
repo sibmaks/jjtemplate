@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class ListNewTemplateFunction implements TemplateFunction<List<?>> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public ListNewTemplateFunction() {
+    }
+
     @Override
     public List<?> invoke(List<Object> args, Object pipeArg) {
         var out = new ArrayList<>(args.size() + 1);

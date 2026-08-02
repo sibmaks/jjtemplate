@@ -1,10 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.reflection;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -19,13 +16,17 @@ import java.util.Optional;
  * @author sibmaks
  * @since 0.0.1
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtils {
+
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private ReflectionUtils() {
+    }
 
     /**
      * Pre-resolved property accessor for a specific declared type.
      */
-    @AllArgsConstructor
     public static final class ResolvedProperty {
         @Getter
         private final Class<?> ownerType;
@@ -34,6 +35,26 @@ public final class ReflectionUtils {
         private final MethodHandle getter;
         @Getter
         private final Class<?> valueType;
+
+        /**
+         * Creates a resolved property accessor.
+         *
+         * @param ownerType declared owner type
+         * @param propertyName property name
+         * @param getter method handle used to read the value
+         * @param valueType declared property type
+         */
+        public ResolvedProperty(
+                Class<?> ownerType,
+                String propertyName,
+                MethodHandle getter,
+                Class<?> valueType
+        ) {
+            this.ownerType = ownerType;
+            this.propertyName = propertyName;
+            this.getter = getter;
+            this.valueType = valueType;
+        }
 
         /**
          * Reads the property value from the target object.
@@ -51,10 +72,20 @@ public final class ReflectionUtils {
      * Pre-resolved method wrapper for a specific declared type.
      */
     @Getter
-    @AllArgsConstructor
     public static final class ResolvedMethod {
         private final Class<?> ownerType;
         private final Method method;
+
+        /**
+         * Creates a resolved method wrapper.
+         *
+         * @param ownerType declared owner type
+         * @param method resolved method
+         */
+        public ResolvedMethod(Class<?> ownerType, Method method) {
+            this.ownerType = ownerType;
+            this.method = method;
+        }
 
         /**
          * Returns the declared return type of the resolved method.

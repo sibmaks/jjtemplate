@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.list;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.lang.reflect.Array;
@@ -31,9 +30,17 @@ import java.util.List;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class SpreadListElement implements ListElement {
     private final TemplateExpression source;
+
+    /**
+     * Creates a spread list element.
+     *
+     * @param source expression whose contents are expanded
+     */
+    public SpreadListElement(TemplateExpression source) {
+        this.source = source;
+    }
 
     @Override
     public void apply(Context context, List<Object> target) {

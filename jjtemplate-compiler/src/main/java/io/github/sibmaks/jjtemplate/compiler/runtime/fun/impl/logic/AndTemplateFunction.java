@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class AndTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public AndTemplateFunction() {
+    }
+
     private boolean requireBoolean(Object value) {
         if (!(value instanceof Boolean)) {
             throw fail("all arguments must be a boolean");

@@ -11,6 +11,12 @@ import java.util.List;
  * @since 0.0.1
  */
 public final class StrTemplateFunction implements TemplateFunction<String> {
+
+    /**
+     * Creates an instance.
+     */
+    public StrTemplateFunction() {
+    }
     @Override
     public String invoke(List<Object> args, Object pipeArg) {
         if (!args.isEmpty()) {

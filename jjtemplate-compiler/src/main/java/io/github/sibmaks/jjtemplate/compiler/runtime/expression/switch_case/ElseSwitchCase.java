@@ -17,11 +17,19 @@ import lombok.*;
  */
 @Getter
 @Builder
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class ElseSwitchCase implements SwitchCase {
     private final TemplateExpression value;
+
+    /**
+     * Creates an unconditional switch case.
+     *
+     * @param value expression evaluated for the fallback branch
+     */
+    public ElseSwitchCase(TemplateExpression value) {
+        this.value = value;
+    }
 
     @Override
     public boolean matches(Object condition, Context context) {

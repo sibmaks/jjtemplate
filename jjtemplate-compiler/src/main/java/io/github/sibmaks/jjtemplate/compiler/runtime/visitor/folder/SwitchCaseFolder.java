@@ -2,16 +2,24 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.*;
-import lombok.RequiredArgsConstructor;
 
 /**
+ * Folds constant switch cases.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class SwitchCaseFolder implements SwitchCaseVisitor<SwitchCase> {
     private final TemplateExpressionFolder folder;
+
+    /**
+     * Creates a switch-case folder.
+     *
+     * @param folder expression folder used for nested expressions
+     */
+    public SwitchCaseFolder(TemplateExpressionFolder folder) {
+        this.folder = folder;
+    }
 
     @Override
     public SwitchCase visit(ExpressionSwitchCase expressionSwitchCase) {

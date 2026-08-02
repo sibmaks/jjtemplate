@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.list;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
@@ -23,9 +22,17 @@ import java.util.List;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class ListStaticItemElement implements ListElement {
     private final Object value;
+
+    /**
+     * Creates a static list element.
+     *
+     * @param value value appended to the list
+     */
+    public ListStaticItemElement(Object value) {
+        this.value = value;
+    }
 
     @Override
     public void apply(Context context, List<Object> target) {

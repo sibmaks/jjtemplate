@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class OrTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public OrTemplateFunction() {
+    }
+
     private boolean requireBoolean(Object value) {
         if (!(value instanceof Boolean)) {
             throw fail("all arguments must be a boolean");

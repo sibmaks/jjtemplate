@@ -20,6 +20,12 @@ import java.util.List;
  */
 public final class DivideTemplateFunction extends MathTemplateFunction {
 
+    /**
+     * Creates a template function instance.
+     */
+    public DivideTemplateFunction() {
+    }
+
     private Number divide(Object left, Object right, Object rawRoundingMode) {
         if (left == null || right == null) {
             return null;

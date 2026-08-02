@@ -16,6 +16,12 @@ import java.util.Map;
  */
 public final class MapLengthTemplateFunction implements TemplateFunction<Integer> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public MapLengthTemplateFunction() {
+    }
+
     private int getLength(Object value) {
         if (value == null) {
             return 0;

@@ -20,6 +20,12 @@ import java.math.BigInteger;
  */
 public final class SubTemplateFunction extends MathTemplateBiFunction {
 
+    /**
+     * Creates an instance.
+     */
+    public SubTemplateFunction() {
+    }
+
     @Override
     public String getName() {
         return "sub";

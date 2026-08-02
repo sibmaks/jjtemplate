@@ -15,6 +15,12 @@ import java.util.List;
  * @since 0.4.0
  */
 public final class StringConcatTemplateFunction implements TemplateFunction<String> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public StringConcatTemplateFunction() {
+    }
     private static String concat(List<Object> args) {
         var sb = new StringBuilder();
         for (var v : args) {

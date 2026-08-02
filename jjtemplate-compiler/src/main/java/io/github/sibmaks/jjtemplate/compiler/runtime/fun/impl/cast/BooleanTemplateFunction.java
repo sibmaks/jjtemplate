@@ -12,6 +12,12 @@ import java.util.List;
  */
 public final class BooleanTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public BooleanTemplateFunction() {
+    }
+
     private Boolean convert(Object value) {
         if (value == null) {
             return null;

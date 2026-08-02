@@ -2,20 +2,28 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.*;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * Folds constant object elements.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class ObjectElementFolder implements ObjectElementVisitor<List<ObjectElement>> {
     private final TemplateExpressionFolder folder;
+
+    /**
+     * Creates an object-element folder.
+     *
+     * @param folder expression folder used for nested expressions
+     */
+    public ObjectElementFolder(TemplateExpressionFolder folder) {
+        this.folder = folder;
+    }
 
     @Override
     public List<ObjectElement> visit(ObjectFieldElement element) {

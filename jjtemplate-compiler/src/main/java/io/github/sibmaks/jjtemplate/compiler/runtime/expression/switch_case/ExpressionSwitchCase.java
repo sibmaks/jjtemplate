@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Objects;
@@ -25,10 +24,20 @@ import java.util.Objects;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class ExpressionSwitchCase implements SwitchCase {
     private final TemplateExpression key;
     private final TemplateExpression value;
+
+    /**
+     * Creates an expression-based switch case.
+     *
+     * @param key expression producing the matched key
+     * @param value expression evaluated when matched
+     */
+    public ExpressionSwitchCase(TemplateExpression key, TemplateExpression value) {
+        this.key = key;
+        this.value = value;
+    }
 
     @Override
     public boolean matches(Object condition, Context context) {

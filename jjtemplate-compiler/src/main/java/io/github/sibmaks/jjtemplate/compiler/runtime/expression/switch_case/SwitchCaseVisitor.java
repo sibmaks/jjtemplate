@@ -7,6 +7,7 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case;
  * coupling logic to concrete case types.
  * </p>
  *
+ * @param <T> result type produced by the visitor
  * @author sibmaks
  * @since 0.5.0
  */

@@ -7,10 +7,18 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Returns the first element of a list.
+ *
  * @author sibmaks
  * @since 0.4.0
  */
 public final class ListHeadTemplateFunction implements TemplateFunction<Object> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public ListHeadTemplateFunction() {
+    }
 
     private Object getHead(Object value) {
         if (value == null) {

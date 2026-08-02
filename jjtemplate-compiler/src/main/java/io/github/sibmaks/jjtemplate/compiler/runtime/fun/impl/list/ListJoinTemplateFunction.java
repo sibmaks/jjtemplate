@@ -9,10 +9,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Joins list elements into a string.
+ *
  * @author sibmaks
  * @since 0.4.1
  */
 public final class ListJoinTemplateFunction implements TemplateFunction<String> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public ListJoinTemplateFunction() {
+    }
 
     private String join(String glue, List<Object> args) {
         var items = new ArrayList<String>();

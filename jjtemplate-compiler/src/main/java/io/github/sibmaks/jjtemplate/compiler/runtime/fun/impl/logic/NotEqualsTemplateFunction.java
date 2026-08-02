@@ -16,6 +16,12 @@ import java.util.Objects;
  * @since 0.0.1
  */
 public final class NotEqualsTemplateFunction implements TemplateFunction<Boolean> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public NotEqualsTemplateFunction() {
+    }
     private boolean areNotEquals(Object left, Object right) {
         if (left instanceof Number && right instanceof Number) {
             return asNum((Number) left).compareTo(asNum((Number) right)) != 0;

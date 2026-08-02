@@ -24,13 +24,29 @@ import java.util.List;
  */
 @Getter
 @Builder
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class SwitchTemplateExpression implements TemplateExpression {
     private final TemplateExpression condition;
     private final List<SwitchCase> cases;
     private final String sourceExpression;
+
+    /**
+     * Creates a runtime switch expression.
+     *
+     * @param condition switch condition
+     * @param cases cases in matching order
+     * @param sourceExpression original source expression
+     */
+    public SwitchTemplateExpression(
+            TemplateExpression condition,
+            List<SwitchCase> cases,
+            String sourceExpression
+    ) {
+        this.condition = condition;
+        this.cases = cases;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {

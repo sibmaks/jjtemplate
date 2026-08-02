@@ -7,11 +7,18 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
+ * Base implementation for numeric template functions.
  *
  * @author sibmaks
  * @since 0.4.0
  */
 public abstract class MathTemplateFunction implements TemplateFunction<Number> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public MathTemplateFunction() {
+    }
 
     /**
      * Convert any number into BigDecimal

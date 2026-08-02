@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -16,7 +15,6 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class TernaryExpression implements Expression {
     /**
      * The condition expression to evaluate.
@@ -33,9 +31,21 @@ public final class TernaryExpression implements Expression {
      */
     public final Expression ifFalse;
 
+    /**
+     * Creates a ternary expression.
+     *
+     * @param condition condition to evaluate
+     * @param ifTrue expression selected for a true condition
+     * @param ifFalse expression selected for a false condition
+     */
+    public TernaryExpression(Expression condition, Expression ifTrue, Expression ifFalse) {
+        this.condition = condition;
+        this.ifTrue = ifTrue;
+        this.ifFalse = ifFalse;
+    }
+
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {
         return visitor.visitTernary(this);
     }
 }
-

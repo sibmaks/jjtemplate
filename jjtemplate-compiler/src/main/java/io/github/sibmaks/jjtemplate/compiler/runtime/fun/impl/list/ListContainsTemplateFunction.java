@@ -22,6 +22,12 @@ import java.util.Set;
  */
 public final class ListContainsTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public ListContainsTemplateFunction() {
+    }
+
     private static boolean containsCollection(
             Collection<?> collection,
             Set<Object> all

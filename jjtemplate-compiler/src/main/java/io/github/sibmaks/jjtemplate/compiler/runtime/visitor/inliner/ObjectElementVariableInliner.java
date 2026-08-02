@@ -1,16 +1,24 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.inliner;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.object.*;
-import lombok.RequiredArgsConstructor;
 
 /**
+ * Inlines variables referenced by object elements.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class ObjectElementVariableInliner implements ObjectElementVisitor<ObjectElement> {
     private final TemplateExpressionVariableInliner inliner;
+
+    /**
+     * Creates an object-element variable inliner.
+     *
+     * @param inliner expression inliner used for nested expressions
+     */
+    public ObjectElementVariableInliner(TemplateExpressionVariableInliner inliner) {
+        this.inliner = inliner;
+    }
 
     @Override
     public ObjectElement visit(ObjectFieldElement element) {

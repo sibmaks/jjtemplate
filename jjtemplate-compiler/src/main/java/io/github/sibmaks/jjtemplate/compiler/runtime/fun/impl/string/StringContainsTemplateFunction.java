@@ -17,6 +17,12 @@ import java.util.Set;
  */
 public final class StringContainsTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringContainsTemplateFunction() {
+    }
+
     private boolean contains(Object value, Set<Object> args) {
         var line = String.valueOf(value);
         for (var item : args) {

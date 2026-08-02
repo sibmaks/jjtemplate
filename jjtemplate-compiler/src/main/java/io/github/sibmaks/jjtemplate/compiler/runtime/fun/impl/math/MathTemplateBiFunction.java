@@ -21,6 +21,12 @@ import java.util.List;
  * @since 0.4.0
  */
 public abstract class MathTemplateBiFunction extends MathTemplateFunction {
+
+    /**
+     * Creates a template function instance.
+     */
+    public MathTemplateBiFunction() {
+    }
     /**
      * Applies the mathematical operation to the given operands.
      *

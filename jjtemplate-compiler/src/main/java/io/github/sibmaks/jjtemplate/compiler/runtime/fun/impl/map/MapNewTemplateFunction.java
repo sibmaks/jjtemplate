@@ -17,6 +17,12 @@ import java.util.Map;
  */
 public final class MapNewTemplateFunction implements TemplateFunction<Map<?, ?>> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public MapNewTemplateFunction() {
+    }
+
     @Override
     public Map<?, ?> invoke(List<Object> args, Object pipeArg) {
         var size = args.size();

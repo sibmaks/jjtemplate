@@ -16,6 +16,12 @@ import java.util.Locale;
  */
 public final class LocaleNewTemplateFunction implements TemplateFunction<Locale> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public LocaleNewTemplateFunction() {
+    }
+
     @Override
     public Locale invoke(List<Object> args, Object pipeArg) {
         if (args.isEmpty()) {

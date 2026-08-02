@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.reflection.ReflectionUtils;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -24,13 +23,29 @@ import java.util.stream.Collectors;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class VariableTemplateExpression implements TemplateExpression {
     private final String rootName;
     private final List<Chain> callChain;
     private final String sourceExpression;
+
+    /**
+     * Creates a variable expression.
+     *
+     * @param rootName root variable name
+     * @param callChain property and method access chain
+     * @param sourceExpression original source expression
+     */
+    public VariableTemplateExpression(
+            String rootName,
+            List<Chain> callChain,
+            String sourceExpression
+    ) {
+        this.rootName = rootName;
+        this.callChain = callChain;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {
@@ -71,11 +86,19 @@ public final class VariableTemplateExpression implements TemplateExpression {
      * If the property does not exist or cannot be read, {@code null} is returned.
      * </p>
      */
-    @AllArgsConstructor
     @ToString
     public static final class GetPropertyChain implements Chain {
         @Getter
         private final String propertyName;
+
+        /**
+         * Creates a reflective property-access step.
+         *
+         * @param propertyName property name
+         */
+        public GetPropertyChain(String propertyName) {
+            this.propertyName = propertyName;
+        }
 
         @Override
         public Object apply(final Context context, final Object o) {
@@ -87,11 +110,24 @@ public final class VariableTemplateExpression implements TemplateExpression {
      * Chain element that uses pre-resolved property accessors for known types.
      */
     @Getter
-    @AllArgsConstructor
     @ToString
     public static final class BoundPropertyChain implements Chain {
         private final String propertyName;
         private final List<ReflectionUtils.ResolvedProperty> resolvedProperties;
+
+        /**
+         * Creates a bound property-access step.
+         *
+         * @param propertyName property name
+         * @param resolvedProperties accessors for known receiver types
+         */
+        public BoundPropertyChain(
+                String propertyName,
+                List<ReflectionUtils.ResolvedProperty> resolvedProperties
+        ) {
+            this.propertyName = propertyName;
+            this.resolvedProperties = resolvedProperties;
+        }
 
         @Override
         public Object apply(Context context, Object o) {
@@ -107,11 +143,21 @@ public final class VariableTemplateExpression implements TemplateExpression {
      * </p>
      */
     @Getter
-    @AllArgsConstructor
     @ToString
     public static final class CallMethodChain implements Chain {
         private final String methodName;
         private final List<TemplateExpression> argsExpressions;
+
+        /**
+         * Creates a reflective method-call step.
+         *
+         * @param methodName method name
+         * @param argsExpressions argument expressions
+         */
+        public CallMethodChain(String methodName, List<TemplateExpression> argsExpressions) {
+            this.methodName = methodName;
+            this.argsExpressions = argsExpressions;
+        }
 
         @Override
         public Object apply(final Context context, final Object o) {
@@ -126,12 +172,28 @@ public final class VariableTemplateExpression implements TemplateExpression {
      * Chain element that uses pre-resolved methods for known receiver types.
      */
     @Getter
-    @AllArgsConstructor
     @ToString
     public static final class BoundMethodChain implements Chain {
         private final String methodName;
         private final List<TemplateExpression> argsExpressions;
         private final List<ReflectionUtils.ResolvedMethod> resolvedMethods;
+
+        /**
+         * Creates a bound method-call step.
+         *
+         * @param methodName method name
+         * @param argsExpressions argument expressions
+         * @param resolvedMethods methods for known receiver types
+         */
+        public BoundMethodChain(
+                String methodName,
+                List<TemplateExpression> argsExpressions,
+                List<ReflectionUtils.ResolvedMethod> resolvedMethods
+        ) {
+            this.methodName = methodName;
+            this.argsExpressions = argsExpressions;
+            this.resolvedMethods = resolvedMethods;
+        }
 
         @Override
         public Object apply(Context context, Object o) {

@@ -23,6 +23,12 @@ import java.util.List;
 public abstract class AbstractStringReplaceTemplateFunction implements TemplateFunction<String> {
 
     /**
+     * Creates a template function instance.
+     */
+    public AbstractStringReplaceTemplateFunction() {
+    }
+
+    /**
      * Executes string replacement using subclass-defined strategy.
      * <p>
      * Input arguments are expected to be validated and normalized

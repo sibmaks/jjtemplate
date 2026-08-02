@@ -1,7 +1,6 @@
 package io.github.sibmaks.jjtemplate.lexer.api;
 
 import io.github.sibmaks.jjtemplate.lexer.TemplateLexer;
-import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -16,7 +15,6 @@ import lombok.ToString;
  */
 
 @ToString
-@AllArgsConstructor
 public final class Token {
     /**
      * The type of this token.
@@ -37,5 +35,20 @@ public final class Token {
      * The ending position (exclusive) of the token in the source text.
      */
     public final int end;
+
+    /**
+     * Creates a token with its type, text, and source range.
+     *
+     * @param type token type
+     * @param lexeme matched source text
+     * @param start inclusive start offset
+     * @param end exclusive end offset
+     */
+    public Token(TokenType type, String lexeme, int start, int end) {
+        this.type = type;
+        this.lexeme = lexeme;
+        this.start = start;
+        this.end = end;
+    }
 
 }

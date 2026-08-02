@@ -1,6 +1,5 @@
 package io.github.sibmaks.jjtemplate.parser.api;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -12,12 +11,20 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 public final class SpreadExpression implements Expression {
     /**
      * Spreading expression.
      */
     public final Expression source;
+
+    /**
+     * Creates a spread expression.
+     *
+     * @param source expression whose value is spread
+     */
+    public SpreadExpression(Expression source) {
+        this.source = source;
+    }
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {

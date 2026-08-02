@@ -15,6 +15,12 @@ import java.util.List;
  */
 public final class NotTemplateFunction implements TemplateFunction<Boolean> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public NotTemplateFunction() {
+    }
+
     private boolean not(Object value) {
         if (!(value instanceof Boolean)) {
             throw fail("argument must be a boolean");

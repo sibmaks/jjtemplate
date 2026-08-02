@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.object;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressionVisitor;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -27,11 +26,19 @@ import java.util.List;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class ObjectTemplateExpression implements TemplateExpression {
     private final List<? extends ObjectElement> elements;
+
+    /**
+     * Creates an object expression.
+     *
+     * @param elements object elements in evaluation order
+     */
+    public ObjectTemplateExpression(List<? extends ObjectElement> elements) {
+        this.elements = elements;
+    }
 
     @Override
     public Object apply(final Context context) {

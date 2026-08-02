@@ -13,4 +13,10 @@ import java.util.LinkedHashMap;
  * @since 0.0.1
  */
 public final class Definition extends LinkedHashMap<String, Object> {
+
+    /**
+     * Creates an instance.
+     */
+    public Definition() {
+    }
 }

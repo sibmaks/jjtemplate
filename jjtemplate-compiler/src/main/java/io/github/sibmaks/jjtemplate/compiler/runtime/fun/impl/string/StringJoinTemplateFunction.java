@@ -21,6 +21,12 @@ import java.util.stream.Collectors;
  * @since 0.4.0
  */
 public final class StringJoinTemplateFunction implements TemplateFunction<String> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public StringJoinTemplateFunction() {
+    }
     private static String join(String glue, List<Object> args) {
         return args.stream()
                 .map(String::valueOf)

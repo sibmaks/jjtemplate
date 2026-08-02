@@ -19,6 +19,12 @@ import java.math.BigInteger;
  */
 public final class SumTemplateFunction extends MathTemplateBiFunction {
 
+    /**
+     * Creates an instance.
+     */
+    public SumTemplateFunction() {
+    }
+
     @Override
     public String getName() {
         return "sum";

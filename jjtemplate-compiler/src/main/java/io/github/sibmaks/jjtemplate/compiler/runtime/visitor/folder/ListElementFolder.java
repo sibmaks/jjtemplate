@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.visitor.folder;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.ConstantTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.*;
-import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -10,13 +9,22 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Folds constant list elements.
  *
  * @author sibmaks
  * @since 0.5.0
  */
-@RequiredArgsConstructor
 public final class ListElementFolder implements ListElementVisitor<List<ListElement>> {
     private final TemplateExpressionFolder folder;
+
+    /**
+     * Creates a list-element folder.
+     *
+     * @param folder expression folder used for nested expressions
+     */
+    public ListElementFolder(TemplateExpressionFolder folder) {
+        this.folder = folder;
+    }
 
     @Override
     public List<ListElement> visit(ConditionListElement element) {

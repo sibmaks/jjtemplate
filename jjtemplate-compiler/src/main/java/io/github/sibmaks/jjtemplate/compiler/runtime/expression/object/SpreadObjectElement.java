@@ -4,7 +4,6 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Map;
@@ -28,9 +27,17 @@ import java.util.Map;
 @Getter
 @ToString
 @EqualsAndHashCode
-@RequiredArgsConstructor
 public final class SpreadObjectElement implements ObjectElement {
     private final TemplateExpression source;
+
+    /**
+     * Creates a spread object element.
+     *
+     * @param source expression producing the entries to expand
+     */
+    public SpreadObjectElement(TemplateExpression source) {
+        this.source = source;
+    }
 
     @Override
     public void apply(Context context, Map<String, Object> target) {

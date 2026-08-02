@@ -16,6 +16,12 @@ import java.util.*;
  * @since 0.0.1
  */
 public final class CollapseTemplateFunction implements TemplateFunction<Map<String, Object>> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public CollapseTemplateFunction() {
+    }
     private static final Map<String, Object> OBJECT_PROPERTIES = ReflectionUtils.getAllProperties(new Object());
 
     private static Map<String, Object> getProperties(Object value) {

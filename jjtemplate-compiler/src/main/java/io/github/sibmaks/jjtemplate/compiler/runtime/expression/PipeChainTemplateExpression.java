@@ -2,7 +2,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.FunctionCallTemplateExpression;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -27,13 +26,29 @@ import java.util.List;
  * @since 0.5.0
  */
 @Getter
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 public final class PipeChainTemplateExpression implements TemplateExpression {
     private final TemplateExpression root;
     private final List<FunctionCallTemplateExpression> chain;
     private final String sourceExpression;
+
+    /**
+     * Creates a pipe-chain expression.
+     *
+     * @param root initial expression
+     * @param chain functions applied in order
+     * @param sourceExpression original source expression
+     */
+    public PipeChainTemplateExpression(
+            TemplateExpression root,
+            List<FunctionCallTemplateExpression> chain,
+            String sourceExpression
+    ) {
+        this.root = root;
+        this.chain = chain;
+        this.sourceExpression = sourceExpression;
+    }
 
     @Override
     public Object apply(final Context context) {

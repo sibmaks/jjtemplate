@@ -32,6 +32,12 @@ import io.github.sibmaks.jjtemplate.parser.api.ThenSwitchCaseExpression;
 public final class TemplateTypeInferenceVisitor {
 
     /**
+     * Creates an instance.
+     */
+    public TemplateTypeInferenceVisitor() {
+    }
+
+    /**
      * Infers the template type for a parsed template context.
      *
      * @param context template context

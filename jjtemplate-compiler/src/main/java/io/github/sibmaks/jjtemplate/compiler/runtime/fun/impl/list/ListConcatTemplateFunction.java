@@ -17,6 +17,12 @@ import java.util.List;
  */
 public final class ListConcatTemplateFunction implements TemplateFunction<List<Object>> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public ListConcatTemplateFunction() {
+    }
+
     private List<Object> concat(List<Object> args) {
         var contacted = new ArrayList<>();
         for (var arg : args) {

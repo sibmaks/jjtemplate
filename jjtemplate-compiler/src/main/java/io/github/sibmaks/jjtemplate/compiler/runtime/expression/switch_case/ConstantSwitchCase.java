@@ -3,7 +3,6 @@ package io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case;
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -23,10 +22,20 @@ import lombok.ToString;
  */
 @Getter
 @ToString
-@RequiredArgsConstructor
 public final class ConstantSwitchCase implements SwitchCase {
     private final Object constant;
     private final TemplateExpression value;
+
+    /**
+     * Creates a constant switch case.
+     *
+     * @param constant value matched by this case
+     * @param value expression evaluated when matched
+     */
+    public ConstantSwitchCase(Object constant, TemplateExpression value) {
+        this.constant = constant;
+        this.value = value;
+    }
 
     @Override
     public boolean matches(Object condition, Context context) {

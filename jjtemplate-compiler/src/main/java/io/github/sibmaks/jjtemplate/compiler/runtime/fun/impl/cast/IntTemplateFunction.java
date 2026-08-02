@@ -13,6 +13,12 @@ import java.util.List;
  * @since 0.0.1
  */
 public final class IntTemplateFunction implements TemplateFunction<BigInteger> {
+
+    /**
+     * Creates a template function instance.
+     */
+    public IntTemplateFunction() {
+    }
     private BigInteger toInt(Object arg) {
         if (arg == null) {
             return null;

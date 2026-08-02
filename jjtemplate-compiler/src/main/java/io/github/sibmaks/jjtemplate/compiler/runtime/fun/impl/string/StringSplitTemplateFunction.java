@@ -22,6 +22,12 @@ import java.util.List;
  */
 public final class StringSplitTemplateFunction implements TemplateFunction<List<String>> {
 
+    /**
+     * Creates a template function instance.
+     */
+    public StringSplitTemplateFunction() {
+    }
+
     private List<String> split(Object value, String regex, int limit) {
         var string = String.valueOf(value);
         var values = string.split(regex, limit);
