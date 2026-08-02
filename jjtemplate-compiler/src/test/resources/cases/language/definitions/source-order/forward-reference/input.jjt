@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "result": "{{ .source }}"
+    },
+    {
+      "source": "available-later"
+    }
+  ],
+  "template": "{{ .result }}"
+}

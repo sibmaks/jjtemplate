@@ -1,0 +1,8 @@
+{
+  "default": "selected",
+  "defaultPipe": "selected",
+  "and": false,
+  "andPipe": false,
+  "or": true,
+  "orPipe": true
+}

@@ -1,0 +1,10 @@
+{
+  "gt": true,
+  "gtPipe": true,
+  "geEqual": true,
+  "geEqualPipe": true,
+  "ltNegative": true,
+  "ltNegativePipe": true,
+  "leDecimal": true,
+  "leDecimalPipe": true
+}

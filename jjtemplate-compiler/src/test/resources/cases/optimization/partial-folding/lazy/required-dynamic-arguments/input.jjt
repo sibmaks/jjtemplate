@@ -1,0 +1,10 @@
+{
+  "template": {
+    "default": "{{ default null, .fallback }}",
+    "defaultPipe": "{{ null | default .fallback }}",
+    "and": "{{ and true, .falseValue }}",
+    "andPipe": "{{ true | and .falseValue }}",
+    "or": "{{ or false, .trueValue }}",
+    "orPipe": "{{ false | or .trueValue }}"
+  }
+}

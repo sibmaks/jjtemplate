@@ -1,0 +1,12 @@
+{
+  "definitions": [
+    {
+      "item": "outer",
+      "items": ["first", "second"]
+    }
+  ],
+  "template": {
+    "{{ result range item,index of .items }}": "{{ .item }}",
+    "after": "{{ .item }}"
+  }
+}

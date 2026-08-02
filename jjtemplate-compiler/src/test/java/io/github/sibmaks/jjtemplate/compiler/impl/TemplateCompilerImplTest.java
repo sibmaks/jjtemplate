@@ -340,6 +340,29 @@ class TemplateCompilerImplTest {
     }
 
     @Test
+    void compileWithTypedContextShouldBindNestedDtoPropertyAndMethodChains() {
+        var compiler = TemplateCompiler.getInstance();
+        var script = TemplateScript.builder()
+                .template(Map.of(
+                        "city", "{{ .person.address.city }}",
+                        "label", "{{ .person.address.label('Home') }}"
+                ))
+                .build();
+        var context = new MapTemplateCompileContext(
+                Map.of("person", List.of(PersonProfile.class)),
+                TemplateTypeValidationMode.STRICT
+        );
+        var person = new PersonProfile(new Address("Moscow"));
+
+        var compiled = compiler.compile(script, context);
+
+        assertEquals(
+                Map.of("city", "Moscow", "label", "Home: Moscow"),
+                compiled.render(Map.of("person", person))
+        );
+    }
+
+    @Test
     void compileWithTypedContextShouldInferTypeFromDefinition() {
         var compiler = TemplateCompiler.getInstance();
         var definition = new Definition();
@@ -485,6 +508,34 @@ class TemplateCompilerImplTest {
 
         public String upper() {
             return value.toUpperCase();
+        }
+    }
+
+    private static final class PersonProfile {
+        private final Address address;
+
+        private PersonProfile(Address address) {
+            this.address = address;
+        }
+
+        public Address getAddress() {
+            return address;
+        }
+    }
+
+    private static final class Address {
+        private final String city;
+
+        private Address(String city) {
+            this.city = city;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public String label(String prefix) {
+            return prefix + ": " + city;
         }
     }
 

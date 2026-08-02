@@ -1,0 +1,5 @@
+{
+  "template": {
+    "{{ result range item,index of .source }}": "{{ .item }}"
+  }
+}

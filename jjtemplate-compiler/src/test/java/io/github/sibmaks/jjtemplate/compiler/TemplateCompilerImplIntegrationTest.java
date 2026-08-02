@@ -11,6 +11,7 @@ import io.github.sibmaks.jjtemplate.compiler.api.TemplateScript;
 import io.github.sibmaks.jjtemplate.compiler.impl.StaticCompiledTemplateImpl;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -56,6 +57,34 @@ class TemplateCompilerImplIntegrationTest {
                     templateScript,
                     context,
                     expected
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Arguments buildErrorArguments(Path root, Path it) {
+        try {
+            var templateScript = OBJECT_MAPPER.readValue(it.resolve("input.jjt").toFile(), TemplateScript.class);
+            var contextPath = it.resolve("variables.json").toFile();
+            var context = Map.<String, Object>of();
+            if (contextPath.exists()) {
+                context = OBJECT_MAPPER.readValue(contextPath, new TypeReference<>() {
+                });
+            }
+            var expectation = OBJECT_MAPPER.readValue(
+                    it.resolve("expected-error.json").toFile(),
+                    new TypeReference<Map<String, String>>() {
+                    }
+            );
+            var path = root.toAbsolutePath().normalize().toString();
+            return Arguments.of(
+                    it.toAbsolutePath().normalize().toString().substring(path.length() + 1),
+                    templateScript,
+                    context,
+                    expectation.get("phase"),
+                    expectation.get("exception"),
+                    expectation.get("messageContains")
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -108,6 +137,64 @@ class TemplateCompilerImplIntegrationTest {
                 (compiledAt - begin) / 1000000.0,
                 (renderedAt - compiledAt) / 1000000.0
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("errorCases")
+    void testErrorScenario(
+            String caseName,
+            TemplateScript templateScript,
+            Map<String, Object> context,
+            String phase,
+            String exceptionType,
+            String messageContains
+    ) {
+        var compiler = TemplateCompiler.getInstance();
+        Executable action;
+        if ("compile".equals(phase)) {
+            action = () -> compiler.compile(templateScript);
+        } else if ("render".equals(phase)) {
+            var compiled = compiler.compile(templateScript);
+            action = () -> compiled.render(context);
+        } else {
+            fail("Unsupported error phase '" + phase + "' for case " + caseName);
+            return;
+        }
+
+        var exception = assertThrows(RuntimeException.class, action);
+
+        assertEquals(exceptionType, exception.getClass().getName());
+        assertTrue(
+                hasMessageInCauseChain(exception, messageContains),
+                () -> "Expected cause chain containing '" + messageContains + "', got: " + describeCauseChain(exception)
+        );
+    }
+
+    private static String describeCauseChain(Throwable exception) {
+        var description = new StringBuilder();
+        var current = exception;
+        while (current != null) {
+            if (description.length() > 0) {
+                description.append(" -> ");
+            }
+            description.append(current.getClass().getName())
+                    .append(": ")
+                    .append(current.getMessage());
+            current = current.getCause();
+        }
+        return description.toString();
+    }
+
+    private static boolean hasMessageInCauseChain(Throwable exception, String expectedMessage) {
+        var current = exception;
+        while (current != null) {
+            var message = current.getMessage();
+            if (message != null && message.contains(expectedMessage)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     @ParameterizedTest
@@ -352,8 +439,21 @@ class TemplateCompilerImplIntegrationTest {
 
         return cases
                 .stream()
+                .filter(it -> Files.isRegularFile(it.resolve("expected.json")))
                 .sorted()
                 .map(it -> buildArguments(resourcesDir, it));
+    }
+
+    public static Stream<Arguments> errorCases() {
+        var resourcesDir = Paths.get("src", "test", "resources", "cases");
+
+        var cases = getCases(resourcesDir);
+
+        return cases
+                .stream()
+                .filter(it -> Files.isRegularFile(it.resolve("expected-error.json")))
+                .sorted()
+                .map(it -> buildErrorArguments(resourcesDir, it));
     }
 
     public static Stream<Arguments> staticCompilationCases() {

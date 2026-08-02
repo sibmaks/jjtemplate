@@ -1,0 +1,5 @@
+{
+  "phase": "render",
+  "exception": "io.github.sibmaks.jjtemplate.compiler.runtime.exception.TemplateEvalException",
+  "messageContains": "Index 5 out of bounds for length 1"
+}

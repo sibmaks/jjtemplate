@@ -13,6 +13,7 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.Swit
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.switch_case.SwitchTemplateExpression;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -245,8 +246,12 @@ public final class TemplateExpressionVariableInliner implements TemplateExpressi
         var inlinedSource = source.visit(this);
         var anyInlined = source != inlinedSource;
 
+        var bodyValues = new HashMap<>(values);
+        bodyValues.remove(expression.getFirstVariableName());
+        bodyValues.remove(expression.getSecondVariableName());
+        var bodyInliner = new TemplateExpressionVariableInliner(bodyValues);
         var body = expression.getBody();
-        var inlinedBody = body.visit(this);
+        var inlinedBody = body.visit(bodyInliner);
         anyInlined |= body != inlinedBody;
 
         var name = expression.getName();

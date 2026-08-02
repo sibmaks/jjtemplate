@@ -1,13 +1,15 @@
 # Integration test cases
 
-Each leaf directory containing an `input.jjt` file is an integration test case.
+Each directory containing an `input.jjt` file is an integration test case.
 The test harness discovers cases recursively, so grouping directories may also
 contain documentation.
 
 A case contains:
 
 - `input.jjt` — template script to compile and render;
-- `expected.json` — expected rendered value;
+- `expected.json` — expected rendered value for a successful case;
+- `expected-error.json` — expected phase, exception type, and message fragment
+  for a failure case;
 - `variables.json` — optional render context.
 
 Cases are grouped by their primary purpose:

@@ -37,55 +37,46 @@ public final class VariableNodeInliner implements TemplateOptimizer {
             return compiledTemplate;
         }
 
-        var staticVariables = new HashMap<String, Object>();
-
-        for (var internalVariable : internalVariables) {
-            var nodeKey = internalVariable.getKey();
-            if (!(nodeKey instanceof ConstantTemplateExpression)) {
-                continue;
-            }
-            var staticNodeKey = (ConstantTemplateExpression) nodeKey;
-            var value = internalVariable.getValue();
-            if (!(value instanceof ConstantTemplateExpression)) {
-                continue;
-            }
-            var staticNodeValue = (ConstantTemplateExpression) value;
-
-            staticVariables.put(String.valueOf(staticNodeKey.getValue()), staticNodeValue.getValue());
-        }
-
-        if (staticVariables.isEmpty()) {
-            return compiledTemplate;
-        }
-
-        var expresssionInliner = new TemplateExpressionVariableInliner(staticVariables);
-
         var anyInlined = false;
-
+        var staticVariables = new HashMap<String, Object>();
         var inlinedVariables = new ArrayList<ObjectFieldElement>(internalVariables.size());
         for (var internalVariable : internalVariables) {
+            var expressionInliner = new TemplateExpressionVariableInliner(staticVariables);
             var key = internalVariable.getKey();
-            var inlinedKey = key.visit(expresssionInliner);
+            var inlinedKey = key.visit(expressionInliner);
             var wasInlined = key != inlinedKey;
 
             var value = internalVariable.getValue();
-            var inlinedValue = value.visit(expresssionInliner);
+            var inlinedValue = value.visit(expressionInliner);
             wasInlined |= value != inlinedValue;
 
+            ObjectFieldElement inlinedVariable;
             if (wasInlined) {
                 anyInlined = true;
-                var foldedInternalVariable = ObjectFieldElement.builder()
+                inlinedVariable = ObjectFieldElement.builder()
                         .key(inlinedKey)
                         .value(inlinedValue)
                         .build();
-                inlinedVariables.add(foldedInternalVariable);
             } else {
-                inlinedVariables.add(internalVariable);
+                inlinedVariable = internalVariable;
+            }
+            inlinedVariables.add(inlinedVariable);
+
+            if (inlinedKey instanceof ConstantTemplateExpression) {
+                var staticKey = (ConstantTemplateExpression) inlinedKey;
+                var variableName = String.valueOf(staticKey.getValue());
+                if (inlinedValue instanceof ConstantTemplateExpression) {
+                    var staticValue = (ConstantTemplateExpression) inlinedValue;
+                    staticVariables.put(variableName, staticValue.getValue());
+                } else {
+                    staticVariables.remove(variableName);
+                }
             }
         }
 
         var astNode = compiledTemplate.getCompiledTemplate();
-        var inlined = astNode.visit(expresssionInliner);
+        var expressionInliner = new TemplateExpressionVariableInliner(staticVariables);
+        var inlined = astNode.visit(expressionInliner);
         if (astNode != inlined) {
             anyInlined = true;
             astNode = inlined;

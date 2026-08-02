@@ -1,0 +1,20 @@
+{
+  "definitions": [
+    {
+      "spread": {
+        "key": "spread",
+        "spreadOnly": true
+      }
+    }
+  ],
+  "template": {
+    "spreadAfterField": {
+      "key": "field",
+      "{{. .spread }}": true
+    },
+    "fieldAfterSpread": {
+      "{{. .spread }}": true,
+      "key": "field"
+    }
+  }
+}

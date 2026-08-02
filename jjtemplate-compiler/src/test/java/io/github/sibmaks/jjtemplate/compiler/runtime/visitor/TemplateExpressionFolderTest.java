@@ -4,9 +4,12 @@ import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.*;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.ConstantFunctionCallTemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.function.DynamicFunctionCallTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ConditionListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.DynamicListElement;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListStaticItemElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.ListTemplateExpression;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.list.SpreadListElement;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.DefaultTemplateFunction;
 import io.github.sibmaks.jjtemplate.compiler.runtime.fun.impl.logic.AndTemplateFunction;
@@ -169,6 +172,75 @@ class TemplateExpressionFolderTest {
         assertSame(expression, folded);
         verify(unusedArgument, never())
                 .visit(folder);
+    }
+
+    @Test
+    void keepFoldedLazyArgumentsWhenLaterRequiredArgumentIsDynamic() {
+        var foldable = mock(TemplateExpression.class);
+        when(foldable.visit(folder))
+                .thenReturn(new ConstantTemplateExpression(null));
+        var dynamic = mock(TemplateExpression.class);
+        when(dynamic.visit(folder))
+                .thenReturn(dynamic);
+        var expression = new DynamicFunctionCallTemplateExpression(
+                new DefaultTemplateFunction(),
+                new ListTemplateExpression(List.of(
+                        new DynamicListElement(foldable),
+                        new DynamicListElement(dynamic)
+                )),
+                "default foldable, dynamic"
+        );
+
+        var folded = assertInstanceOf(DynamicFunctionCallTemplateExpression.class, folder.visit(expression));
+
+        assertNotSame(expression, folded);
+        var elements = folded.getArgExpression().getElements();
+        var first = assertInstanceOf(ListStaticItemElement.class, elements.get(0));
+        assertNull(first.getValue());
+        var second = assertInstanceOf(DynamicListElement.class, elements.get(1));
+        assertSame(dynamic, second.getValue());
+    }
+
+    @Test
+    void doNotFoldLazyFunctionWithSpreadArguments() {
+        assertLazyFunctionWithEagerElementIsNotFolded(
+                new SpreadListElement(new ConstantTemplateExpression(List.of("value")))
+        );
+    }
+
+    @Test
+    void doNotFoldLazyFunctionWithConditionalArguments() {
+        assertLazyFunctionWithEagerElementIsNotFolded(
+                new ConditionListElement(new ConstantTemplateExpression("value"))
+        );
+    }
+
+    @Test
+    void doNotFoldDynamicLazyFunction() {
+        TemplateFunction<Object> function = mock();
+        when(function.isLazy()).thenReturn(true);
+        when(function.isDynamic()).thenReturn(true);
+        var expression = new DynamicFunctionCallTemplateExpression(
+                function,
+                new ListTemplateExpression(List.of(new ListStaticItemElement("value"))),
+                "dynamic-lazy"
+        );
+
+        var folded = folder.visit(expression);
+
+        assertSame(expression, folded);
+    }
+
+    private void assertLazyFunctionWithEagerElementIsNotFolded(ListElement element) {
+        var expression = new DynamicFunctionCallTemplateExpression(
+                new DefaultTemplateFunction(),
+                new ListTemplateExpression(List.of(element)),
+                "default eager"
+        );
+
+        var folded = folder.visit(expression);
+
+        assertSame(expression, folded);
     }
 
     private void assertLazyFunctionFolds(TemplateFunction<?> function, Object firstArgument, Object expected) {

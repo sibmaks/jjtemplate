@@ -1,6 +1,7 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression.list;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
+import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpression;
 import io.github.sibmaks.jjtemplate.compiler.runtime.expression.TemplateExpressionVisitor;
 import org.junit.jupiter.api.Test;
 
@@ -86,5 +87,50 @@ class ListTemplateExpressionTest {
 
         assertNotEquals(expr1, expr3);
         assertNotEquals(expr1.hashCode(), expr3.hashCode());
+    }
+
+    @Test
+    void applyLazyShouldEvaluateAnAccessedArgumentOnlyOnce() {
+        Context context = mock();
+        TemplateExpression first = mock("first");
+        TemplateExpression second = mock("second");
+        when(first.apply(context)).thenReturn("value");
+        var expression = new ListTemplateExpression(List.of(
+                new DynamicListElement(first),
+                new DynamicListElement(second)
+        ));
+
+        var arguments = expression.applyLazy(context);
+
+        assertEquals("value", arguments.get(0));
+        assertEquals("value", arguments.get(0));
+        verify(first).apply(context);
+        verifyNoInteractions(second);
+    }
+
+    @Test
+    void applyLazyShouldUseEagerEvaluationForSpreadArguments() {
+        Context context = mock();
+        TemplateExpression source = mock();
+        when(source.apply(context)).thenReturn(List.of("first", "second"));
+        var expression = new ListTemplateExpression(List.of(new SpreadListElement(source)));
+
+        var arguments = expression.applyLazy(context);
+
+        assertEquals(List.of("first", "second"), arguments);
+        verify(source).apply(context);
+    }
+
+    @Test
+    void applyLazyShouldUseEagerEvaluationForConditionalArguments() {
+        Context context = mock();
+        TemplateExpression source = mock();
+        when(source.apply(context)).thenReturn("value");
+        var expression = new ListTemplateExpression(List.of(new ConditionListElement(source)));
+
+        var arguments = expression.applyLazy(context);
+
+        assertEquals(List.of("value"), arguments);
+        verify(source).apply(context);
     }
 }

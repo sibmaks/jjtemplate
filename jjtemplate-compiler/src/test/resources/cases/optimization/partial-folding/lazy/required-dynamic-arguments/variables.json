@@ -1,0 +1,5 @@
+{
+  "fallback": "selected",
+  "falseValue": false,
+  "trueValue": true
+}

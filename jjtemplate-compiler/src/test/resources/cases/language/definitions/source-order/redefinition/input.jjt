@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "value": "first"
+    },
+    {
+      "value": "second"
+    }
+  ],
+  "template": "{{ .value }}"
+}

@@ -183,6 +183,19 @@ class ReflectionUtilsTest {
     }
 
     @Test
+    void getPropertyShouldNotUseFallbackWhenKnownGetterFails() {
+        var target = new BrokenFallbackProperty();
+
+        var exception = assertThrows(
+                TemplateEvalException.class,
+                () -> ReflectionUtils.getProperty(target, "boom")
+        );
+
+        assertTrue(exception.getMessage().contains("Failed to access property 'boom'"));
+        assertNotNull(exception.getCause());
+    }
+
+    @Test
     void getPropertyUsesFieldFallbackResolverForMapWhenKeyMissing() {
         var map = new FallbackMap();
         map.put("present", "value");
@@ -305,6 +318,43 @@ class ReflectionUtilsTest {
         var obj = new WithOptional();
         ReflectionUtils.invokeMethodReflective(obj, "setLast", List.of("value"));
         assertEquals(Optional.of("value"), obj.last);
+    }
+
+    @Test
+    void invokeMethodShouldKeepAlreadyWrappedOptional() {
+        var target = new OptionalTarget();
+        var expected = Optional.of("value");
+
+        ReflectionUtils.invokeMethodReflective(target, "setValue", List.of(expected));
+
+        assertSame(expected, target.value);
+    }
+
+    @Test
+    void invokeMethodShouldSupportBooleanAndCharacterPrimitives() {
+        var target = new PrimitiveTarget();
+
+        var actual = ReflectionUtils.invokeMethodReflective(target, "describe", List.of(true, 'x'));
+
+        assertEquals("true:x", actual);
+    }
+
+    @Test
+    void invokeMethodShouldPreferExactOverAssignableOverload() {
+        var target = new OverloadedTarget();
+
+        var actual = ReflectionUtils.invokeMethodReflective(target, "select", List.of(42));
+
+        assertEquals("integer", actual);
+    }
+
+    @Test
+    void invokeMethodShouldPreferAssignableOverNumericConversion() {
+        var target = new OverloadedTarget();
+
+        var actual = ReflectionUtils.invokeMethodReflective(target, "select", List.of(42L));
+
+        assertEquals("number", actual);
     }
 
     @Test
@@ -605,6 +655,17 @@ class ReflectionUtilsTest {
         }
     }
 
+    public static class BrokenFallbackProperty implements FieldFallbackResolver {
+        public String getBoom() {
+            throw new IllegalStateException("boom");
+        }
+
+        @Override
+        public Object resolve(String fieldName) {
+            return "fallback:" + fieldName;
+        }
+    }
+
     static class FallbackMap extends HashMap<String, Object> implements FieldFallbackResolver {
         @Override
         public Object resolve(String fieldName) {
@@ -687,6 +748,34 @@ class ReflectionUtilsTest {
 
         public Number asNumber(Number value) {
             return value;
+        }
+    }
+
+    static class OptionalTarget {
+        private Optional<String> value;
+
+        public void setValue(Optional<String> value) {
+            this.value = value;
+        }
+    }
+
+    static class PrimitiveTarget {
+        public String describe(boolean enabled, char marker) {
+            return enabled + ":" + marker;
+        }
+    }
+
+    static class OverloadedTarget {
+        public String select(Integer value) {
+            return "integer";
+        }
+
+        public String select(Number value) {
+            return "number";
+        }
+
+        public String select(Object value) {
+            return "object";
         }
     }
 }

@@ -1,0 +1,12 @@
+{
+  "template": {
+    "gt": "{{ gt 2, 1 }}",
+    "gtPipe": "{{ 2 | gt 1 }}",
+    "geEqual": "{{ ge 2, 2 }}",
+    "geEqualPipe": "{{ 2 | ge 2 }}",
+    "ltNegative": "{{ lt -2, -1 }}",
+    "ltNegativePipe": "{{ -2 | lt -1 }}",
+    "leDecimal": "{{ le 1.5, 1.5 }}",
+    "leDecimalPipe": "{{ 1.5 | le 1.5 }}"
+  }
+}

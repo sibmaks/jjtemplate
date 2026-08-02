@@ -1,0 +1,11 @@
+{
+  "definitions": [
+    {
+      "value": "static"
+    },
+    {
+      "value": "{{ .external }}"
+    }
+  ],
+  "template": "{{ .value }}"
+}

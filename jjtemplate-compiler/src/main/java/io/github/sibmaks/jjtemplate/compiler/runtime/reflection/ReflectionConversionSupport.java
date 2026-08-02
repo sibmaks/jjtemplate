@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,16 +39,47 @@ final class ReflectionConversionSupport {
                 converted[i] = Optional.of(arg);
             } else if (paramType.isAssignableFrom(argType)) {
                 converted[i] = arg;
-                score += 1;
+                score += inheritanceDistance(argType, paramType);
             } else if (isNumeric(paramType) && isNumeric(argType)) {
                 converted[i] = convertNumber((Number) arg, paramType);
-                score += 2;
+                score += 100;
             } else {
                 return null;
             }
         }
 
         return new ConversionResult(converted, score);
+    }
+
+    private static int inheritanceDistance(Class<?> source, Class<?> target) {
+        var visited = new HashSet<Class<?>>();
+        var current = new ArrayDeque<Class<?>>();
+        current.add(source);
+        var distance = 0;
+        while (!current.isEmpty()) {
+            var levelSize = current.size();
+            distance++;
+            for (var i = 0; i < levelSize; i++) {
+                var type = current.remove();
+                var parent = type.getSuperclass();
+                if (parent != null && visited.add(parent)) {
+                    if (parent.equals(target)) {
+                        return distance;
+                    }
+                    current.add(parent);
+                }
+                for (var implemented : type.getInterfaces()) {
+                    if (!visited.add(implemented)) {
+                        continue;
+                    }
+                    if (implemented.equals(target)) {
+                        return distance;
+                    }
+                    current.add(implemented);
+                }
+            }
+        }
+        return Integer.MAX_VALUE;
     }
 
     static Object[] convertVarArgs(

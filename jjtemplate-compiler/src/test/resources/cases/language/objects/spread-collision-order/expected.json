@@ -1,0 +1,10 @@
+{
+  "spreadAfterField": {
+    "key": "spread",
+    "spreadOnly": true
+  },
+  "fieldAfterSpread": {
+    "key": "field",
+    "spreadOnly": true
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "phase": "compile",
+  "exception": "io.github.sibmaks.jjtemplate.compiler.exception.TemplateCompilationException",
+  "messageContains": "Function 'missing' not found in namespace: 'string'"
+}

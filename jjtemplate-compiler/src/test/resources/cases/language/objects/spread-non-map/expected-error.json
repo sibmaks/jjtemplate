@@ -1,0 +1,5 @@
+{
+  "phase": "render",
+  "exception": "java.lang.IllegalArgumentException",
+  "messageContains": "spread object expects Map"
+}
