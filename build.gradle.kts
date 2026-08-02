@@ -7,6 +7,30 @@ import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
+data class MavenArtifactMetadata(
+    val displayName: String,
+    val description: String,
+)
+
+val mavenArtifactMetadata = mapOf(
+    "jjtemplate" to MavenArtifactMetadata(
+        "JJTemplate",
+        "Lightweight Java JSON template engine optimized for fast rendering and JSON-compatible output.",
+    ),
+    "jjtemplate-lexer" to MavenArtifactMetadata(
+        "JJTemplate Lexer",
+        "Tokenizes JJTemplate templates and their embedded expressions.",
+    ),
+    "jjtemplate-parser" to MavenArtifactMetadata(
+        "JJTemplate Parser",
+        "Parses JJTemplate tokens into abstract syntax trees for template expressions.",
+    ),
+    "jjtemplate-compiler" to MavenArtifactMetadata(
+        "JJTemplate Compiler",
+        "Compiles JJTemplate templates into optimized executable trees and provides the rendering runtime.",
+    ),
+)
+
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -115,10 +139,11 @@ subprojects {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
                 pom {
+                    val metadata = mavenArtifactMetadata.getValue(project.name)
                     configureCommonPom(this)
                     packaging = "jar"
-                    name = artifactId
-                    description = "Part of JJTemplate project"
+                    name = metadata.displayName
+                    description = metadata.description
                 }
             }
         }
@@ -145,10 +170,11 @@ publishing {
     publications {
         create<MavenPublication>("aggregator") {
             pom {
+                val metadata = mavenArtifactMetadata.getValue(project.name)
                 configureCommonPom(this)
                 packaging = "pom"
-                name = artifactId
-                description = "Template engine for Java projects"
+                name = metadata.displayName
+                description = metadata.description
 
                 withXml {
                     val dependenciesNode = asNode().appendNode("dependencies")

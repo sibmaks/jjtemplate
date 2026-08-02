@@ -1,7 +1,7 @@
 import org.gradle.api.publish.maven.MavenPom
 
 fun configureCommonPom(pom: MavenPom) {
-    pom.url.set("https://github.com/sibmaks/jjtemplate")
+    pom.url.set("https://sibmaks.github.io/jjtemplate")
     pom.licenses {
         license {
             name.set("Apache License, version 2.0")
