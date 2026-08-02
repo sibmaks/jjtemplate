@@ -24,6 +24,7 @@ public final class ScaleTemplateFunction extends MathTemplateFunction {
      * Creates a template function instance.
      */
     public ScaleTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Number scale(Object value, int scale, RoundingMode roundingMode) {

@@ -22,6 +22,7 @@ public final class MapContainsTemplateFunction implements TemplateFunction<Boole
      * Creates a template function instance.
      */
     public MapContainsTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private static boolean containsMap(

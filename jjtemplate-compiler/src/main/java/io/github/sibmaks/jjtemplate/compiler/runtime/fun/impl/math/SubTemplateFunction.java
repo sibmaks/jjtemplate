@@ -24,6 +24,7 @@ public final class SubTemplateFunction extends MathTemplateBiFunction {
      * Creates an instance.
      */
     public SubTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

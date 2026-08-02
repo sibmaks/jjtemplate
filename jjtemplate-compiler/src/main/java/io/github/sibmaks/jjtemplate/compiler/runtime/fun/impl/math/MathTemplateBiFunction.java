@@ -25,7 +25,8 @@ public abstract class MathTemplateBiFunction extends MathTemplateFunction {
     /**
      * Creates a template function instance.
      */
-    public MathTemplateBiFunction() {
+    protected MathTemplateBiFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     /**
      * Applies the mathematical operation to the given operands.

@@ -15,6 +15,7 @@ public final class BenchmarkFixtures {
     private static final int DEFAULT_COLLECTION_SIZE = 16;
 
     private BenchmarkFixtures() {
+        // Prevents instantiation of this utility class.
     }
 
     /**

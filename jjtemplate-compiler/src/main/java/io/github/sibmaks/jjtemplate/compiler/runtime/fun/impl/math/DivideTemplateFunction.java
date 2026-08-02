@@ -24,6 +24,7 @@ public final class DivideTemplateFunction extends MathTemplateFunction {
      * Creates a template function instance.
      */
     public DivideTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Number divide(Object left, Object right, Object rawRoundingMode) {

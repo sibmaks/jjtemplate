@@ -17,6 +17,7 @@ import java.util.List;
  */
 public final class JJTemplateParser {
     private JJTemplateParser() {
+        // Prevents instantiation of this utility class.
     }
 
     /**

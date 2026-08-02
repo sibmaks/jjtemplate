@@ -16,6 +16,7 @@ public final class StrTemplateFunction implements TemplateFunction<String> {
      * Creates an instance.
      */
     public StrTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     @Override
     public String invoke(List<Object> args, Object pipeArg) {

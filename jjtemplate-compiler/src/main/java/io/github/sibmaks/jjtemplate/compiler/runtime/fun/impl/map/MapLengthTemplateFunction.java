@@ -20,6 +20,7 @@ public final class MapLengthTemplateFunction implements TemplateFunction<Integer
      * Creates a template function instance.
      */
     public MapLengthTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private int getLength(Object value) {

@@ -20,6 +20,7 @@ public final class ListEmptyTemplateFunction implements TemplateFunction<Boolean
      * Creates a template function instance.
      */
     public ListEmptyTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean isEmpty(Object value) {

@@ -24,6 +24,7 @@ public final class MultiplyTemplateFunction extends MathTemplateBiFunction {
      * Creates a template function instance.
      */
     public MultiplyTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

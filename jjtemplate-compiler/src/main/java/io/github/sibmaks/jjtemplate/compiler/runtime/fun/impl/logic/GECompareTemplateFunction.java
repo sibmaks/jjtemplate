@@ -18,6 +18,7 @@ public final class GECompareTemplateFunction extends CompareTemplateFunction {
      * Creates a template function instance.
      */
     public GECompareTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

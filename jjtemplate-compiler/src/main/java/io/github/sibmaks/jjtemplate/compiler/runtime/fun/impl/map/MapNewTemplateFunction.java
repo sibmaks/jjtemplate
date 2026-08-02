@@ -21,6 +21,7 @@ public final class MapNewTemplateFunction implements TemplateFunction<Map<?, ?>>
      * Creates a template function instance.
      */
     public MapNewTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

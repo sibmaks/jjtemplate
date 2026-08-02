@@ -19,6 +19,7 @@ public final class NegTemplateFunction extends MathTemplateFunction {
      * Creates a template function instance.
      */
     public NegTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Number neg(Object value) {

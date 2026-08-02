@@ -27,6 +27,7 @@ public final class UnusedVariableNodeEliminator implements TemplateOptimizer {
      * Creates an instance.
      */
     public UnusedVariableNodeEliminator() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

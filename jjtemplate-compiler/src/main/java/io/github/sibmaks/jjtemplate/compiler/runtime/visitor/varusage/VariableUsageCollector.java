@@ -36,6 +36,7 @@ public final class VariableUsageCollector implements
      * Creates an empty variable-usage collector.
      */
     public VariableUsageCollector() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

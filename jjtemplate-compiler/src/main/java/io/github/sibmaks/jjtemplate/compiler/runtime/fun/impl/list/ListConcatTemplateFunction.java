@@ -21,6 +21,7 @@ public final class ListConcatTemplateFunction implements TemplateFunction<List<O
      * Creates a template function instance.
      */
     public ListConcatTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private List<Object> concat(List<Object> args) {

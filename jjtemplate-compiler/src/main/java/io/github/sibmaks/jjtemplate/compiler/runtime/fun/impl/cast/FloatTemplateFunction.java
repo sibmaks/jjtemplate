@@ -17,6 +17,7 @@ public final class FloatTemplateFunction implements TemplateFunction<BigDecimal>
      * Creates a template function instance.
      */
     public FloatTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private BigDecimal toFloat(Object arg) {
         if (arg == null) {

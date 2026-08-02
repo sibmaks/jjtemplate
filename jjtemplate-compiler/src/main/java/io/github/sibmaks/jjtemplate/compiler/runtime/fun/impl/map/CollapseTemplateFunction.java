@@ -21,6 +21,7 @@ public final class CollapseTemplateFunction implements TemplateFunction<Map<Stri
      * Creates a template function instance.
      */
     public CollapseTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private static final Map<String, Object> OBJECT_PROPERTIES = ReflectionUtils.getAllProperties(new Object());
 

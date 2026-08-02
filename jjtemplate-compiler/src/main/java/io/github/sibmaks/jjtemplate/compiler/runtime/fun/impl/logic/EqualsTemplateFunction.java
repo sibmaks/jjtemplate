@@ -21,6 +21,7 @@ public final class EqualsTemplateFunction implements TemplateFunction<Boolean> {
      * Creates a template function instance.
      */
     public EqualsTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private boolean areEquals(Object left, Object right) {
         if (left instanceof Number && right instanceof Number) {

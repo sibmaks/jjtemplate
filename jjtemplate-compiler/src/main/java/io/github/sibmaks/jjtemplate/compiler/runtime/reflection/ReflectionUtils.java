@@ -22,6 +22,7 @@ public final class ReflectionUtils {
      * Prevents instantiation of this utility class.
      */
     private ReflectionUtils() {
+        // Prevents instantiation of this utility class.
     }
 
     /**

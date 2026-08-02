@@ -19,6 +19,7 @@ public final class AndTemplateFunction implements TemplateFunction<Boolean> {
      * Creates a template function instance.
      */
     public AndTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean requireBoolean(Object value) {

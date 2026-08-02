@@ -16,6 +16,7 @@ public final class ExpressionSourceRenderer implements ExpressionVisitor<String>
      * Creates an instance.
      */
     public ExpressionSourceRenderer() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

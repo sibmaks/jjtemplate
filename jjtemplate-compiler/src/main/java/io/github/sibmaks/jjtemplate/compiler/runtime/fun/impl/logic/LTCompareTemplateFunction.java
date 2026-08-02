@@ -17,6 +17,7 @@ public final class LTCompareTemplateFunction extends CompareTemplateFunction {
      * Creates a template function instance.
      */
     public LTCompareTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

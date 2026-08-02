@@ -21,6 +21,7 @@ public final class StringContainsTemplateFunction implements TemplateFunction<Bo
      * Creates a template function instance.
      */
     public StringContainsTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean contains(Object value, Set<Object> args) {

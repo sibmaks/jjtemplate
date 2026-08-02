@@ -18,6 +18,7 @@ public final class ListHeadTemplateFunction implements TemplateFunction<Object> 
      * Creates a template function instance.
      */
     public ListHeadTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Object getHead(Object value) {

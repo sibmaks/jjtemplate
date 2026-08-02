@@ -19,6 +19,7 @@ public final class ListNewTemplateFunction implements TemplateFunction<List<?>> 
      * Creates a template function instance.
      */
     public ListNewTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

@@ -20,6 +20,7 @@ public final class DateParseTemplateFunction implements TemplateFunction<LocalDa
      * Creates a template function instance.
      */
     public DateParseTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private LocalDate parseDate(String format, String date) {

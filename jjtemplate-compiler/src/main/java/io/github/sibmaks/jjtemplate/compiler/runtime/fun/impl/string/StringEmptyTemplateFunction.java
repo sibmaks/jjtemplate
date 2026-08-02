@@ -19,6 +19,7 @@ public final class StringEmptyTemplateFunction implements TemplateFunction<Boole
      * Creates a template function instance.
      */
     public StringEmptyTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean isEmpty(Object value) {

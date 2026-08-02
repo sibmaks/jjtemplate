@@ -19,6 +19,7 @@ public final class OrTemplateFunction implements TemplateFunction<Boolean> {
      * Creates a template function instance.
      */
     public OrTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean requireBoolean(Object value) {

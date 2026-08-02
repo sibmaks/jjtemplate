@@ -19,6 +19,7 @@ public final class XorTemplateFunction implements TemplateFunction<Boolean> {
      * Creates an instance.
      */
     public XorTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean xor(Object left, Object right) {

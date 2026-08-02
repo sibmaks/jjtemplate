@@ -58,7 +58,7 @@ public final class TemplateCompileOptions {
      */
     private TemplateCompileOptions(
             boolean optimize,
-            TemplateEvaluationOptions evaluationOptions
+            @NonNull TemplateEvaluationOptions evaluationOptions
     ) {
         this.optimize = optimize;
         this.evaluationOptions = evaluationOptions;

@@ -18,6 +18,7 @@ public final class DateNowTemplateFunction implements TemplateFunction<LocalDate
      * Creates a template function instance.
      */
     public DateNowTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

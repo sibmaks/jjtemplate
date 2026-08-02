@@ -20,6 +20,7 @@ public final class StringConcatTemplateFunction implements TemplateFunction<Stri
      * Creates a template function instance.
      */
     public StringConcatTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private static String concat(List<Object> args) {
         var sb = new StringBuilder();

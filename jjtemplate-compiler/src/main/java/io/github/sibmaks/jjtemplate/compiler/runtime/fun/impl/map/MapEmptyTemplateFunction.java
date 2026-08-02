@@ -20,6 +20,7 @@ public final class MapEmptyTemplateFunction implements TemplateFunction<Boolean>
      * Creates a template function instance.
      */
     public MapEmptyTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean isEmpty(Object value) {

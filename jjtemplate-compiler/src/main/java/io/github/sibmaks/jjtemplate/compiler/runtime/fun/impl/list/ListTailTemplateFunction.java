@@ -20,6 +20,7 @@ public final class ListTailTemplateFunction implements TemplateFunction<List<Obj
      * Creates a template function instance.
      */
     public ListTailTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private List<Object> getTail(Object value) {

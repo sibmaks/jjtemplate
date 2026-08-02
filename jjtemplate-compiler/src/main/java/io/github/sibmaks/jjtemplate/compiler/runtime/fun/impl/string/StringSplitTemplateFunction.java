@@ -26,6 +26,7 @@ public final class StringSplitTemplateFunction implements TemplateFunction<List<
      * Creates a template function instance.
      */
     public StringSplitTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private List<String> split(Object value, String regex, int limit) {

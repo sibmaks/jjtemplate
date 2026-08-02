@@ -17,7 +17,8 @@ public abstract class MathTemplateFunction implements TemplateFunction<Number> {
     /**
      * Creates a template function instance.
      */
-    public MathTemplateFunction() {
+    protected MathTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

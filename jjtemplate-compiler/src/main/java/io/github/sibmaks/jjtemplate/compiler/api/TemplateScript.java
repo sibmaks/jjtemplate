@@ -35,6 +35,7 @@ public class TemplateScript {
      * Creates an empty template script.
      */
     public TemplateScript() {
+        // Fields intentionally retain default values for deserialization.
     }
 
     /**

@@ -20,6 +20,7 @@ public final class LocaleNewTemplateFunction implements TemplateFunction<Locale>
      * Creates a template function instance.
      */
     public LocaleNewTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

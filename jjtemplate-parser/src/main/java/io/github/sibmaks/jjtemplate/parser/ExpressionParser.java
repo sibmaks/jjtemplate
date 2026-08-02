@@ -25,6 +25,7 @@ public class ExpressionParser {
      * Creates an expression parser.
      */
     public ExpressionParser() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

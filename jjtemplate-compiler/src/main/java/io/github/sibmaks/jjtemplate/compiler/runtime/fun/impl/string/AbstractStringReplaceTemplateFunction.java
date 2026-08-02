@@ -25,7 +25,8 @@ public abstract class AbstractStringReplaceTemplateFunction implements TemplateF
     /**
      * Creates a template function instance.
      */
-    public AbstractStringReplaceTemplateFunction() {
+    protected AbstractStringReplaceTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

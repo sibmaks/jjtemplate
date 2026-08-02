@@ -18,5 +18,6 @@ public final class Definition extends LinkedHashMap<String, Object> {
      * Creates an instance.
      */
     public Definition() {
+        // LinkedHashMap performs all required initialization.
     }
 }

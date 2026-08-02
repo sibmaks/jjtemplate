@@ -18,6 +18,7 @@ public final class LECompareTemplateFunction extends CompareTemplateFunction {
      * Creates a template function instance.
      */
     public LECompareTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

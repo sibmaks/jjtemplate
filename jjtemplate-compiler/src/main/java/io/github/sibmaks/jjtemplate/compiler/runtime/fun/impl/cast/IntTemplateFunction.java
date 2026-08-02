@@ -18,6 +18,7 @@ public final class IntTemplateFunction implements TemplateFunction<BigInteger> {
      * Creates a template function instance.
      */
     public IntTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private BigInteger toInt(Object arg) {
         if (arg == null) {

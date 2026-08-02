@@ -24,6 +24,7 @@ public final class NumberFormatNewTemplateFunction implements TemplateFunction<N
      * Creates a template function instance.
      */
     public NumberFormatNewTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

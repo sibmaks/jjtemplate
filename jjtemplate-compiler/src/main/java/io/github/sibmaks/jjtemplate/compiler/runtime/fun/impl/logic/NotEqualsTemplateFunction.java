@@ -21,6 +21,7 @@ public final class NotEqualsTemplateFunction implements TemplateFunction<Boolean
      * Creates a template function instance.
      */
     public NotEqualsTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private boolean areNotEquals(Object left, Object right) {
         if (left instanceof Number && right instanceof Number) {

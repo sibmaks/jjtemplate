@@ -24,6 +24,7 @@ public final class StringIndexOfTemplateFunction implements TemplateFunction<Int
      * Creates a template function instance.
      */
     public StringIndexOfTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Integer indexOf(Object value, String str) {

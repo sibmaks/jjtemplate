@@ -20,6 +20,7 @@ public final class ListJoinTemplateFunction implements TemplateFunction<String> 
      * Creates a template function instance.
      */
     public ListJoinTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private String join(String glue, List<Object> args) {

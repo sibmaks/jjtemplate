@@ -19,7 +19,8 @@ public abstract class CompareTemplateFunction implements TemplateFunction<Boolea
     /**
      * Creates a template function instance.
      */
-    public CompareTemplateFunction() {
+    protected CompareTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

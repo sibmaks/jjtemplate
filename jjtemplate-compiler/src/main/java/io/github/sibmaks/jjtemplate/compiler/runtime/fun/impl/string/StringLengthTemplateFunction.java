@@ -19,6 +19,7 @@ public final class StringLengthTemplateFunction implements TemplateFunction<Inte
      * Creates a template function instance.
      */
     public StringLengthTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private int getLength(Object value) {

@@ -25,6 +25,7 @@ public final class StringLastIndexOfTemplateFunction implements TemplateFunction
      * Creates a template function instance.
      */
     public StringLastIndexOfTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Integer lastIndexOf(Object value, String str) {

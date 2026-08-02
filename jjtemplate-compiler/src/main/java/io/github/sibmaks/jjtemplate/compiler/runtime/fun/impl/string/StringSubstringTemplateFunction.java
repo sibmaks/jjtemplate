@@ -21,6 +21,7 @@ public final class StringSubstringTemplateFunction implements TemplateFunction<S
      * Creates a template function instance.
      */
     public StringSubstringTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private String substr(Object value, int beginIndex, Integer endIndex) {

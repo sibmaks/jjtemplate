@@ -20,6 +20,7 @@ public final class DefaultTemplateFunction implements TemplateFunction<Object> {
      * Creates a template function instance.
      */
     public DefaultTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     @Override
     public Object invoke(List<Object> args, Object pipeArg) {

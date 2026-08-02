@@ -20,6 +20,7 @@ public final class StringReplaceTemplateFunction extends AbstractStringReplaceTe
      * Creates a template function instance.
      */
     public StringReplaceTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

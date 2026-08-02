@@ -35,6 +35,7 @@ public final class TemplateTypeInferenceVisitor {
      * Creates an instance.
      */
     public TemplateTypeInferenceVisitor() {
+        // No initialization is required because this implementation is stateless.
     }
 
     /**

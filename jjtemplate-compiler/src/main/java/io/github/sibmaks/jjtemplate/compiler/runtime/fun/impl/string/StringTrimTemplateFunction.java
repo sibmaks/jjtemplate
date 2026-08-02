@@ -25,6 +25,7 @@ public final class StringTrimTemplateFunction implements TemplateFunction<String
      * Creates a template function instance.
      */
     public StringTrimTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private String trim(Object value) {

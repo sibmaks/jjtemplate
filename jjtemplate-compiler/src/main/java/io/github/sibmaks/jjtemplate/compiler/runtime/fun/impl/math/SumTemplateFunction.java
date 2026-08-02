@@ -23,6 +23,7 @@ public final class SumTemplateFunction extends MathTemplateBiFunction {
      * Creates an instance.
      */
     public SumTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

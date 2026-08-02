@@ -27,6 +27,7 @@ public final class VariableNodeInliner implements TemplateOptimizer {
      * Creates an instance.
      */
     public VariableNodeInliner() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

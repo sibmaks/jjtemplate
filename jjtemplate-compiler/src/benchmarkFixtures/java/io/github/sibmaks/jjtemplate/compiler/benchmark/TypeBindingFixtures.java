@@ -11,6 +11,7 @@ import java.util.Map;
  */
 public final class TypeBindingFixtures {
     private TypeBindingFixtures() {
+        // Prevents instantiation of this utility class.
     }
 
     /**

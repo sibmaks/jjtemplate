@@ -16,6 +16,7 @@ public final class BooleanTemplateFunction implements TemplateFunction<Boolean> 
      * Creates a template function instance.
      */
     public BooleanTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private Boolean convert(Object value) {

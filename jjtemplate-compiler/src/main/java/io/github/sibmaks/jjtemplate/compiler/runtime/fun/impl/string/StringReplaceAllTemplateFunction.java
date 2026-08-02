@@ -22,6 +22,7 @@ public final class StringReplaceAllTemplateFunction extends AbstractStringReplac
      * Creates a template function instance.
      */
     public StringReplaceAllTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     @Override

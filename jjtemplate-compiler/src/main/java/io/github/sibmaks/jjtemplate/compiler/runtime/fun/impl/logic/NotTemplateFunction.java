@@ -19,6 +19,7 @@ public final class NotTemplateFunction implements TemplateFunction<Boolean> {
      * Creates a template function instance.
      */
     public NotTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private boolean not(Object value) {

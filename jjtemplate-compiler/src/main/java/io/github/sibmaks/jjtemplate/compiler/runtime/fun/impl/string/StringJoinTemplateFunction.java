@@ -26,6 +26,7 @@ public final class StringJoinTemplateFunction implements TemplateFunction<String
      * Creates a template function instance.
      */
     public StringJoinTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
     private static String join(String glue, List<Object> args) {
         return args.stream()

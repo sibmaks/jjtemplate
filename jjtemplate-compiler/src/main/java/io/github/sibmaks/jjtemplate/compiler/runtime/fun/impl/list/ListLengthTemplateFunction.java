@@ -20,6 +20,7 @@ public final class ListLengthTemplateFunction implements TemplateFunction<Intege
      * Creates a template function instance.
      */
     public ListLengthTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private int getLength(Object value) {

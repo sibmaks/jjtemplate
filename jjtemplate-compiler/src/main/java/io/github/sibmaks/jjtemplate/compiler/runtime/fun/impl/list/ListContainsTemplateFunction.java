@@ -26,6 +26,7 @@ public final class ListContainsTemplateFunction implements TemplateFunction<Bool
      * Creates a template function instance.
      */
     public ListContainsTemplateFunction() {
+        // No initialization is required because this implementation is stateless.
     }
 
     private static boolean containsCollection(
