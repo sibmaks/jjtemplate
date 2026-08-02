@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.0.0-rc2] - 2026-08-02
+
 ### Added
 
 - Added Gradle dependency locking for the root build, `buildSrc`, and all published modules.
@@ -108,6 +110,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Added integration coverage for date and datetime formatting expressions.
 
 [Unreleased]: https://github.com/sibmaks/jjtemplate/compare/v1.0.0-rc1...HEAD
+[1.0.0-rc2]: https://github.com/sibmaks/jjtemplate/compare/v1.0.0-rc1...v1.0.0-rc2
 [1.0.0-rc1]: https://github.com/sibmaks/jjtemplate/compare/v0.9.2...v1.0.0-rc1
 [0.9.2]: https://github.com/sibmaks/jjtemplate/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/sibmaks/jjtemplate/compare/v0.9.0...v0.9.1
