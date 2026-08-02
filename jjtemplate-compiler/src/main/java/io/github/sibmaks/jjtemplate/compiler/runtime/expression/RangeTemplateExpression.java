@@ -1,13 +1,13 @@
 package io.github.sibmaks.jjtemplate.compiler.runtime.expression;
 
 import io.github.sibmaks.jjtemplate.compiler.runtime.context.Context;
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Template expression that iterates over a collection, array, or map and produces a list of results.
@@ -42,12 +42,12 @@ public final class RangeTemplateExpression implements TemplateExpression {
     /**
      * Creates a range expression.
      *
-     * @param name result-name expression
-     * @param firstVariableName item variable for collections and arrays, key variable for maps
+     * @param name               result-name expression
+     * @param firstVariableName  item variable for collections and arrays, key variable for maps
      * @param secondVariableName index variable for collections and arrays, value variable for maps
-     * @param source range source
-     * @param body expression evaluated for each item
-     * @param sourceExpression original source expression
+     * @param source             range source
+     * @param body               expression evaluated for each item
+     * @param sourceExpression   original source expression
      */
     public RangeTemplateExpression(
             TemplateExpression name,
@@ -87,7 +87,7 @@ public final class RangeTemplateExpression implements TemplateExpression {
         }
     }
 
-    private ArrayList<Object> evaluateArray(Context context, Object sourceObject) {
+    private List<Object> evaluateArray(Context context, Object sourceObject) {
         var length = Array.getLength(sourceObject);
         var out = new ArrayList<>(length);
         var iteration = new HashMap<String, Object>(2, 1);
@@ -106,7 +106,7 @@ public final class RangeTemplateExpression implements TemplateExpression {
         return out;
     }
 
-    private ArrayList<Object> evaluateCollection(Context context, Collection<?> sourceObject) {
+    private List<Object> evaluateCollection(Context context, Collection<?> sourceObject) {
         var out = new ArrayList<>(sourceObject.size());
         var iteration = new HashMap<String, Object>(2, 1);
         var index = 0;
@@ -124,7 +124,7 @@ public final class RangeTemplateExpression implements TemplateExpression {
         return out;
     }
 
-    private ArrayList<Object> evaluateMap(Context context, Map<?, ?> sourceObject) {
+    private List<Object> evaluateMap(Context context, Map<?, ?> sourceObject) {
         var out = new ArrayList<>(sourceObject.size());
         var iteration = new HashMap<String, Object>(2, 1);
         for (var entry : sourceObject.entrySet()) {
