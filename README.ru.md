@@ -8,9 +8,8 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 
 **JJTemplate** - это легковесный шаблонизатор, ориентированный на **минимальное время рендеринга** и **JSON-совместимый
-вход/выход**. Он компилирует шаблоны в оптимизированные абстрактные синтаксические деревья (AST) для быстрого
-выполнения,
-гарантируя валидный JSON в результате.
+вход/выход**. **JJT** расшифровывается как **Java JSON Template**. JJTemplate компилирует шаблоны в оптимизированные
+абстрактные синтаксические деревья (AST) для быстрого выполнения, гарантируя валидный JSON в результате.
 
 Плагин IDEA: [здесь](https://github.com/sibmaks/jjtemplate-plugin).
 
@@ -46,6 +45,75 @@ implementation("io.github.sibmaks.jjtemplate:jjtemplate:{version}")
     ```java
     var result = compiled.render(Map.of("name", "Alice"));
     ```
+
+## Собственные функции
+
+Реализуйте `TemplateFunction` и задайте пространство имён и имя, которые будут использоваться в JJT-выражениях.
+Например, следующая функция доступна как `custom:reverse`:
+
+```java
+import io.github.sibmaks.jjtemplate.compiler.runtime.fun.TemplateFunction;
+
+import java.util.List;
+
+public final class ReverseTemplateFunction implements TemplateFunction<String> {
+    @Override
+    public String invoke(List<Object> args, Object pipeArg) {
+        if (!args.isEmpty()) {
+            throw fail("no arguments expected after the pipe value");
+        }
+        return reverse(pipeArg);
+    }
+
+    @Override
+    public String invoke(List<Object> args) {
+        if (args.size() != 1) {
+            throw fail("exactly 1 argument required");
+        }
+        return reverse(args.get(0));
+    }
+
+    @Override
+    public String getNamespace() {
+        return "custom";
+    }
+
+    @Override
+    public String getName() {
+        return "reverse";
+    }
+
+    @Override
+    public boolean isDynamic() {
+        return false;
+    }
+
+    private String reverse(Object value) {
+        return value == null ? null : new StringBuilder(value.toString()).reverse().toString();
+    }
+}
+```
+
+Зарегистрируйте функцию в параметрах выполнения и создайте компилятор с этими параметрами:
+
+```java
+var evaluationOptions = TemplateEvaluationOptions.builder()
+        .functions(List.of(new ReverseTemplateFunction()))
+        .build();
+var compileOptions = TemplateCompileOptions.builder()
+        .evaluationOptions(evaluationOptions)
+        .build();
+var compiler = TemplateCompiler.getInstance(compileOptions);
+```
+
+После этого функцию можно вызывать напрямую или через pipe:
+
+```json
+{
+  "direct": "{{ custom:reverse .value }}",
+  "pipe": "{{ .value | custom:reverse }}"
+}
+```
 
 ## Формат шаблона
 
