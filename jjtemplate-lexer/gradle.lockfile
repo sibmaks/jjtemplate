@@ -12,7 +12,6 @@ commons-beanutils:commons-beanutils:1.9.4=checkstyle
 commons-codec:commons-codec:1.15=checkstyle
 commons-collections:commons-collections:3.2.2=checkstyle
 info.picocli:picocli:4.7.6=checkstyle
-io.github.sibmaks.jjtemplate:jjtemplate-lexer:1.0.0-rc1=apiBaseline
 net.sf.saxon:Saxon-HE:12.5=checkstyle
 org.antlr:antlr4-runtime:4.13.2=checkstyle
 org.apache.commons:commons-lang3:3.8.1=checkstyle

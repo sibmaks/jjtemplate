@@ -1,6 +1,9 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+io.github.sibmaks.jjtemplate:jjtemplate-compiler:1.0.0-rc1=jjtemplate-compilerApiBaseline
+io.github.sibmaks.jjtemplate:jjtemplate-lexer:1.0.0-rc1=jjtemplate-compilerApiBaseline,jjtemplate-lexerApiBaseline,jjtemplate-parserApiBaseline
+io.github.sibmaks.jjtemplate:jjtemplate-parser:1.0.0-rc1=jjtemplate-compilerApiBaseline,jjtemplate-parserApiBaseline
 org.jacoco:org.jacoco.agent:0.8.13=jacocoAgent,jacocoAnt
 org.jacoco:org.jacoco.ant:0.8.13=jacocoAnt
 org.jacoco:org.jacoco.core:0.8.13=jacocoAnt
@@ -8,5 +11,5 @@ org.jacoco:org.jacoco.report:0.8.13=jacocoAnt
 org.ow2.asm:asm-commons:9.8=jacocoAnt
 org.ow2.asm:asm-tree:9.8=jacocoAnt
 org.ow2.asm:asm:9.8=jacocoAnt
-org.slf4j:slf4j-api:2.0.17=runtimeClasspath,testRuntimeClasspath
+org.slf4j:slf4j-api:2.0.17=jjtemplate-compilerApiBaseline,runtimeClasspath,testRuntimeClasspath
 empty=annotationProcessor,compileClasspath,testAnnotationProcessor,testCompileClasspath

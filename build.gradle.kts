@@ -54,13 +54,14 @@ subprojects {
         create("deployerJars")
     }
 
-    val apiBaseline = configurations.create("apiBaseline") {
+    val apiBaseline = rootProject.configurations.create("${project.name}ApiBaseline") {
         isCanBeConsumed = false
         isCanBeResolved = true
         isTransitive = true
+        resolutionStrategy.useGlobalDependencySubstitutionRules.set(false)
     }
 
-    dependencies.add(
+    rootProject.dependencies.add(
         apiBaseline.name,
         "${project.group}:${project.name}:${apiBaselineVersion.get()}"
     )
