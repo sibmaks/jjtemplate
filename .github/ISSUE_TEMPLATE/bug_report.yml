@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a reproducible problem with JJTemplate
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve JJTemplate. Please provide a minimal reproduction and remove any sensitive data.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem description
+      description: Describe what went wrong and when it occurs.
+      placeholder: A clear and concise description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: template
+    attributes:
+      label: JJT template
+      description: Provide the smallest JJT template that reproduces the problem.
+      render: json
+      placeholder: |
+        {
+          "template": {
+            "message": "{{ .message }}"
+          }
+        }
+    validations:
+      required: true
+
+  - type: textarea
+    id: input
+    attributes:
+      label: Input sample
+      description: Provide the input data used to render the template. Remove secrets and personal data.
+      render: json
+      placeholder: |
+        {
+          "message": "Hello"
+        }
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What output or behavior did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What happened instead? Include the full exception and stack trace, if applicable.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: JJTemplate version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java version
+      placeholder: e.g. OpenJDK 21.0.8
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other details that may help diagnose the problem.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched the existing issues and did not find a duplicate.
+          required: true
+        - label: I removed secrets and personal data from the reproduction.
+          required: true
