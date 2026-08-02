@@ -13,9 +13,6 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -23,6 +20,8 @@ concurrency:
 jobs:
   build:
     name: Build Jekyll site
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
