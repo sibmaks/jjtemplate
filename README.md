@@ -2,11 +2,18 @@
 
 [English](README.md) | [Русский](README.ru.md)
 
+[![Java](https://img.shields.io/badge/Java-11%2B-blue)](https://openjdk.org/projects/jdk/11/)
+[![GitHub Release](https://img.shields.io/github/v/release/sibmaks/jjtemplate?sort=semver)](https://github.com/sibmaks/jjtemplate/releases)
+[![Maven](https://img.shields.io/maven-central/v/io.github.sibmaks.jjtemplate/jjtemplate?label=Maven)](https://central.sonatype.com/artifact/io.github.sibmaks.jjtemplate/jjtemplate)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=bugs)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sibmaks_jjtemplate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sibmaks_jjtemplate)
-[![Maven](https://badges.mvnrepository.com/badge/io.github.sibmaks.jjtemplate/jjtemplate/badge.svg?label=Maven)](https://mvnrepository.com/artifact/io.github.sibmaks.jjtemplate/jjtemplate)
+
+[![Build](https://github.com/sibmaks/jjtemplate/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/sibmaks/jjtemplate/actions/workflows/build.yml)
+[![Javadocs](https://javadoc.io/badge2/io.github.sibmaks.jjtemplate/jjtemplate/javadoc.svg)](https://javadoc.io/doc/io.github.sibmaks.jjtemplate/jjtemplate)
+[![License](https://img.shields.io/github/license/sibmaks/jjtemplate)](https://github.com/sibmaks/jjtemplate/blob/main/LICENSE)
 
 **JJTemplate** is a lightweight templating engine designed for **minimal render time** and **JSON-compatible
 input/output**. **JJT** stands for **Java JSON Template**. JJTemplate compiles templates into optimized abstract syntax
